@@ -1,0 +1,24 @@
+{
+  "name": "@acme-corp/admin-api",
+  "main": "adminApiSDK.ts",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "PORT=3250 wait-on tcp:5432 && sleep 0.2 && ts-node-dev --exit-child server.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@acme-corp/api": "*",
+    "@acme-corp/shared-backend": "*",
+    "@acme-corp/shared-universal": "*",
+    "@types/node": "17.0.0",
+    "ts-node-dev": "1.1.8"
+  },
+  "dependencies": {
+    "create-typed-sdk": "0.0.6",
+    "fastify": "3.23.0",
+    "fastify-cors": "6.0.2",
+    "ts-node": "10.4.0",
+    "typescript": "4.5.4"
+  }
+}

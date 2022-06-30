@@ -1,0 +1,25 @@
+{
+  "name": "@acme-corp/admin-app",
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite --port 3500 --clearScreen false",
+    "build": "tsc && vite build",
+    "serve": "vite preview"
+  },
+  "dependencies": {
+    "@acme-corp/admin-api": "*",
+    "@acme-corp/api": "*",
+    "@acme-corp/shared-frontend": "*",
+    "@acme-corp/shared-universal": "*",
+    "react": "17.0.0",
+    "react-dom": "17.0.0",
+    "react-query": "3.34.7"
+  },
+  "devDependencies": {
+    "@types/react": "17.0.0",
+    "@types/react-dom": "17.0.0",
+    "@vitejs/plugin-react": "1.0.0",
+    "typescript": "4.5.4",
+    "vite": "2.6.4"
+  }
+}

@@ -1,0 +1,7 @@
+node_modules
+dist
+tsconfig.tsbuildinfo
+.pnpm-debug.log
+yarn-error.log
+.parcel-cache
+*secret.*

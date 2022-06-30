@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "incremental": true,
+    "pretty": true,
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "strict": true,
+    "esModuleInterop": true,
+    "strictFunctionTypes": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "strictNullChecks": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "useUnknownInCatchVariables": false,
+    "noImplicitReturns": true,
+    "noErrorTruncation": true,
+    "noImplicitAny": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitThis": false,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "jsx": "react-jsx"
+  },
+  "include": ["global.d.ts"]
+}

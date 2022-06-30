@@ -1,0 +1,10 @@
+wordpress-sync/*
+!wordpress-sync/app
+wordpress-sync/app/*
+!wordpress-sync/app/public
+wordpress-sync/app/public/*
+!wordpress-sync/app/public/wp-content
+wordpress-sync/app/public/wp-content/*
+!wordpress-sync/app/public/wp-content/plugins
+wordpress-sync/app/public/wp-content/plugins/*
+!wordpress-sync/app/public/wp-content/plugins/acme-corp-calculators
