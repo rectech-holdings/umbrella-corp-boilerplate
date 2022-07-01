@@ -1,3 +1,5 @@
+import { execaCommand } from "execa";
+
 import { globbySync } from "globby";
 import fs from "fs";
 import semver from "semver";
@@ -77,3 +79,13 @@ npx replace-in-files-cli --regex='"${safeDepName}": "[^"]+"' --replacement='"${d
     });
   }
 });
+
+async function getWorkspacePackageNames() {
+  try {
+    return Object.keys(
+      JSON.parse((await execaCommand(`yarn workspaces info`)).stdout.split("\n").slice(1, -1).join(""))
+    );
+  } catch (e) {
+    throw new Error("Unable to get yarn workspaces info. The output format has likely changed...");
+  }
+}

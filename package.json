@@ -8,7 +8,7 @@
     "deploy": "echo something",
     "prepare": "node ./cli-scripts/post-install.mjs",
     "secrets:acme": "turbo run secrets --filter=*acme* --",
-    "secrets:cyberdyne": "turbo run secrets --filter=*acme* --"
+    "secrets:cyberdyne": "turbo run secrets --filter=*cyberdyne* --"
   },
   "workspaces": {
     "packages": [
