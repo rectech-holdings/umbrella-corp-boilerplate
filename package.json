@@ -7,7 +7,7 @@
     "dev-all": "turbo run dev",
     "deploy": "echo something",
     "prepare": "node ./cli-scripts/post-install.mjs",
-    "secrets": "turbo run secrets --"
+    "secrets": "turbo run secrets --scope=@acme-corp/app --include-dependencies --"
   },
   "workspaces": {
     "packages": [
@@ -21,6 +21,7 @@
     "@typescript-eslint/parser": "5.4.0",
     "eslint": "8.3.0",
     "eslint-plugin-react-hooks": "4.3.0",
+    "execa": "6.1.0",
     "globby": "^12.0.2",
     "lodash": "4.17.21",
     "semver": "7.3.5",

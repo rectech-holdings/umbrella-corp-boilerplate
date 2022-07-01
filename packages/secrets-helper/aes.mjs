@@ -8,23 +8,28 @@ import path from "path";
 const command = process.argv[2];
 
 if (command !== "encrypt" && command !== "decrypt") {
-  throw new Error("Must specify 'encrypt' or 'decrypt' to secrets-helper");
+  throw new Error(
+    "Must specify 'encrypt' or 'decrypt' to secrets-helper as first parameter. E.g. \"yarn secrets encrypt staging password\""
+  );
 }
 
 const environment = process.argv[3];
 
 if (!environment) {
-  throw new Error(`Unable to ${command}! Environment of must be defined as first parameter`);
+  const msg = `Environment must be defined as second parameter. E.g. "yarn secrets encrypt staging password"`;
+  throw new Error(msg);
 }
 
 if (environment === "development") {
-  throw new Error(`Unable ${command} for development environment`);
+  const msg = `\"development\" is not a valid environment! Development secrets should be checked in for now.`;
+  throw new Error(msg);
 }
 
 const password = process.argv[4];
 
 if (!password) {
-  throw new Error(`Unable to ${command}! Password must be defined as second parameter`);
+  const msg = `Password must be defined as third parameter. E.g. \"yarn secrets encrypt staging password\"`;
+  throw new Error(msg);
 }
 
 const dirPath = path.join(process.cwd(), "./config/secret");
