@@ -3,7 +3,8 @@
   "main": "adminApiSDK.ts",
   "version": "1.0.0",
   "scripts": {
-    "dev": "PORT=3250 wait-on tcp:5432 && sleep 0.2 && ts-node-dev --exit-child server.ts"
+    "dev": "PORT=3250 wait-on tcp:5432 && sleep 0.2 && ts-node-dev --exit-child server.ts",
+    "secrets": "yarn secrets-helper"
   },
   "author": "",
   "license": "ISC",

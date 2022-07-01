@@ -3,23 +3,27 @@
   "version": "1.0.0",
   "main": "apiSDK.ts",
   "scripts": {
-    "dev": "PORT=3300 wait-on tcp:5432 && sleep 0.2 && ts-node-dev --exit-child server.ts"
+    "dev": "PORT=3300 wait-on tcp:5432 && sleep 0.2 && ts-node-dev --exit-child server.ts",
+    "encrypt": "yarn secrets-helper encrypt",
+    "decrypt": "yarn secrets-helper decrypt",
+    "secrets": "yarn secrets-helper"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@types/node": "17.0.0",
-    "ts-node-dev": "1.1.8"
+    "ts-node-dev": "1.1.8",
+    "wait-on": "6.0.0"
   },
   "dependencies": {
     "@acme-corp/db": "*",
     "@acme-corp/shared-backend": "*",
     "@acme-corp/shared-universal": "*",
+    "@acme-corp/secrets-helper": "*",
     "create-typed-sdk": "0.0.6",
     "fastify": "3.23.0",
     "fastify-cors": "6.0.2",
     "ts-node": "10.4.0",
-    "typescript": "4.5.4",
-    "wait-on": "6.0.0"
+    "typescript": "4.5.4"
   }
 }

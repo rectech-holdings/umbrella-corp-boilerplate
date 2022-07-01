@@ -2,7 +2,6 @@
   "name": "@acme-corp/background",
   "version": "1.0.0",
   "main": "index.js",
-  "license": "MIT",
   "scripts": {
     "dev": "wait-on tcp:5432 && sleep 0.2 && echo 'No background processes yet...'"
   },

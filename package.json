@@ -6,7 +6,8 @@
     "dev-admin": "turbo run dev --scope=@acme-corp/admin-app --include-dependencies",
     "dev-all": "turbo run dev",
     "deploy": "echo something",
-    "prepare": "node ./scripts/post-install.mjs"
+    "prepare": "node ./cli-scripts/post-install.mjs",
+    "secrets": "turbo run secrets --"
   },
   "workspaces": {
     "packages": [
@@ -23,6 +24,7 @@
     "globby": "^12.0.2",
     "lodash": "4.17.21",
     "semver": "7.3.5",
+    "ts-node": "10.8.1",
     "turbo": "1.3.1",
     "typescript": "4.5.4"
   }

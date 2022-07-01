@@ -5,8 +5,6 @@
     "build": {
       "dependsOn": ["^build"]
     },
-    "dev": {
-      "cache": false
-    }
+    "secrets": { "cache": false }
   }
 }
