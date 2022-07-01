@@ -29,9 +29,10 @@ const workspacePackages = await (async function getWorkspacePackageNames() {
 
 let errors = [];
 
-const files = globbySync(["**/*/package.json"], { gitignore: true });
+const files = globbySync(["**/*/package.json", "package.json"], { gitignore: true });
+
 files.forEach((file) => {
-  const pkgJson = JSON.parse(String(fs.readFileSync(file)));
+  const pkgJson = readJSON(file);
   const pkgName = pkgJson.name;
   if (isWorkspacePackage(pkgName)) {
     const deps = {
@@ -56,9 +57,9 @@ files.forEach((file) => {
       Object.entries(deps[depType]).forEach(([dep, version]) => {
         //Ensure no semver ranges. They are abomination
         if (!String(version[0]).match(/\d/) && version[0] !== "*" && version !== "*") {
-          errors.push({
-            msg: `Semver range (e.g. ^ or ~) detected in package.json of ${pkgName}: "${dep}": "${version}". This is prohibited in this monorepo in order to prevent version duplication.`,
-          });
+          const msg = `Semver range (e.g. ^ or ~) detected in package.json of ${pkgName}: "${dep}": "${version}". This is prohibited in this monorepo in order to prevent version duplication.`;
+
+          throw new Error(msg);
         }
 
         //Ensure local package dependencies have a version of "*"
@@ -89,19 +90,20 @@ files.forEach((file) => {
         const priorVersion = ensureNoDifferentVersionsMap[dep];
         if (priorVersion && priorVersion.version !== version) {
           const higherVersion = semver.gt(priorVersion.version, version) ? priorVersion.version : version;
+          const lowerVersion = higherVersion === version ? priorVersion.version : version;
 
           errors.push({
             recoveryPrompt: async () => {
               const yes = await yesno({
-                question: `The packages ${pkgJson.name} and ${priorVersion.name} are on different versions of ${dep}: ${version} and ${priorVersion.version}. Would you like to upgrade ${dep} from "${priorVersion.version}" to "${higherVersion}"? (y/n)`,
+                question: `The packages ${pkgJson.name} and ${priorVersion.name} are on different versions of ${dep}. Would you like to upgrade ${dep} from "${lowerVersion}" to "${higherVersion}"? (y/n)`,
                 defaultValue: null,
               });
 
               if (yes) {
                 await replaceInFile({
                   to: `"${dep}": "${higherVersion}"`,
-                  from: `"${dep}": "${priorVersion.version}"`,
-                  files: "**/*/package.json",
+                  from: `"${dep}": "${lowerVersion}"`,
+                  files: ["**/*/package.json", "package.json"],
                   ignore: ["node_modules"],
                 });
                 return true;
@@ -159,5 +161,13 @@ if (errors.length) {
 }
 
 function isWorkspacePackage(pkgName) {
-  return workspacePackages.includes(pkgName);
+  return (
+    workspacePackages.includes(pkgName) ||
+    // Include root of the monorepo...
+    pkgName === readJSON(process.cwd() + "/package.json").name
+  );
+}
+
+function readJSON(filePath) {
+  return JSON.parse(String(fs.readFileSync(filePath)));
 }
