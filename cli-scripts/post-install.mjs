@@ -13,7 +13,7 @@ const files = globbySync(["**/*/package.json"], { gitignore: true });
 files.forEach((file) => {
   const pkgJson = JSON.parse(String(fs.readFileSync(file)));
   const pkgName = pkgJson.name;
-  if (pkgName.indexOf("@acme-corp/") === 0) {
+  if (pkgName.indexOf("@umbrella-corp/") === 0) {
     const deps = {
       dependencies: pkgJson.dependencies || {},
       devDependencies: pkgJson.devDependencies || {},
@@ -37,16 +37,14 @@ files.forEach((file) => {
       Object.entries(deps[depType]).forEach(([dep, version]) => {
         //Ensure no semver ranges. They are abomination
         if (!String(version[0]).match(/\d/) && version[0] !== "*" && version !== "*") {
-          const correctVersion = version.slice(1);
           console.error(
-            `Semver range (e.g. ^ or ~) detected in package.json of ${pkgName}: "${dep}": "${version}". This is prohibited in this monorepo in order to prevent version duplication.
-Please change the package version with the following command at project root:\n\nyarn lerna exec 'yarn add ${dep}@${correctVersion}' --scope=${pkgName}\n`
+            `Semver range (e.g. ^ or ~) detected in package.json of ${pkgName}: "${dep}": "${version}". This is prohibited in this monorepo in order to prevent version duplication.`
           );
           process.exit(1);
         }
 
         //Ensure local package dependencies have a version of "*"
-        if (dep.indexOf("@acme-corp/") === 0 && version !== "*") {
+        if (dep.indexOf("@umbrella-corp/") === 0 && version !== "*") {
           console.error(
             `Local dependency in package.json ${pkgName} for package ${dep} must be "*", not "${version}". At project root, please run:\n\nnpx replace-in-files-cli --string='"${dep}": "${version}"' --replacement='"${dep}": "*"' '*/**' '!node_modules'`
           );

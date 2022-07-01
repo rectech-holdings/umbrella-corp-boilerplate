@@ -1,0 +1,14 @@
+{
+  "name": "@umbrella-corp/secrets-helper",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "bin": {
+    "secrets-helper": "./aes.mjs"
+  },
+  "dependencies": {
+    "node-aescrypt": "1.0.8"
+  }
+}

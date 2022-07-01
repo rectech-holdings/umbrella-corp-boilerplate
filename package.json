@@ -2,20 +2,20 @@
   "private": true,
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev --scope=@acme-corp/app --include-dependencies",
-    "dev-admin": "turbo run dev --scope=@acme-corp/admin-app --include-dependencies",
+    "dev": "turbo run dev --scope=@umbrella-corp/acme-spa --include-dependencies",
+    "dev-admin": "turbo run dev --scope=@umbrella-corp/acme-admin-spa --include-dependencies",
     "dev-all": "turbo run dev",
     "deploy": "echo something",
     "prepare": "node ./cli-scripts/post-install.mjs",
-    "secrets": "turbo run secrets --scope=@acme-corp/app --include-dependencies --"
+    "secrets:acme": "turbo run secrets --filter=*acme* --",
+    "secrets:cyberdyne": "turbo run secrets --filter=*acme* --"
   },
   "workspaces": {
     "packages": [
-      "packages/*",
-      "apps/*"
+      "companies/*/*/*"
     ]
   },
-  "name": "acme-corp",
+  "name": "umbrella-corp",
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "5.4.0",
     "@typescript-eslint/parser": "5.4.0",

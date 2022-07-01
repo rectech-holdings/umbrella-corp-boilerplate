@@ -1,0 +1,18 @@
+{
+  "name": "@umbrella-corp/deploy-node-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "declaration": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc -w --preserveWatchOutput"
+  },
+  "devDependencies": {
+    "typescript": "4.5.4"
+  },
+  "dependencies": {
+    "@pulumi/gcp": "6.12.0",
+    "@pulumi/pulumi": "3.25.0"
+  }
+}
