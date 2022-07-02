@@ -29,7 +29,7 @@ const workspacePackages = await (async function getWorkspacePackageNames() {
 
 let errors = [];
 
-const files = globbySync("**/*/package.json", { gitignore: true });
+const files = globbySync("**/*/package.json", { gitignore: true, followSymbolicLinks: false });
 
 files.forEach((file) => {
   const pkgJson = readJSON(file);
@@ -38,15 +38,9 @@ files.forEach((file) => {
     const deps = {
       dependencies: pkgJson.dependencies || {},
       devDependencies: pkgJson.devDependencies || {},
-      peerDependencies: pkgJson.peerDependencies || {},
     };
 
-    //Ensure the same module is not declared twice in different dependency types (dependencies, devDependencies, or peerDependencies)
-    const duplicates = [
-      ..._.intersection(Object.keys(deps.dependencies), Object.keys(deps.devDependencies)),
-      ..._.intersection(Object.keys(deps.dependencies), Object.keys(deps.peerDependencies)),
-      ..._.intersection(Object.keys(deps.devDependencies), Object.keys(deps.peerDependencies)),
-    ];
+    const duplicates = [..._.intersection(Object.keys(deps.dependencies), Object.keys(deps.devDependencies))];
     if (duplicates.length) {
       errors.push({
         msg: `Error in ${pkgName}. The packages "${duplicates.toString()}" are declared more than once across "dependencies", "devDependencies", and "peerDependencies". Please fix this issue in ${file}`,
