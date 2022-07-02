@@ -8,6 +8,8 @@ import path from "path";
 
 const program = new Command();
 
+const allowedEnvs = ["staging", "production"];
+
 program.name("config-helper").description("CLI to make Umbrella Corp config easier");
 
 program
@@ -27,6 +29,14 @@ program
   .option("--suffix <suffix>", '(Optional) Encryption suffix to be added to file name. Defaults to ".aes"', ".aes")
   .action(async (options) => {
     const { env: environment, password, directory, pattern, suffix } = options;
+
+    if (!allowedEnvs.includes(environment)) {
+      process.exitCode = 1;
+      console.error(
+        chalk.red(`Invalid environment "${environment}". Available options are: ${allowedEnvs.join(" OR ")}`)
+      );
+      return;
+    }
 
     const dirPath = path.join(process.cwd(), directory);
     const filePattern = pattern.replace("*", environment);
