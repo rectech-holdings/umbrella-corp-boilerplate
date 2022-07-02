@@ -1,0 +1,27 @@
+{
+  "name": "ac-api",
+  "version": "1.0.0",
+  "main": "apiSDK.ts",
+  "scripts": {
+    "dev": "PORT=3300 wait-on tcp:5432 && sleep 0.2 && ts-node-dev --exit-child server.ts",
+    "encrypt": "yarn config-helper encrypt",
+    "decrypt": "yarn config-helper decrypt",
+    "secrets": "yarn config-helper"
+  },
+  "devDependencies": {
+    "@types/node": "18.0.0",
+    "ts-node-dev": "1.1.8",
+    "wait-on": "6.0.0"
+  },
+  "dependencies": {
+    "ac-db": "*",
+    "ac-shared-backend": "*",
+    "ac-shared-universal": "*",
+    "config-helper": "*",
+    "create-typed-sdk": "0.0.6",
+    "fastify": "3.23.0",
+    "fastify-cors": "6.0.2",
+    "ts-node": "10.8.1",
+    "typescript": "4.7.4"
+  }
+}

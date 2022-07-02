@@ -1,0 +1,12 @@
+{
+  "name": "cy-background",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "wait-on tcp:5432 && sleep 0.2 && echo 'No background processes yet...'"
+  },
+  "dependencies": {
+    "lodash": "4.17.21",
+    "cy-api": "*"
+  }
+}

@@ -29,7 +29,7 @@ const workspacePackages = await (async function getWorkspacePackageNames() {
 
 let errors = [];
 
-const files = globbySync(["**/*/package.json", "package.json"], { gitignore: true });
+const files = globbySync("**/*/package.json", { gitignore: true });
 
 files.forEach((file) => {
   const pkgJson = readJSON(file);
@@ -161,11 +161,7 @@ if (errors.length) {
 }
 
 function isWorkspacePackage(pkgName) {
-  return (
-    workspacePackages.includes(pkgName) ||
-    // Include root of the monorepo...
-    pkgName === readJSON(process.cwd() + "/package.json").name
-  );
+  return workspacePackages.includes(pkgName);
 }
 
 function readJSON(filePath) {

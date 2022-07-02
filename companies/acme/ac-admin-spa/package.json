@@ -1,0 +1,25 @@
+{
+  "name": "ac-admin-spa",
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite --port 3500 --clearScreen false",
+    "build": "tsc && vite build",
+    "serve": "vite preview"
+  },
+  "dependencies": {
+    "ac-admin-api": "*",
+    "ac-api": "*",
+    "ac-shared-frontend": "*",
+    "ac-shared-universal": "*",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-query": "3.34.7"
+  },
+  "devDependencies": {
+    "@types/react": "18.0.14",
+    "@types/react-dom": "18.0.5",
+    "@vitejs/plugin-react": "2.0.0-beta.0",
+    "typescript": "4.7.4",
+    "vite": "2.6.4"
+  }
+}

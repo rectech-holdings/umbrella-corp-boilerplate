@@ -1,0 +1,17 @@
+{
+  "name": "config-helper",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "bin": {
+    "config-helper": "./index.mjs"
+  },
+  "dependencies": {
+    "chalk": "5.0.1",
+    "commander": "9.3.0",
+    "globby": "13.1.2",
+    "node-aescrypt": "1.0.8"
+  }
+}
