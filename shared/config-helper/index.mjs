@@ -40,9 +40,10 @@ program
     }
 
     await Promise.all(
-      files.map(async (filePath) => {
-        const from = createReadStream(filePath);
-        const to = createWriteStream(filePath + suffix);
+      files.map(async (readPath) => {
+        const writePath = readPath + suffix;
+        const from = createReadStream(readPath);
+        const to = createWriteStream(writePath);
         const through = new Encrypt(password);
 
         await new Promise((res, rej) => {
@@ -55,7 +56,7 @@ program
       })
     );
 
-    console.info(`Successfully encrypted ${files.length} files...`);
+    console.info(`Success encrypting ${files.length} files!`);
   });
 
 program
@@ -88,9 +89,10 @@ program
     }
 
     await Promise.all(
-      files.map(async (filePath) => {
-        const from = createReadStream(filePath);
-        const to = createWriteStream(filePath.replace(suffix, ""));
+      files.map(async (readPath) => {
+        const writePath = readPath.replace(suffix, "");
+        const from = createReadStream(readPath);
+        const to = createWriteStream(writePath);
         const through = new Decrypt(password);
 
         await new Promise((res, rej) => {
@@ -102,7 +104,7 @@ program
         });
       })
     );
-    console.info(`Successfully decrypted ${files.length} files...`);
+    console.info(`Success decrypting ${files.length} files!`);
   });
 
 program.parse();
