@@ -9,9 +9,9 @@
   "dependencies": {
     "@headlessui/react": "1.4.3",
     "@heroicons/react": "1.0.5",
+    "autoprefixer": "10.4.2",
     "cy-shared-frontend": "*",
     "cy-shared-universal": "*",
-    "autoprefixer": "10.4.2",
     "postcss": "8.4.6",
     "react": "18.2.0",
     "react-dom": "18.2.0",
@@ -21,11 +21,11 @@
     "zustand": "4.0.0-rc.1"
   },
   "devDependencies": {
-    "cy-api": "*",
     "@types/react": "18.0.14",
     "@types/react-dom": "18.0.5",
     "@vitejs/plugin-react": "2.0.0-beta.0",
+    "cy-api": "*",
     "typescript": "4.7.4",
-    "vite": "2.6.4"
+    "vite": "3.0.0-beta.6"
   }
 }

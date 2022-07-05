@@ -1,6 +1,7 @@
 {
   "name": "ac-spa",
   "version": "0.0.0",
+  "type": "module",
   "scripts": {
     "dev": "vite --clearScreen false --port 3000",
     "build": "tsc && vite build",
@@ -21,11 +22,11 @@
     "zustand": "4.0.0-rc.1"
   },
   "devDependencies": {
-    "ac-api": "*",
     "@types/react": "18.0.14",
     "@types/react-dom": "18.0.5",
     "@vitejs/plugin-react": "2.0.0-beta.0",
+    "ac-api": "*",
     "typescript": "4.7.4",
-    "vite": "2.6.4"
+    "vite": "3.0.0-beta.6"
   }
 }
