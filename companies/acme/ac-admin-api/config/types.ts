@@ -1,5 +1,5 @@
 export type PublicConfig = {
-  blah: string;
+  port: number;
 };
 
 export type SecretConfig = {

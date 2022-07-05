@@ -1,9 +1,7 @@
 {
   "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
-    "target": "ES2017",
-    "noEmit": true,
-    "module": "commonjs"
+    "noEmit": true
   },
   "include": ["**/*"]
 }

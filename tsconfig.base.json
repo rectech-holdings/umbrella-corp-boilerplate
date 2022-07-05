@@ -1,5 +1,7 @@
 {
   "compilerOptions": {
+    "module": "ES2022",
+    "target": "ES2022",
     "incremental": true,
     "pretty": true,
     "moduleResolution": "node",

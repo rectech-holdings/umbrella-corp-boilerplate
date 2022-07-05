@@ -3,6 +3,7 @@ import yesno from "yesno";
 import replaceInFile from "replace-in-file";
 import { globbySync } from "globby";
 import fs from "fs";
+import { getWorkspaceInfo } from "./utils/utils.mjs";
 import semver from "semver";
 import _ from "lodash";
 const ensureNoDifferentVersionsMap = {};
@@ -12,20 +13,7 @@ if (process.env["npm_config_argv"] && JSON.parse(process.env["npm_config_argv"])
   process.exit(0);
 }
 
-const workspacePackages = await (async function getWorkspacePackageNames() {
-  if (!getWorkspacePackageNames.cached) {
-    try {
-      const val = Object.keys(
-        JSON.parse((await execaCommand(`yarn workspaces info`)).stdout.split("\n").slice(1, -1).join(""))
-      );
-      getWorkspacePackageNames.cached = val;
-    } catch (e) {
-      throw new Error("Unable to get yarn workspaces info. The output format has likely changed...");
-    }
-  }
-
-  return getWorkspacePackageNames.cached;
-})();
+const workspacePackages = Object.keys(await getWorkspaceInfo());
 
 let errors = [];
 

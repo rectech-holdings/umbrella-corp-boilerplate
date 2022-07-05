@@ -7,7 +7,7 @@
     "build:ts": "tsc",
     "build:prisma": "prisma generate",
     "dev": "run-p -l dev:*",
-    "dev:db": "node cli-scripts/start-dev-db.mjs",
+    "dev:db": "node scripts/start-dev-db.mjs",
     "dev:ts": "tsc -w --preserveWatchOutput",
     "dev:prisma": "prisma generate --watch",
     "create-migration": "prisma migrate dev --create-only",
@@ -22,7 +22,7 @@
     "@types/node": "18.0.0",
     "execa": "6.1.0",
     "npm-run-all": "4.1.5",
-    "ts-node": "10.8.1",
+    "ts-node": "10.8.2",
     "typescript": "4.7.4"
   }
 }
