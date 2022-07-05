@@ -1,40 +1,45 @@
-import logo from "./logo.svg";
-import "./App.css";
-import { Providers } from "./services/Providers";
-import { ApiSDK } from "./services/apiSDK.service";
-import { Router } from "./routes/Router";
-import { SideNav } from "./components/sideNav";
-import Header from "./components/header";
+import { useState } from 'react'
+import logo from './logo.svg'
+import './App.css'
 
 function App() {
-  return (
-    <Providers>
-      <AppInner />
-    </Providers>
-  );
-}
-
-function AppInner() {
-  const loans = ApiSDK.useEndpoint().loans.getAllLoans({});
-
-  const someData = [1, 2, 3, 4, 5];
-
-  if (loans.status !== "success") {
-    return (
-    <div>
-      <Header />
-      <div>Loading...</div>
-    </div>
-    );
-  }
+  const [count, setCount] = useState(0)
 
   return (
-    <div>
-      <Header />
-      <SideNav />
-      <Router />
+    <div className="App">
+      <header className="App-header">
+        <img src={logo} className="App-logo" alt="logo" />
+        <p>Hello Vite + React!</p>
+        <p>
+          <button type="button" onClick={() => setCount((count) => count + 1)}>
+            count is: {count}
+          </button>
+        </p>
+        <p>
+          Edit <code>App.tsx</code> and save to test HMR updates.
+        </p>
+        <p>
+          <a
+            className="App-link"
+            href="https://reactjs.org"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Learn React
+          </a>
+          {' | '}
+          <a
+            className="App-link"
+            href="https://vitejs.dev/guide/features.html"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Vite Docs
+          </a>
+        </p>
+      </header>
     </div>
-    );
+  )
 }
 
-export default App;
+export default App

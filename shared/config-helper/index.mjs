@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 import { Command } from "commander";
+import os from "os";
+import fs from "fs";
 import { createReadStream, createWriteStream, readdirSync } from "fs";
 import chalk from "chalk";
 import { globby } from "globby";
 import { Encrypt, Decrypt } from "node-aescrypt";
 import path from "path";
+import esbuild from "esbuild";
 
 const program = new Command();
 
@@ -115,6 +118,42 @@ program
       })
     );
     console.info(`Success decrypting ${files.length} files!`);
+  });
+
+program
+  .command("print-public")
+  .description(
+    "Prints all public config. This is typically so that it can be easily sourced into the running bash process"
+  )
+  .option("-p, --path <path>", 'Relative path to the public config file. Defaults to "config/public/index.ts"')
+  .option("-e, --export <export>", 'Named export to read inside the config file. Defaults to "publicConfig"')
+  .action(async (options) => {
+    const readPath = path.join(process.cwd(), options.path || "config/public/index.ts");
+    if (!fs.existsSync(readPath)) {
+      const msg = `Unable to find ${readPath}! Aborting`;
+      throw new Error(msg);
+    }
+
+    const writePath = path.join(os.tmpdir(), Math.random() * Math.random() + ".mjs");
+    const res = await esbuild.build({
+      entryPoints: [readPath],
+      outfile: writePath,
+      bundle: true,
+      target: "esnext",
+      format: "esm",
+    });
+
+    if (res.errors.length) {
+      throw new Error("Error compiling config! Output from esbuild follows:\n" + JSON.stringify(res.errors, null, 2));
+    }
+
+    const envMap = (await import(writePath))[options.export || "publicConfig"];
+
+    console.info(
+      Object.keys(envMap)
+        .map((k) => `${k}="${envMap[k]}";`)
+        .join(" ")
+    );
   });
 
 program.parse();
