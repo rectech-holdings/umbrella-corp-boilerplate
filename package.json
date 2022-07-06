@@ -16,6 +16,10 @@
       "*",
       "companies/*/*",
       "shared/*"
+    ],
+    "nohoist": [
+      "**/react-native",
+      "**/react-native/**"
     ]
   },
   "devDependencies": {
