@@ -11,6 +11,7 @@
   "plugins": ["@typescript-eslint", "react-hooks"],
   "rules": {
     "@typescript-eslint/no-floating-promises": 1,
+    "@typescript-eslint/await-thenable": 2,
     "@typescript-eslint/no-shadow": "error",
     "no-cond-assign": "error",
     "react-hooks/rules-of-hooks": "error"

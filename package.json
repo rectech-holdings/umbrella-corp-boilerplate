@@ -12,6 +12,10 @@
     "encrypt": "config-helper encrypt",
     "decrypt": "config-helper decrypt"
   },
+  "lint-staged": {
+    "**/*.+(mjs|ts|tsx|json|css)": "yarn prettier --write",
+    "**/*.+(mjs|ts|tsx)": "eslint"
+  },
   "workspaces": {
     "packages": [
       "*",
@@ -35,7 +39,9 @@
     "globby": "13.1.2",
     "husky": "^8.0.0",
     "is-ci": "3.0.1",
+    "lint-staged": "13.0.3",
     "lodash": "4.17.21",
+    "prettier": "2.7.1",
     "replace-in-file": "6.3.5",
     "semver": "7.3.5",
     "ts-node": "10.8.2",

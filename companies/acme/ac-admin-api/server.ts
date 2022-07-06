@@ -14,7 +14,7 @@ app.get("/hello", (req, resp) => {
 
 attachApiToAppWithDefault(api, app);
 
-const { port } = await publicConfig;
+const { port } = publicConfig;
 
 app.listen(port, function (err, address) {
   if (err) {
