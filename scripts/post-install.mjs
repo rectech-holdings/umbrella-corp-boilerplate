@@ -1,5 +1,6 @@
 import { execaCommand } from "execa";
 import yesno from "yesno";
+import chalk from "chalk";
 import replaceInFile from "replace-in-file";
 import { globbySync } from "globby";
 import fs from "fs";
@@ -117,7 +118,7 @@ files.forEach((file) => {
 
 if (errors.length) {
   if (!shouldPromptForRecovery) {
-    console.error(errors.map((a) => console.error(chalk.red(a.msg))));
+    errors.map((a) => console.error(chalk.red(a.msg)));
     process.exit(1);
   }
 
@@ -126,16 +127,15 @@ if (errors.length) {
   let shouldReinstall = false;
   for (let i = 0; i < errors.length; i++) {
     const { msg, recoveryPrompt } = errors[i];
-    if (msg) {
-      console.error("\n\n" + msg + "\n\n");
-    } else if (recoveryPrompt) {
+    if (recoveryPrompt) {
       const didRecover = await recoveryPrompt();
       if (didRecover) {
         shouldReinstall = true;
       } else {
         shouldThrow = true;
       }
-    } else {
+    } else if (msg) {
+      console.error("\n\n" + msg + "\n\n");
       shouldThrow = true;
     }
   }
