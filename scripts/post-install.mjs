@@ -6,7 +6,7 @@ import fs from "fs";
 import { getWorkspaceInfo } from "./utils/utils.mjs";
 import semver from "semver";
 import _ from "lodash";
-const ensureNoDifferentVersionsMap = {};
+import isCI from "is-ci";
 
 //Don't run this script if we're adding packages. Too flaky.
 if (process.env["npm_config_argv"] && JSON.parse(process.env["npm_config_argv"]).original?.[0] === "add") {
@@ -14,9 +14,10 @@ if (process.env["npm_config_argv"] && JSON.parse(process.env["npm_config_argv"])
 }
 
 const workspacePackages = Object.keys(await getWorkspaceInfo());
+const ensureNoDifferentVersionsMap = {};
+const shouldPromptForRecovery = !isCI && process.argv[2] !== "--non-interactive";
 
 let errors = [];
-
 const files = globbySync("**/*/package.json", { gitignore: true, followSymbolicLinks: false });
 
 files.forEach((file) => {
@@ -46,10 +47,12 @@ files.forEach((file) => {
 
         //Ensure local package dependencies have a version of "*"
         if (isWorkspacePackage(dep) && version !== "*") {
+          const msg = `Dependency in ${pkgName} for local package "${dep}" must be "*", not "${version}".`;
           errors.push({
+            msg,
             recoveryPrompt: async () => {
               const yes = await yesno({
-                question: `Dependency in ${pkgName} for local package "${dep}" must be "*", not "${version}". Would you like to upgrade from "${version}" to "*"? (y/n)`,
+                question: [msg, `Would you like to upgrade from "${version}" to "*"? (y/n)`].join(" "),
                 defaultValue: null,
               });
 
@@ -74,10 +77,15 @@ files.forEach((file) => {
           const higherVersion = semver.gt(priorVersion.version, version) ? priorVersion.version : version;
           const lowerVersion = higherVersion === version ? priorVersion.version : version;
 
+          const msg = `The packages ${pkgJson.name} and ${priorVersion.name} are on different versions of ${dep}.`;
           errors.push({
+            msg,
             recoveryPrompt: async () => {
               const yes = await yesno({
-                question: `The packages ${pkgJson.name} and ${priorVersion.name} are on different versions of ${dep}. Would you like to upgrade ${dep} from "${lowerVersion}" to "${higherVersion}"? (y/n)`,
+                question: [
+                  msg,
+                  `Would you like to upgrade ${dep} from "${lowerVersion}" to "${higherVersion}"? (y/n)`,
+                ].join(" "),
                 defaultValue: null,
               });
 
@@ -108,6 +116,11 @@ files.forEach((file) => {
 });
 
 if (errors.length) {
+  if (!shouldPromptForRecovery) {
+    console.error(errors.map((a) => console.error(chalk.red(a.msg))));
+    process.exit(1);
+  }
+
   errors = _.orderBy(errors, (a) => Number(!!a.recoveryPrompt), "desc");
   let shouldThrow = false;
   let shouldReinstall = false;
@@ -149,3 +162,5 @@ function isWorkspacePackage(pkgName) {
 function readJSON(filePath) {
   return JSON.parse(String(fs.readFileSync(filePath)));
 }
+
+console.info("Monorepo configuration is good 👍");
