@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "dev": "tsc -w --preserveWatchOutput"
   },
   "dependencies": {
     "typescript": "4.7.4"

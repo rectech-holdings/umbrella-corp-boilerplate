@@ -1,8 +1,9 @@
 {
   "name": "cy-admin-spa",
   "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "dev": "vite --port 3500 --clearScreen false",
+    "dev": "node --loader ts-node/esm --experimental-specifier-resolution=node src/dev.js",
     "build": "tsc && vite build",
     "serve": "vite preview"
   },
