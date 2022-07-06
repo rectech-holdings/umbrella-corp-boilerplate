@@ -7,4 +7,4 @@ wordpress-sync/app/public/*
 wordpress-sync/app/public/wp-content/*
 !wordpress-sync/app/public/wp-content/plugins
 wordpress-sync/app/public/wp-content/plugins/*
-!wordpress-sync/app/public/wp-content/plugins/umbrella-corp-calculators
+!wordpress-sync/app/public/wp-content/plugins/acme-calculators
