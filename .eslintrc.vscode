@@ -1,0 +1,12 @@
+{
+  // Only specify parser options in vscode. These rules are too slow otherwise.
+  "root": true,
+  "extends": ["./.eslintrc"],
+  "parserOptions": {
+    "project": ["./tsconfig.eslint.json", "./companies/**/*/tsconfig.json", "./shared/**/*/tsconfig.json"]
+  },
+  "rules": {
+    "@typescript-eslint/no-floating-promises": 1,
+    "@typescript-eslint/await-thenable": 2
+  }
+}
