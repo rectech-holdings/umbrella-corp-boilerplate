@@ -1,7 +1,8 @@
-export type PublicConfig = {
+export type PublicConfig = Readonly<{
   port: number;
-};
+  url: string;
+}>;
 
-export type SecretConfig = {
+export type SecretConfig = Readonly<{
   stripeApiKey: string;
-};
+}>;
