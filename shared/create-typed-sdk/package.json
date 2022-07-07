@@ -19,9 +19,8 @@
   ],
   "scripts": {
     "dev": "run-p dev:*",
-    "dev:lib": "yarn build && run-p -l 'build:* --watch'",
-    "dev:example": "cd example-app && yarn dev",
-    "postprepare": "cd example-app && yarn",
+    "dev:lib": "pnpm build && run-p -l 'build:* --watch'",
+    "dev:example": "cd example-app && pnpm dev",
     "do-publish": "npm login && npx np",
     "test": "echo no-tests",
     "build": "run-p build:*",
@@ -31,19 +30,19 @@
     "build:esm-ts": "tsc --outDir dist/esm"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "5.4.0",
-    "@typescript-eslint/parser": "5.4.0",
+    "@typescript-eslint/eslint-plugin": "5.30.5",
+    "@typescript-eslint/parser": "5.30.5",
     "esbuild": "0.14.48",
-    "eslint": "8.18.0",
-    "eslint-plugin-react-hooks": "4.3.0",
-    "np": "7.6.0",
+    "eslint": "8.19.0",
+    "eslint-plugin-react-hooks": "4.6.0",
+    "np": "7.6.2",
     "npm-run-all": "4.1.5",
     "react-query": "3.39.1",
     "typescript": "4.7.4",
-    "yargs-parser": "21.0.0"
+    "yargs-parser": "21.0.1"
   },
   "dependencies": {
-    "axios": "0.24.0",
+    "axios": "0.27.2",
     "fast-safe-stringify": "2.1.1"
   },
   "peerDependencies": {

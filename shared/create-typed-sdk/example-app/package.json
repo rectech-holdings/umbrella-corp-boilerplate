@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "run-p dev:* --print-label",
-    "dev:vite": "yarn vite",
+    "dev:vite": "pnpm vite",
     "dev:server": "ts-node-dev --respawn server.ts",
     "build": "tsc && vite build",
     "serve": "vite preview"

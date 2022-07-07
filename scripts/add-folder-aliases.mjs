@@ -3,7 +3,7 @@ import fs from "fs";
 import chalk from "chalk";
 import os from "os";
 import _ from "lodash";
-import { getWorkspaceInfo } from "./utils/utils.mjs";
+import { getWorkspaceInfo } from "./getWorkspaceInfo.mjs";
 import path from "path";
 import yesno from "yesno";
 
@@ -60,6 +60,6 @@ if (yes) {
       chalk.yellow("Wrote aliases!\n"),
       ...aliasCommands,
       chalk.yellow(`\nCall "source ~/${terminalFiles[0]}" to load the aliases to your current shell session.`),
-    ].join("\n")
+    ].join("\n"),
   );
 }

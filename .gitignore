@@ -1,6 +1,7 @@
 node_modules
 dist
 tsconfig.tsbuildinfo
+yarn.lock
 .pnpm-debug.log
 yarn-error.log
 .parcel-cache

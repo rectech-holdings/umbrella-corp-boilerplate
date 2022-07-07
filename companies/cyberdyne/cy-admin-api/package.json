@@ -3,11 +3,10 @@
   "main": "adminApiSDK.ts",
   "version": "1.0.0",
   "scripts": {
-    "dev": "PORT=3250 wait-on tcp:5432 && sleep 0.2 && ts-node-dev --exit-child server.ts",
-    "secrets": "yarn config-helper"
+    "dev": "PORT=3250 wait-on tcp:5432 && sleep 0.2 && ts-node-dev --exit-child server.ts"
   },
   "devDependencies": {
-    "@types/node": "18.0.0",
+    "@types/node": "18.0.3",
     "cy-api": "*",
     "cy-shared-backend": "*",
     "cy-shared-universal": "*",
@@ -15,8 +14,8 @@
   },
   "dependencies": {
     "create-typed-sdk": "*",
-    "fastify": "3.23.0",
-    "fastify-cors": "6.0.2",
+    "fastify": "4.2.0",
+    "fastify-cors": "6.1.0",
     "ts-node": "10.8.2",
     "typescript": "4.7.4"
   }
