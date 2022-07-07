@@ -1,7 +1,7 @@
 import { api } from "./server-api";
 import { attachApiToAppWithDefault } from "create-typed-sdk/core";
 import fastify from "fastify";
-import cors from "fastify-cors";
+import cors from "@fastify/cors";
 
 const app = fastify();
 

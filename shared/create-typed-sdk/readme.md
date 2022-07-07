@@ -62,7 +62,7 @@ Note: Make sure you adhere to the conventions of the deep API object you defined
 import { myApi } from "./api.ts";
 import { collectEndpoints } from "create-typed-sdk/server";
 import fastify from "fastify";
-import cors from "fastify-cors";
+import cors from "@fastify/cors";
 const app = fastify();
 
 app.register(cors, { origin: "*" });
