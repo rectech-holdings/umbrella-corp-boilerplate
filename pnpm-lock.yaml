@@ -12,7 +12,7 @@ importers:
       '@typescript-eslint/eslint-plugin': 5.30.5
       '@typescript-eslint/parser': 5.30.5
       chalk: 5.0.1
-      config-helper: '*'
+      config-helper: workspace:*
       eslint: 8.19.0
       eslint-plugin-react-hooks: 4.6.0
       execa: 6.1.0
@@ -37,7 +37,7 @@ importers:
       '@typescript-eslint/eslint-plugin': 5.30.5_6zdoc3rn4mpiddqwhppni2mnnm
       '@typescript-eslint/parser': 5.30.5_4x5o4skxv6sl53vpwefgt23khm
       chalk: 5.0.1
-      config-helper: 1.2.0
+      config-helper: link:shared/config-helper
       eslint: 8.19.0
       eslint-plugin-react-hooks: 4.6.0_eslint@8.19.0
       execa: 6.1.0
@@ -58,10 +58,10 @@ importers:
     specifiers:
       '@fastify/cors': 8.0.0
       '@types/node': 18.0.3
-      ac-api: '*'
-      ac-shared-backend: '*'
-      ac-shared-universal: '*'
-      create-typed-sdk: '*'
+      ac-api: workspace:*
+      ac-shared-backend: workspace:*
+      ac-shared-universal: workspace:*
+      create-typed-sdk: workspace:*
       fastify: 4.2.0
       ts-node: 10.8.2
       ts-node-dev: 2.0.0
@@ -84,10 +84,10 @@ importers:
       '@types/react': 18.0.15
       '@types/react-dom': 18.0.6
       '@vitejs/plugin-react': 2.0.0-beta.0
-      ac-admin-api: '*'
-      ac-api: '*'
-      ac-shared-frontend: '*'
-      ac-shared-universal: '*'
+      ac-admin-api: workspace:*
+      ac-api: workspace:*
+      ac-shared-frontend: workspace:*
+      ac-shared-universal: workspace:*
       react: 18.2.0
       react-dom: 18.2.0
       react-query: 3.39.1
@@ -112,11 +112,11 @@ importers:
     specifiers:
       '@fastify/cors': 8.0.0
       '@types/node': 18.0.3
-      ac-db: '*'
-      ac-shared-backend: '*'
-      ac-shared-universal: '*'
-      config-helper: '*'
-      create-typed-sdk: '*'
+      ac-db: workspace:*
+      ac-shared-backend: workspace:*
+      ac-shared-universal: workspace:*
+      config-helper: workspace:*
+      create-typed-sdk: workspace:*
       fastify: 4.2.0
       ts-node: 10.8.2
       ts-node-dev: 2.0.0
@@ -127,7 +127,7 @@ importers:
       ac-db: link:../ac-db
       ac-shared-backend: link:../ac-shared-backend
       ac-shared-universal: link:../ac-shared-universal
-      config-helper: 1.2.0
+      config-helper: link:../../../shared/config-helper
       create-typed-sdk: link:../../../shared/create-typed-sdk
       fastify: 4.2.0
       ts-node: 10.8.2_fxk5i3xm3ivo7fjwhcizcinpla
@@ -139,7 +139,7 @@ importers:
 
   companies/acme/ac-background:
     specifiers:
-      ac-api: '*'
+      ac-api: workspace:*
       lodash: 4.17.21
     dependencies:
       ac-api: link:../ac-api
@@ -216,7 +216,7 @@ importers:
       '@types/react': 18.0.15
       '@types/react-dom': 18.0.6
       '@vitejs/plugin-react': 2.0.0-beta.0
-      ac-shared-frontend: '*'
+      ac-shared-frontend: workspace:*
       react: 18.2.0
       react-dom: 18.2.0
       typescript: 4.7.4
@@ -236,10 +236,10 @@ importers:
     specifiers:
       '@fastify/cors': 8.0.0
       '@types/node': 18.0.3
-      create-typed-sdk: '*'
-      cy-api: '*'
-      cy-shared-backend: '*'
-      cy-shared-universal: '*'
+      create-typed-sdk: workspace:*
+      cy-api: workspace:*
+      cy-shared-backend: workspace:*
+      cy-shared-universal: workspace:*
       fastify: 4.2.0
       ts-node: 10.8.2
       ts-node-dev: 2.0.0
@@ -262,10 +262,10 @@ importers:
       '@types/react': 18.0.15
       '@types/react-dom': 18.0.6
       '@vitejs/plugin-react': 2.0.0-beta.0
-      cy-admin-api: '*'
-      cy-api: '*'
-      cy-shared-frontend: '*'
-      cy-shared-universal: '*'
+      cy-admin-api: workspace:*
+      cy-api: workspace:*
+      cy-shared-frontend: workspace:*
+      cy-shared-universal: workspace:*
       react: 18.2.0
       react-dom: 18.2.0
       react-query: 3.39.1
@@ -290,11 +290,11 @@ importers:
     specifiers:
       '@fastify/cors': 8.0.0
       '@types/node': 18.0.3
-      config-helper: '*'
-      create-typed-sdk: '*'
-      cy-db: '*'
-      cy-shared-backend: '*'
-      cy-shared-universal: '*'
+      config-helper: workspace:*
+      create-typed-sdk: workspace:*
+      cy-db: workspace:*
+      cy-shared-backend: workspace:*
+      cy-shared-universal: workspace:*
       fastify: 4.2.0
       ts-node: 10.8.2
       ts-node-dev: 2.0.0
@@ -302,7 +302,7 @@ importers:
       wait-on: 6.0.1
     dependencies:
       '@fastify/cors': 8.0.0
-      config-helper: 1.2.0
+      config-helper: link:../../../shared/config-helper
       create-typed-sdk: link:../../../shared/create-typed-sdk
       cy-db: link:../cy-db
       cy-shared-backend: link:../cy-shared-backend
@@ -317,7 +317,7 @@ importers:
 
   companies/cyberdyne/cy-background:
     specifiers:
-      cy-api: '*'
+      cy-api: workspace:*
       lodash: 4.17.21
     dependencies:
       cy-api: link:../cy-api
@@ -2576,15 +2576,6 @@ packages:
       proto-list: 1.2.4
     dev: true
 
-  /config-helper/1.2.0:
-    resolution: {integrity: sha512-rJhh3bLJpN6atPlH3ZMpJj3Hy6EIUdJunGZnnw3Bw58g1BB5+ik36UtkRzLFDbY39GW/ks8CG6QD+xMUkkohPQ==}
-    engines: {node: '>= 4'}
-    dependencies:
-      debug: 2.6.9
-      extend: 3.0.2
-    transitivePeerDependencies:
-      - supports-color
-
   /configstore/5.0.1:
     resolution: {integrity: sha512-aMKprgk5YhBNyH25hj8wGt2+D52Sw1DRRIzqBwLp2Ya9mFmY8KPvvtvmna8SxVR9JMZ4kzMD68N22vlaRpkeFA==}
     engines: {node: '>=8'}
@@ -2729,6 +2720,7 @@ packages:
         optional: true
     dependencies:
       ms: 2.0.0
+    dev: true
 
   /debug/3.2.7:
     resolution: {integrity: sha512-CFjzYYAi4ThfiQvizrFQevTTXHtnCqWfe7x1AhgEscTz6ZbLbfoLRLPugTQyBth6f8ZERVUSyWHFD/7Wu4t1XQ==}
@@ -3579,9 +3571,6 @@ packages:
       signal-exit: 3.0.7
       strip-final-newline: 3.0.0
     dev: true
-
-  /extend/3.0.2:
-    resolution: {integrity: sha512-fjquC59cD7CyW6urNXK0FBufkZcoiGG80wTuPujX590cB5Ttln20E2UB4S/WARVqhXffZl2LNgS+gQdPIIim/g==}
 
   /external-editor/3.1.0:
     resolution: {integrity: sha512-hMQ4CX1p1izmuLYyZqLMO/qGNw10wSv9QDCPfzXfyFrOaCSSoRfqE1Kf1s5an66J5JZC62NewG+mK49jOCtQew==}
@@ -5197,6 +5186,7 @@ packages:
 
   /ms/2.0.0:
     resolution: {integrity: sha512-Tpp60P6IUJDTuOq/5Z8cdskzJujfwqfOTkrwIwj7IRISpnkJnT6SyJ4PCPnGMoFjC9ddhal5KVIYtAt97ix05A==}
+    dev: true
 
   /ms/2.1.2:
     resolution: {integrity: sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==}

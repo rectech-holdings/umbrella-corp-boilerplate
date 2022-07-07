@@ -8,10 +8,10 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "ac-admin-api": "*",
-    "ac-api": "*",
-    "ac-shared-frontend": "*",
-    "ac-shared-universal": "*",
+    "ac-admin-api": "workspace:*",
+    "ac-api": "workspace:*",
+    "ac-shared-frontend": "workspace:*",
+    "ac-shared-universal": "workspace:*",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-query": "3.39.1"

@@ -7,6 +7,6 @@
   },
   "dependencies": {
     "lodash": "4.17.21",
-    "cy-api": "*"
+    "cy-api": "workspace:*"
   }
 }

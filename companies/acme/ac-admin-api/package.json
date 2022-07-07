@@ -7,13 +7,13 @@
   },
   "devDependencies": {
     "@types/node": "18.0.3",
-    "ac-api": "*",
-    "ac-shared-backend": "*",
-    "ac-shared-universal": "*",
+    "ac-api": "workspace:*",
+    "ac-shared-backend": "workspace:*",
+    "ac-shared-universal": "workspace:*",
     "ts-node-dev": "2.0.0"
   },
   "dependencies": {
-    "create-typed-sdk": "*",
+    "create-typed-sdk": "workspace:*",
     "fastify": "4.2.0",
     "@fastify/cors": "8.0.0",
     "ts-node": "10.8.2",

@@ -35,7 +35,7 @@ export async function getPackageErrors() {
       Object.keys(deps).forEach((depType) => {
         Object.entries(deps[depType]).forEach(([dep, version]) => {
           //Ensure no semver ranges. They are abomination
-          if (!String(version[0]).match(/\d/) && version[0] !== "*" && version !== "*") {
+          if (!String(version[0]).match(/\d/) && version[0] !== "workspace:*" && version !== "workspace:*") {
             const msg = `Semver range (e.g. ^ or ~) detected in package.json of ${pkgName}: "${dep}": "${version}". This is prohibited in this monorepo in order to prevent version duplication.`;
 
             errors.push({
@@ -62,20 +62,22 @@ export async function getPackageErrors() {
             });
           }
 
+          const priorVersion = ensureNoDifferentVersionsMap[dep];
+
           //Ensure local package dependencies have a version of "*"
-          if (isWorkspacePackage(dep) && version !== "*") {
-            const msg = `Dependency in ${pkgName} for local package "${dep}" must be "*", not "${version}".`;
+          if (isWorkspacePackage(dep) && version !== "workspace:*") {
+            const msg = `Dependency in ${pkgName} for local package "${dep}" must be "workspace:*", not "${version}".`;
             errors.push({
               msg,
               recoveryPrompt: async () => {
                 const yes = await yesno({
-                  question: [msg, `Would you like to upgrade from "${version}" to "*"? (y/n)`].join(" "),
+                  question: [msg, `Would you like to upgrade from "${version}" to "workspace:*"? (y/n)`].join(" "),
                   defaultValue: null,
                 });
 
                 if (yes) {
                   await replaceInFile({
-                    to: `"${dep}": "*"`,
+                    to: `"${dep}": "workspace:*"`,
                     from: `"${dep}": "${version}"`,
                     files: [pkgJsonFile, `**/${priorVersion.name}/package.json`],
                   });
@@ -85,11 +87,7 @@ export async function getPackageErrors() {
                 }
               },
             });
-          }
-
-          //Ensure versions are identical across all packages.
-          const priorVersion = ensureNoDifferentVersionsMap[dep];
-          if (priorVersion && priorVersion.version !== version) {
+          } else if (priorVersion && priorVersion.version !== version) {
             const higherVersion = semver.gt(priorVersion.version, version) ? priorVersion.version : version;
             const lowerVersion = higherVersion === version ? priorVersion.version : version;
 

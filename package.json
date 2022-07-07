@@ -4,13 +4,13 @@
   "private": true,
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev --scope=ac-spa --include-dependencies",
-    "dev-admin": "turbo run dev --scope=ac-admin-spa --include-dependencies",
-    "dev-all": "turbo run dev",
-    "deploy": "echo something",
+    "dev": "pnpm dev --filter ...ac-spa",
+    "dev-admin": "pnpm dev --filter ...ac-admin-spa",
     "lint": "eslint",
-    "prepare": "husky install && node ./scripts/post-install.mjs --non-interactive",
-    "encrypt": "config-helper encrypt",
+    "install:ac": "pnpm i -F umbrella-corp -F ac-spa...",
+    "clean": "rm -rf node_modules && pnpm -r exec rm -rf node_modules",
+    "prepare": "husky install && node ./scripts/post-install.mjs",
+    "encrypt": "node ./shared/config-helper/index.mjs encrypt",
     "decrypt": "config-helper decrypt"
   },
   "lint-staged": {
@@ -26,7 +26,7 @@
     "@typescript-eslint/eslint-plugin": "5.30.5",
     "@typescript-eslint/parser": "5.30.5",
     "chalk": "5.0.1",
-    "config-helper": "*",
+    "config-helper": "workspace:*",
     "eslint": "8.19.0",
     "eslint-plugin-react-hooks": "4.6.0",
     "execa": "6.1.0",

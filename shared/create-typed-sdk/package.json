@@ -46,7 +46,7 @@
     "fast-safe-stringify": "2.1.1"
   },
   "peerDependencies": {
-    "react-query": "*"
+    "react-query": "workspace:*"
   },
   "peerDependenciesMeta": {
     "react-query": {
