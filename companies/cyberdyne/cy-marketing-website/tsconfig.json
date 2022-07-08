@@ -1,9 +1,0 @@
-{
-  "extends": "../../../tsconfig.base.json",
-  "compilerOptions": {
-    "noEmit": true,
-    "target": "es2017",
-    "module": "commonjs"
-  },
-  "include": ["wordpress-sync/app/public/wp-content/plugins/umbrella-corp-calculators/src/**/*"]
-}

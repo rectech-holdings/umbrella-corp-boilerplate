@@ -7,7 +7,9 @@
     "dev:server": "echo 'Started dev server at http://localhost:1234' && cd wordpress-sync/app/public/wp-content/plugins/umbrella-corp-calculators/dist && npx http-server -s -p 1234 -c-1",
     "dev:build": "node dev.mjs",
     "dev:ts": "tsc -w --preserveWatchOutput",
-    "build": "node build.mjs",
+    "build": "pnpm build:ejs",
+    "build:ejs": "node build.mjs",
+    "build:ts": "tsc",
     "deploy": "echo 'Deploy through local-wp after syncing from production... See readme'"
   },
   "dependencies": {

@@ -4,7 +4,9 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "ts-node src/dev.ts",
-    "build": "tsc && vite build",
+    "build": "pnpm build:ts && pnpm build:vite",
+    "build:ts": "tsc --noEmit",
+    "build:vite": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {

@@ -6,9 +6,7 @@
     "//": "Prefix commands with 'do-' so that pnpm task runner doesn't execute them...",
     "do-dev": "run-p dev:* --print-label",
     "dev:vite": "pnpm vite",
-    "dev:server": "nodemon -x \"ts-node\" server.ts",
-    "do-build": "tsc && vite build",
-    "do-serve": "vite preview"
+    "dev:server": "nodemon -x \"ts-node\" server.ts"
   },
   "dependencies": {
     "create-typed-sdk": "link:.."

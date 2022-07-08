@@ -4,7 +4,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "tsc"
+    "build:": "pnpm build:ts",
+    "build:ts": "tsc"
   },
   "dependencies": {
     "typescript": "4.7.4"

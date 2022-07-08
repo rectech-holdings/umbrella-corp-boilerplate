@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "wait-on tcp:5432 && sleep 0.2 && echo 'No background processes yet...'",
-    "build": "tsc --noEmit"
+    "build": "pnpm build:ts",
+    "build:ts": "tsc --noEmit"
   },
   "dependencies": {
     "lodash": "4.17.21",
