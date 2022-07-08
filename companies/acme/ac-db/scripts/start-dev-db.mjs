@@ -1,17 +1,29 @@
 import { execaCommand } from "execa";
 import fs from "fs";
 
-await new Promise((res) => {
-  console.info("Starting postgres via Docker...");
-  const proc = execaCommand(
-    "docker run --expose 5432 -p 5432:5432 -e POSTGRES_PASSWORD=password -v $(pwd)/.pgdata:/var/lib/postgresql/data postgres",
-    {
-      buffer: false,
-      shell: true,
-      all: true,
-    }
-  );
+console.info("Starting postgres via Docker...");
 
+//Kill docker process if somehow it got orphaned
+const existing = (await execaCommand("docker ps")).stdout
+  .match(/(^\w{12} {3}postgres) /gm)
+  ?.map((a) => a.split(/ {3}/)[0]);
+
+if (existing) {
+  for (let proc of existing) {
+    await execaCommand(`docker kill ${proc}`);
+  }
+}
+
+const proc = execaCommand(
+  "docker run --expose 5432 -p 5432:5432 -e POSTGRES_PASSWORD=password -v $(pwd)/.pgdata:/var/lib/postgresql/data postgres",
+  {
+    buffer: false,
+    shell: true,
+    all: true,
+  },
+);
+
+await new Promise((res) => {
   proc.all.on("data", (d) => {
     const msg = String(d);
     if (msg.match(/ready to accept/i)) {

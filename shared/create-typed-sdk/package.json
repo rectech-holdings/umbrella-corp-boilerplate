@@ -1,26 +1,42 @@
 {
   "name": "create-typed-sdk",
+  "private": true,
   "version": "0.0.6",
-  "description": "A library for quickly created SDKs for your Node.js Typescript backends. No build step, no risk of injecting your server code into your frontend, just sweet, sweet DX goodness.",
-  "main": "./dist/cjs/reactSDK.js",
-  "module": "./dist/esm/reactSDK.js",
-  "types": "./dist/esm/reactSDK.d.ts",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/scottmas/create-typed-sdk.git"
+  "description": "A library for automatically creating SDKs for your Node.js Typescript backends. No build step, no risk of injecting your server code into your frontend, just sweet, sweet DX goodness.",
+  "type": "module",
+  "types": "./dist/esm/index.d.ts",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "default": {
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/9opl-=i,.ˆ6πcjs/index.js"
+      }
+    },
+    "./core": {
+      "import": {
+        "types": "./dist/esm/core/index.d.ts",
+        "default": "./dist/esm/core/index.js"
+      },
+      "default": {
+        "types": "./dist/cjs/core/index.d.ts",
+        "default": "./dist/cjs/core/index.js"
+      }
+    }
   },
-  "homepage": "https://github.com/scottmas/create-typed-sdk",
-  "author": "scottmas",
-  "license": "ISC",
   "files": [
     "src",
     "dist",
     "core"
   ],
   "scripts": {
-    "dev": "run-p dev:*",
-    "dev:lib": "pnpm build && run-p -l 'build:* --watch'",
-    "dev:example": "cd example-app && pnpm dev",
+    "dev": "pnpm build && run-p -l 'build:* --watch'",
+    "example-dev": "cd example-app && pnpm dev",
     "do-publish": "npm login && npx np",
     "test": "echo no-tests",
     "build": "run-p build:*",
@@ -45,11 +61,11 @@
     "axios": "0.27.2",
     "fast-safe-stringify": "2.1.1"
   },
-  "peerDependencies": {
-    "react-query": "workspace:*"
-  },
   "peerDependenciesMeta": {
     "react-query": {
+      "optional": true
+    },
+    "react": {
       "optional": true
     }
   }

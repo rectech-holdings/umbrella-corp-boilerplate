@@ -8,5 +8,5 @@ const server = await createServer({
 await server.listen(publicConfig.port);
 
 setTimeout(() => {
-  console.info(`Acme SPA web app ready to accept requests at http://localhost:${publicConfig.port}`);
-}, 2000);
+  console.info(`Acme Admin SPA ready to accept requests at http://localhost:${publicConfig.port}`);
+}, 5000);

@@ -9,4 +9,4 @@ await server.listen(publicConfig.port);
 
 setTimeout(() => {
   console.info(`Acme SPA web app ready to accept requests at http://localhost:${publicConfig.port}`);
-}, 2000);
+}, 5000);

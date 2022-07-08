@@ -1,11 +1,5 @@
 import type { QueryClient } from "react-query";
-import {
-  DeepAsyncFnRecord,
-  DoFetch,
-  getTypedSDKInstance,
-  TypedSDK,
-  getFetchFn,
-} from "./internal";
+import { DeepAsyncFnRecord, DoFetch, getTypedSDKInstance, TypedSDK, getFetchFn } from "../internal";
 
 export function createTypedSDK<T extends DeepAsyncFnRecord<any>>(
   opts:
@@ -13,7 +7,7 @@ export function createTypedSDK<T extends DeepAsyncFnRecord<any>>(
     | {
         queryClient?: QueryClient;
         doFetch: DoFetch;
-      }
+      },
 ): TypedSDK<T> {
   let doFetch: DoFetch;
   if ("doFetch" in opts) {
@@ -53,24 +47,19 @@ export function attachApiToAppWithDefault<T extends DeepAsyncFnRecord<T>>(
   app: {
     post: (
       path: string,
-      handler: (
-        req: { body: any },
-        resp: { send: (v: any) => any } | { json: (v: any) => any }
-      ) => void
+      handler: (req: { body: any }, resp: { send: (v: any) => any } | { json: (v: any) => any }) => void,
     ) => any;
-  }
+  },
 ) {
   collectEndpoints(api).forEach(({ fn, path }) => {
     if (!app.post) {
-      throw new Error(
-        "No post method found on app! Ensure you are using a nodejs library like express or fastify"
-      );
+      throw new Error("No post method found on app! Ensure you are using a nodejs library like express or fastify");
     }
 
     app.post("/" + path.join("/"), async (req, resp) => {
       if (!req.body) {
         throw new Error(
-          "Unable to find post body! Ensure your server parses the request body and attaches it to the request"
+          "Unable to find post body! Ensure your server parses the request body and attaches it to the request",
         );
       }
 
@@ -81,7 +70,7 @@ export function attachApiToAppWithDefault<T extends DeepAsyncFnRecord<T>>(
         resp.json(val);
       } else {
         throw new Error(
-          "Unable to find method to send response! Ensure you are using a nodejs library like express or fastify"
+          "Unable to find method to send response! Ensure you are using a nodejs library like express or fastify",
         );
       }
     });

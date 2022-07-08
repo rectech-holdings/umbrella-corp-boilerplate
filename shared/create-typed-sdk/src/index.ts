@@ -20,20 +20,18 @@ import {
   useQuery,
 } from "react-query";
 
-export * from "./coreSDK";
+export * from "./core";
 
 //Re-export the query client type when the user is creating the sdk for consumption
 export { QueryClient } from "react-query";
 
-export function createTypedReactSDK<
-  Endpoints extends DeepAsyncFnRecord<Endpoints>
->(
+export function createTypedReactSDK<Endpoints extends DeepAsyncFnRecord<Endpoints>>(
   opts:
     | { url: string; queryClient: QueryClient }
     | {
         queryClient: QueryClient;
         doFetch: DoFetch;
-      }
+      },
 ): ReactSDK<Endpoints> {
   return new ReactSDK(opts);
 }
@@ -48,7 +46,7 @@ export class ReactSDK<Endpoints extends DeepAsyncFnRecord<Endpoints>> {
       | {
           queryClient: QueryClient;
           doFetch: DoFetch;
-        }
+        },
   ) {
     this.queryClient = opts.queryClient;
     if ("doFetch" in opts) {
@@ -131,9 +129,7 @@ export class ReactSDK<Endpoints extends DeepAsyncFnRecord<Endpoints>> {
       return new Proxy(() => {}, {
         apply: (__, ___, args) => {
           if (!this.queryClient) {
-            console.error(
-              "No query client provided. Unable to call useInfiniteSDK"
-            );
+            console.error("No query client provided. Unable to call useInfiniteSDK");
             return Promise.resolve();
           }
 

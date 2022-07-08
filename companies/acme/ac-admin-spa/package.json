@@ -1,5 +1,6 @@
 {
   "name": "ac-admin-spa",
+  "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
@@ -12,6 +13,7 @@
     "ac-api": "workspace:*",
     "ac-shared-frontend": "workspace:*",
     "ac-shared-universal": "workspace:*",
+    "ac-db": "workspace:*",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-query": "3.39.1"

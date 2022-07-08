@@ -1,5 +1,6 @@
 {
   "name": "ac-background",
+  "private": true,
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
@@ -8,5 +9,8 @@
   "dependencies": {
     "lodash": "4.17.21",
     "ac-api": "workspace:*"
+  },
+  "devDependencies": {
+    "wait-on": "6.0.1"
   }
 }

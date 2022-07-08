@@ -6,7 +6,7 @@ import { publicConfig } from "./config/public";
 
 const app = Fastify();
 
-app.register(cors, { origin: "*" });
+await app.register(cors, { origin: "*" });
 
 attachApiToAppWithDefault(api, app);
 

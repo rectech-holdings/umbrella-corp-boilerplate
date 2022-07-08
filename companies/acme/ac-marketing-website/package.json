@@ -1,5 +1,6 @@
 {
   "name": "ac-marketing-website",
+  "private": true,
   "version": "1.0.0",
   "scripts": {
     "dev": "run-p dev:*",
