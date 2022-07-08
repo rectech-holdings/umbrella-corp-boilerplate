@@ -1,13 +1,15 @@
 {
   "compilerOptions": {
-    "module": "CommonJS",
+    "module": "ES2022",
     "target": "ES2022",
+    "moduleResolution": "node",
     "incremental": true,
     "pretty": true,
-    "moduleResolution": "node16",
     "strict": true,
-    "esModuleInterop": true,
     "strictFunctionTypes": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "allowUnreachableCode": true,
     "suppressImplicitAnyIndexErrors": true,
     "declaration": true,

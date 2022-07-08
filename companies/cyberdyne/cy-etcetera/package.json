@@ -1,6 +1,7 @@
 {
   "name": "cy-etcetera",
   "private": true,
+  "type": "module",
   "version": "1.0.0",
   "scripts": {
     "dev": "echo 'Just a placeholder package...'"

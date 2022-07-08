@@ -1,6 +1,7 @@
 {
   "name": "config-helper",
   "private": true,
+  "type": "module",
   "version": "1.0.0",
   "scripts": {
     "asdf build:ts": "echo 'No ts to build...'"

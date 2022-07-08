@@ -1,13 +1,12 @@
 {
   "name": "ac-db",
   "private": true,
+  "type": "module",
   "version": "1.0.0",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "run-s build:*",
-    "build:prisma": "prisma generate",
-    "build:ts": "tsc",
+    "build": "prisma generate && tsc",
     "dev": "run-p -l dev:*",
     "dev:db": "node scripts/start-dev-db.mjs",
     "dev:ts": "tsc -w --preserveWatchOutput",

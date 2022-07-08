@@ -1,9 +1,10 @@
 {
   "name": "ac-spa",
   "private": true,
+  "type": "module",
   "version": "0.0.0",
   "scripts": {
-    "dev": "pnpm build:ts && node dist/dev.ts",
+    "dev": "pnpm build:ts && node dist/dev.js",
     "build": "pnpm build:ts && pnpm build:vite",
     "build:ts": "tsc",
     "build:vite": "vite build",

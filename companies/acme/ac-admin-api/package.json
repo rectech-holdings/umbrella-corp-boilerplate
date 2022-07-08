@@ -1,6 +1,7 @@
 {
   "name": "ac-admin-api",
   "private": true,
+  "type": "module",
   "main": "./dist/adminApiSDK.js",
   "types": "./dist/adminApiSDK.d.ts",
   "version": "1.0.0",

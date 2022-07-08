@@ -1,4 +1,4 @@
-import { publicConfig } from "./config/public";
+import { publicConfig } from "./config/public/index.js";
 
 (async () => {
   const { createServer } = await import("vite");

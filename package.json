@@ -1,6 +1,7 @@
 {
   "name": "umbrella-corp",
   "private": true,
+  "type": "module",
   "packageManager": "pnpm@7.5.0",
   "scripts": {
     "build": "turbo run build",

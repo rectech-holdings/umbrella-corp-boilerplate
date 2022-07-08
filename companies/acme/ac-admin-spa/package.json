@@ -1,6 +1,7 @@
 {
   "name": "ac-admin-spa",
   "private": true,
+  "type": "module",
   "version": "0.0.0",
   "scripts": {
     "dev": "pnpm build:ts && node dist/dev.js",

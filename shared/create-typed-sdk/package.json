@@ -1,6 +1,7 @@
 {
   "name": "create-typed-sdk",
   "private": true,
+  "type": "module",
   "version": "0.0.6",
   "description": "A library for automatically creating SDKs for your Node.js Typescript backends. No build step, no risk of injecting your server code into your frontend, just sweet, sweet DX goodness.",
   "types": "./dist/esm/index.d.ts",

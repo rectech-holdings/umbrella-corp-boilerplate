@@ -1,6 +1,7 @@
 {
   "name": "ac-api",
   "private": true,
+  "type": "module",
   "version": "1.0.0",
   "main": "./dist/apiSDK.js",
   "types": "./dist/apiSDK.d.ts",

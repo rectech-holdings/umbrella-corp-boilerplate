@@ -20,14 +20,14 @@ program
   .description("encrypt files")
   .requiredOption(
     "-d, --directory <directory>",
-    "Relative path to the directory (and its sub-directories) you wish to scan."
+    "Relative path to the directory (and its sub-directories) you wish to scan.",
   )
   .requiredOption("-e, --env <env>", '"staging" or "production"')
   .requiredOption("-p, --password <password>", "Password used to encrypt")
   .option(
     "--pattern <pattern>",
     '(Optional) Pattern of file w/ single "*" for env placeholder. Defaults to "secret.*.ts"',
-    "secret.*.ts"
+    "secret.*.ts",
   )
   .option("--suffix <suffix>", '(Optional) Encryption suffix to be added to file name. Defaults to ".aes"', ".aes")
   .action(async (options) => {
@@ -36,7 +36,7 @@ program
     if (!allowedEnvs.includes(environment)) {
       process.exitCode = 1;
       console.error(
-        chalk.red(`Invalid environment "${environment}". Available options are: ${allowedEnvs.join(" OR ")}`)
+        chalk.red(`Invalid environment "${environment}". Available options are: ${allowedEnvs.join(" OR ")}`),
       );
       return;
     }
@@ -44,7 +44,7 @@ program
     const dirPath = path.join(process.cwd(), directory);
     const filePattern = pattern.replace("*", environment);
 
-    const files = await globby(`${dirPath}/**/${filePattern}`, { ignore: ["node_modules"], absolute: true });
+    const files = await globby(`${dirPath}/**/${filePattern}`, { ignore: "**/node_modules/**", absolute: true });
 
     if (!files.length) {
       console.error(chalk.red(`Aborting! No files of pattern "${pattern}" found in directory ${dirPath}!`));
@@ -66,7 +66,7 @@ program
             .on("error", (e) => rej(e))
             .on("finish", () => res());
         });
-      })
+      }),
     );
 
     console.info(`Success encrypting ${files.length} files!`);
@@ -77,14 +77,14 @@ program
   .description("decrypt files")
   .requiredOption(
     "-d, --directory <directory>",
-    "Relative path to the directory (and its sub-directories) you wish to scan."
+    "Relative path to the directory (and its sub-directories) you wish to scan.",
   )
   .requiredOption("-e, --env <env>", '"staging" or "production"')
   .requiredOption("-p, --password <password>", "Password used to decrypt")
   .option(
     "--pattern <pattern>",
     '(Optional) Pattern of file w/ single "*" for env placeholder. Defaults to "secret.*.ts.aes"',
-    "secret.*.ts.aes"
+    "secret.*.ts.aes",
   )
   .option("--suffix <suffix>", '(Optional) Encryption suffix to be removed from file name. Defaults to ".aes"', ".aes")
   .action(async (options) => {
@@ -93,7 +93,7 @@ program
     const dirPath = path.join(process.cwd(), directory);
     const filePattern = pattern.replace("*", environment);
 
-    const files = await globby(`${dirPath}/**/${filePattern}`, { ignore: ["node_modules"], absolute: true });
+    const files = await globby(`${dirPath}/**/${filePattern}`, { ignore: "**/node_modules/**", absolute: true });
 
     if (!files.length) {
       console.error(chalk.red(`Aborting! No files of pattern "${pattern}" found in directory ${dirPath}!`));
@@ -115,7 +115,7 @@ program
             .on("error", (e) => rej(e))
             .on("finish", () => res());
         });
-      })
+      }),
     );
     console.info(`Success decrypting ${files.length} files!`);
   });
@@ -123,7 +123,7 @@ program
 program
   .command("print-public")
   .description(
-    "Prints all public config. This is typically so that it can be easily sourced into the running bash process"
+    "Prints all public config. This is typically so that it can be easily sourced into the running bash process",
   )
   .option("-p, --path <path>", 'Relative path to the public config file. Defaults to "config/public/index.ts"')
   .option("-e, --export <export>", 'Named export to read inside the config file. Defaults to "publicConfig"')
@@ -152,7 +152,7 @@ program
     console.info(
       Object.keys(envMap)
         .map((k) => `${k}="${envMap[k]}";`)
-        .join(" ")
+        .join(" "),
     );
   });
 

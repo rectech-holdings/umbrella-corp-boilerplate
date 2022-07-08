@@ -6,7 +6,7 @@ import { globbySync } from "globby";
 import browserslist from "browserslist";
 import { resolveToEsbuildTarget } from "esbuild-plugin-browserslist";
 
-export const root = path.resolve("wordpress-sync/app/public/wp-content/plugins/umbrella-corp-calculators");
+export const root = path.resolve("wordpress-sync/app/public/wp-content/plugins/acme-calculators");
 export const esbuildConfig = {
   entryPoints: globbySync(`${root}/src/**/entry.tsx`),
   outdir: `${root}/dist`,

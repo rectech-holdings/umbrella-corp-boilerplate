@@ -1,6 +1,7 @@
 {
   "name": "create-typed-sdk-example-app",
   "private": true,
+  "type": "module",
   "version": "0.0.0",
   "scripts": {
     "//": "Prefix commands with 'do-' so that pnpm task runner doesn't execute them...",

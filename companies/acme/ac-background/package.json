@@ -1,6 +1,7 @@
 {
   "name": "ac-background",
   "private": true,
+  "type": "module",
   "version": "1.0.0",
   "scripts": {
     "dev": "echo 'No background processes yet...'",

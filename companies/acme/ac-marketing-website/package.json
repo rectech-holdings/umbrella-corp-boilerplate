@@ -1,10 +1,11 @@
 {
   "name": "ac-marketing-website",
   "private": true,
+  "type": "module",
   "version": "1.0.0",
   "scripts": {
     "dev": "run-p dev:*",
-    "dev:server": "echo 'Started dev server at http://localhost:1234' && cd wordpress-sync/app/public/wp-content/plugins/umbrella-corp-calculators/dist && npx http-server -s -p 1234 -c-1",
+    "dev:server": "echo 'Started dev server at http://localhost:1234' && cd wordpress-sync/app/public/wp-content/plugins/acme-calculators/dist && npx http-server -s -p 1234 -c-1",
     "dev:build": "node dev.mjs",
     "dev:ts": "tsc -w --preserveWatchOutput",
     "build": "pnpm build:ejs",
