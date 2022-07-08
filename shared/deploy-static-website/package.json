@@ -3,9 +3,9 @@
   "private": true,
   "version": "1.0.0",
   "description": "",
-  "main": "dist/index.js",
-  "declaration": "dist/index.d.ts",
-  "scripts": {},
+  "scripts": {
+    "build:ts": "echo 'No ts to build...'"
+  },
   "devDependencies": {
     "typescript": "4.7.4"
   },

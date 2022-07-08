@@ -1,5 +1,5 @@
 import type { QueryClient } from "react-query";
-import { DeepAsyncFnRecord, DoFetch, getTypedSDKInstance, TypedSDK, getFetchFn } from "../internal";
+import { DeepAsyncFnRecord, DoFetch, getTypedSDKInstance, TypedSDK, getFetchFn } from "../internal.js";
 
 export function createTypedSDK<T extends DeepAsyncFnRecord<any>>(
   opts:

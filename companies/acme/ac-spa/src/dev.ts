@@ -1,7 +1,7 @@
-import { createServer } from "vite";
-import { publicConfig } from "./config/public";
+import { publicConfig } from "./config/public/index.js";
 
 (async () => {
+  const { createServer } = await import("vite");
   const server = await createServer({
     clearScreen: false,
   });

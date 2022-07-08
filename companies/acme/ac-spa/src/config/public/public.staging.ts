@@ -1,5 +1,5 @@
-import { PublicConfig } from "../types";
-import { publicConfig as devPublicConfig } from "./public.development";
+import { PublicConfig } from "../types.js";
+import { publicConfig as devPublicConfig } from "./public.development.js";
 
 export const publicConfig: PublicConfig = {
   ...devPublicConfig,

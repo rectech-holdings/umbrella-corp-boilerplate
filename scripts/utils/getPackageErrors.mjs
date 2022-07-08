@@ -20,6 +20,8 @@ export async function getPackageErrors() {
     const pkgJson = readJSON(pkgJsonFile);
     const pkgName = pkgJson.name;
     if (isWorkspacePackage(pkgName)) {
+      //TODO: Check for required scripts like "dev", "build:ts", etc
+
       const deps = {
         dependencies: pkgJson.dependencies || {},
         devDependencies: pkgJson.devDependencies || {},

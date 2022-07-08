@@ -9,7 +9,7 @@ import {
   getQueryKey,
   getFetchFn,
   getTypedSDKInstance,
-} from "./internal";
+} from "./internal.js";
 import {
   QueryClient,
   UseInfiniteQueryOptions,
@@ -20,7 +20,7 @@ import {
   useQuery,
 } from "react-query";
 
-export * from "./core";
+export * from "./core/index.js";
 
 //Re-export the query client type when the user is creating the sdk for consumption
 export { QueryClient } from "react-query";

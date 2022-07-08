@@ -1,9 +1,7 @@
 {
   "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
-    "noEmit": true,
-    "target": "es2017",
-    "module": "commonjs"
+    "noEmit": true
   },
   "include": ["wordpress-sync/app/public/wp-content/plugins/acme-calculators/src/**/*"]
 }

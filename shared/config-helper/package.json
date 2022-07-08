@@ -2,8 +2,9 @@
   "name": "config-helper",
   "private": true,
   "version": "1.0.0",
-  "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "asdf build:ts": "echo 'No ts to build...'"
+  },
   "bin": {
     "config-helper": "./index.mjs"
   },
@@ -13,8 +14,6 @@
     "commander": "9.3.0",
     "esbuild": "0.14.48",
     "globby": "13.1.2",
-    "node-aescrypt": "1.0.8",
-    "ts-node": "10.8.2",
-    "typescript": "4.7.4"
+    "node-aescrypt": "1.0.8"
   }
 }

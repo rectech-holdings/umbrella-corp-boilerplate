@@ -2,5 +2,7 @@
   "name": "ac-shared-universal",
   "private": true,
   "version": "1.0.0",
-  "main": "index.js"
+  "scripts": {
+    "build:ts": "echo 'No ts to build...'"
+  }
 }

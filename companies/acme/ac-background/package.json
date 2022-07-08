@@ -2,9 +2,9 @@
   "name": "ac-background",
   "private": true,
   "version": "1.0.0",
-  "main": "index.js",
   "scripts": {
-    "dev": "wait-on tcp:5432 && sleep 0.2 && echo 'No background processes yet...'"
+    "dev": "echo 'No background processes yet...'",
+    "build:ts": "echo 'No ts to build...'"
   },
   "dependencies": {
     "lodash": "4.17.21",

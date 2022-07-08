@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { render } from "react-dom";
-import { createServerSDK } from "../server-sdk";
+import { createServerSDK } from "./server-sdk.js";
 import { QueryClient, QueryClientProvider, useQueryClient } from "react-query";
 
 const queryClient = new QueryClient();
@@ -17,11 +17,9 @@ function App() {
 
 function AppInner() {
   useEffect(() => {
-    ServerSDK.fetch.accounts
-      .someCoolAccountsFn({ foo: "asdf" })
-      .then((data) => {
-        console.log("Fetched data!", data.someValue);
-      });
+    ServerSDK.fetch.accounts.someCoolAccountsFn({ foo: "asdf" }).then((data) => {
+      console.log("Fetched data!", data.someValue);
+    });
   }, []);
 
   const r2 = ServerSDK.useMutationEndpoint().accounts.someCoolAccountsFn();
@@ -32,7 +30,7 @@ function AppInner() {
     { bar: 123, blah: "asdf" },
     {
       select: (a) => a.waddup,
-    }
+    },
   );
 
   return (

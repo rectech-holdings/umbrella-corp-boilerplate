@@ -3,12 +3,11 @@
   "private": true,
   "version": "1.0.0",
   "description": "",
-  "main": "dist/index.js",
-  "declaration": "dist/index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
-    "build:": "pnpm build:ts",
-    "build:ts": "tsc",
-    "dev": "tsc -w --preserveWatchOutput"
+    "dev": "tsc -w --preserveWatchOutput",
+    "build": "tsc"
   },
   "devDependencies": {
     "typescript": "4.7.4"

@@ -2,10 +2,10 @@
   "name": "ac-shared-frontend",
   "private": true,
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
-    "build:": "pnpm build:ts",
-    "build:ts": "tsc",
+    "build": "tsc",
     "dev": "tsc -w --preserveWatchOutput"
   },
   "dependencies": {

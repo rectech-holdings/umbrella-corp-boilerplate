@@ -1,0 +1,11 @@
+{
+  "name": "cy-etcetera",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "echo 'Just a placeholder package...'"
+  },
+  "dependencies": {
+    "lodash": "4.17.21"
+  }
+}

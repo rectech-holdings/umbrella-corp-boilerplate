@@ -2,17 +2,17 @@
   "name": "ac-api",
   "private": true,
   "version": "1.0.0",
-  "main": "./apiSDK.ts",
+  "main": "./dist/apiSDK.js",
+  "types": "./dist/apiSDK.d.ts",
   "scripts": {
-    "dev": "wait-on tcp:5432 && sleep 0.2 && nodemon -x \"ts-node\" server.ts",
-    "build": "pnpm build:ts",
-    "build:ts": "tsc --noEmit"
+    "dev": "tsc-watch --noClear --onSuccess 'node ./dist/server.js'",
+    "build": "tsc"
   },
   "devDependencies": {
     "@types/node": "18.0.3",
-    "node-dev": "7.4.3",
-    "nodemon": "2.0.19",
-    "wait-on": "6.0.1"
+    "wait-on": "6.0.1",
+    "tsc-watch": "5.0.3",
+    "typescript": "4.7.4"
   },
   "dependencies": {
     "@fastify/cors": "8.0.0",
@@ -21,8 +21,6 @@
     "ac-shared-universal": "workspace:*",
     "config-helper": "workspace:*",
     "create-typed-sdk": "workspace:*",
-    "fastify": "4.2.0",
-    "ts-node": "10.8.2",
-    "typescript": "4.7.4"
+    "fastify": "4.2.0"
   }
 }

@@ -1,5 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 
-export function createDBClient(): PrismaClient {
+export * from "@prisma/client";
+
+export function createDBClient() {
   return new PrismaClient();
 }

@@ -35,7 +35,7 @@
   ],
   "scripts": {
     "dev": "pnpm build && run-p -l 'build:* --watch'",
-    "example-dev": "cd example-app && pnpm dev",
+    "example-dev": "cd example-app && yarn dev",
     "do-publish": "npm login && npx np",
     "test": "echo no-tests",
     "build": "run-p build:*",
