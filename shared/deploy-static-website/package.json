@@ -5,11 +5,7 @@
   "description": "",
   "main": "dist/index.js",
   "declaration": "dist/index.d.ts",
-  "scripts": {
-    "build:": "pnpm build:ts",
-    "build:ts": "tsc",
-    "dev": "tsc -w --preserveWatchOutput"
-  },
+  "scripts": {},
   "devDependencies": {
     "typescript": "4.7.4"
   },

@@ -3,10 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "main": "index.js",
-  "scripts": {
-    "build": "pnpm build:ts",
-    "build:ts": "tsc"
-  },
+  "scripts": {},
   "bin": {
     "config-helper": "./index.mjs"
   },

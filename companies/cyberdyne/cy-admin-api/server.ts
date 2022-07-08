@@ -6,23 +6,28 @@ import Fastify from "fastify";
 import { publicConfig } from "./config/public";
 const app = Fastify();
 
-app.register(cors, { origin: "*" });
+(async () => {
+  await app.register(cors, { origin: "*" });
 
-app.get("/hello", (req, resp) => {
-  resp.send({ success: true });
-});
+  app.get("/hello", async (req, resp) => {
+    await resp.send({ success: true });
+  });
 
-attachApiToAppWithDefault(api, app);
+  attachApiToAppWithDefault(api, app);
 
-const { port } = publicConfig;
+  const { port } = await publicConfig;
 
-app.listen({ port }, function (err, address) {
-  if (err) {
-    console.error(err);
-    process.exit(1);
-  } else {
-    setTimeout(() => {
-      console.info("Cyberdyne admin app api listening on port", port);
-    }, 1000);
-  }
+  app.listen({ port }, function (err, address) {
+    if (err) {
+      console.error(err);
+      process.exit(1);
+    } else {
+      setTimeout(() => {
+        console.info("Cyberdyne admin app api listening on port", port);
+      }, 1000);
+    }
+  });
+})().catch((e) => {
+  console.error(e);
+  process.exit(1);
 });
