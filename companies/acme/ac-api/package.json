@@ -3,9 +3,9 @@
   "private": true,
   "version": "1.0.0",
   "main": "./apiSDK.ts",
-  "type": "module",
   "scripts": {
-    "dev": "wait-on tcp:5432 && sleep 0.2 && nodemon -x \"ts-node-esm --experimental-specifier-resolution=node\" server.ts"
+    "dev": "wait-on tcp:5432 && sleep 0.2 && nodemon -x \"ts-node\" server.ts",
+    "build": "tsc --noEmit"
   },
   "devDependencies": {
     "@types/node": "18.0.3",

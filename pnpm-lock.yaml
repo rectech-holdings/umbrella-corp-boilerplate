@@ -83,6 +83,7 @@ importers:
 
   companies/acme/ac-admin-spa:
     specifiers:
+      '@types/node': 18.0.3
       '@types/react': 18.0.15
       '@types/react-dom': 18.0.6
       '@vitejs/plugin-react': 2.0.0-beta.0
@@ -94,6 +95,7 @@ importers:
       react: 18.2.0
       react-dom: 18.2.0
       react-query: 3.39.1
+      ts-node: 10.8.2
       typescript: 4.7.4
       vite: 3.0.0-beta.6
     dependencies:
@@ -106,9 +108,11 @@ importers:
       react-dom: 18.2.0_react@18.2.0
       react-query: 3.39.1_biqbaboplfbrettd7655fr4n2y
     devDependencies:
+      '@types/node': 18.0.3
       '@types/react': 18.0.15
       '@types/react-dom': 18.0.6
       '@vitejs/plugin-react': 2.0.0-beta.0_vite@3.0.0-beta.6
+      ts-node: 10.8.2_fxk5i3xm3ivo7fjwhcizcinpla
       typescript: 4.7.4
       vite: 3.0.0-beta.6
 
@@ -125,7 +129,6 @@ importers:
       node-dev: 7.4.3
       nodemon: 2.0.19
       ts-node: 10.8.2
-      ts-node-dev: 1.1.8
       typescript: 4.7.4
       wait-on: 6.0.1
     dependencies:
@@ -142,7 +145,6 @@ importers:
       '@types/node': 18.0.3
       node-dev: 7.4.3
       nodemon: 2.0.19
-      ts-node-dev: 1.1.8_typescript@4.7.4
       wait-on: 6.0.1
 
   companies/acme/ac-background:
@@ -224,12 +226,14 @@ importers:
 
   companies/acme/ac-spa:
     specifiers:
+      '@types/node': 18.0.3
       '@types/react': 18.0.15
       '@types/react-dom': 18.0.6
       '@vitejs/plugin-react': 2.0.0-beta.0
       ac-shared-frontend: workspace:*
       react: 18.2.0
       react-dom: 18.2.0
+      ts-node: 10.8.2
       typescript: 4.7.4
       vite: 3.0.0-beta.6
     dependencies:
@@ -237,9 +241,11 @@ importers:
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
     devDependencies:
+      '@types/node': 18.0.3
       '@types/react': 18.0.15
       '@types/react-dom': 18.0.6
       '@vitejs/plugin-react': 2.0.0-beta.0_vite@3.0.0-beta.6
+      ts-node: 10.8.2_fxk5i3xm3ivo7fjwhcizcinpla
       typescript: 4.7.4
       vite: 3.0.0-beta.6
 
@@ -253,7 +259,6 @@ importers:
       cy-shared-universal: workspace:*
       fastify: 4.2.0
       ts-node: 10.8.2
-      ts-node-dev: 1.1.8
       typescript: 4.7.4
       wait-on: 6.0.1
     dependencies:
@@ -267,11 +272,11 @@ importers:
       cy-api: link:../cy-api
       cy-shared-backend: link:../cy-shared-backend
       cy-shared-universal: link:../cy-shared-universal
-      ts-node-dev: 1.1.8_typescript@4.7.4
       wait-on: 6.0.1
 
   companies/cyberdyne/cy-admin-spa:
     specifiers:
+      '@types/node': 18.0.3
       '@types/react': 18.0.15
       '@types/react-dom': 18.0.6
       '@vitejs/plugin-react': 2.0.0-beta.0
@@ -282,6 +287,7 @@ importers:
       react: 18.2.0
       react-dom: 18.2.0
       react-query: 3.39.1
+      ts-node: 10.8.2
       typescript: 4.7.4
       vite: 3.0.0-beta.6
     dependencies:
@@ -293,9 +299,11 @@ importers:
       react-dom: 18.2.0_react@18.2.0
       react-query: 3.39.1_biqbaboplfbrettd7655fr4n2y
     devDependencies:
+      '@types/node': 18.0.3
       '@types/react': 18.0.15
       '@types/react-dom': 18.0.6
       '@vitejs/plugin-react': 2.0.0-beta.0_vite@3.0.0-beta.6
+      ts-node: 10.8.2_fxk5i3xm3ivo7fjwhcizcinpla
       typescript: 4.7.4
       vite: 3.0.0-beta.6
 
@@ -310,7 +318,6 @@ importers:
       cy-shared-universal: workspace:*
       fastify: 4.2.0
       ts-node: 10.8.2
-      ts-node-dev: 1.1.8
       typescript: 4.7.4
       wait-on: 6.0.1
     dependencies:
@@ -325,7 +332,6 @@ importers:
       typescript: 4.7.4
     devDependencies:
       '@types/node': 18.0.3
-      ts-node-dev: 1.1.8_typescript@4.7.4
       wait-on: 6.0.1
 
   companies/cyberdyne/cy-background:
@@ -414,7 +420,6 @@ importers:
       react: 18.2.0
       react-dom: 18.2.0
       ts-node: 10.8.2
-      ts-node-dev: 1.1.8
       typescript: 4.7.4
       vite: 3.0.0-beta.6
     dependencies:
@@ -426,7 +431,6 @@ importers:
       '@types/react-dom': 18.0.6
       '@vitejs/plugin-react': 2.0.0-beta.0_vite@3.0.0-beta.6
       ts-node: 10.8.2_fxk5i3xm3ivo7fjwhcizcinpla
-      ts-node-dev: 1.1.8_typescript@4.7.4
       typescript: 4.7.4
       vite: 3.0.0-beta.6
 
@@ -1601,14 +1605,6 @@ packages:
       '@types/node': 18.0.3
     dev: false
 
-  /@types/strip-bom/3.0.0:
-    resolution: {integrity: sha512-xevGOReSYGM7g/kUBZzPqCrR/KYAo+F0yiPc85WFTJa0MSLtyFTVTU6cJu/aV4mid7IffDIWqo69THF2o4JiEQ==}
-    dev: true
-
-  /@types/strip-json-comments/0.0.30:
-    resolution: {integrity: sha512-7NQmHra/JILCd1QqpSzl8+mJRc8ZHz3uDm8YV1Ks9IhK0epEiTw8aIErbvH9PI+6XbqhyIQy3462nEsn7UVzjQ==}
-    dev: true
-
   /@typescript-eslint/eslint-plugin/5.30.5_6zdoc3rn4mpiddqwhppni2mnnm:
     resolution: {integrity: sha512-lftkqRoBvc28VFXEoRgyZuztyVUQ04JvUnATSPtIRFAccbXTWL6DEtXGYMcbg998kXw1NLUJm7rTQ9eUt+q6Ig==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
@@ -2261,6 +2257,7 @@ packages:
 
   /buffer-from/1.1.2:
     resolution: {integrity: sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ==}
+    dev: false
 
   /bug-killer/4.4.4:
     resolution: {integrity: sha512-O/iJPwIf0Igra3q91s+jGeYhUSdtFUtBMb1JMwvAZLS0We1mIdEuDM4FCjbxFQAF+R6GqpRVgHVQa0utQQxSEA==}
@@ -5229,12 +5226,6 @@ packages:
       minimist: 1.2.6
     dev: false
 
-  /mkdirp/1.0.4:
-    resolution: {integrity: sha512-vVqVZQyf3WLx2Shd0qJ9xuvqgAyKPLAiqITEtqW0oIUjzo3PePDd6fW9iFz30ef7Ysp/oiWqbhszeGWW2T6Gzw==}
-    engines: {node: '>=10'}
-    hasBin: true
-    dev: true
-
   /months/1.2.0:
     resolution: {integrity: sha512-zFM7hUpziSYGk2DNObYGWgHdRRxAOgjl8CC1Rbl50p/q0rGDsREfk0nbxxmSIquVi/lEAuUY8nwbwkZ8biNCOQ==}
     engines: {node: '>=0.10.0'}
@@ -6481,13 +6472,6 @@ packages:
     engines: {node: '>= 0.10'}
     dev: true
 
-  /rimraf/2.7.1:
-    resolution: {integrity: sha512-uWjbaKIK3T1OSVptzX7Nl6PvQ3qAGtKEtVRjRuazjfL3Bx5eI409VZSqgND+4UNnmzLVdPj9FqFJNPqBZFve4w==}
-    hasBin: true
-    dependencies:
-      glob: 7.2.3
-    dev: true
-
   /rimraf/3.0.2:
     resolution: {integrity: sha512-JZkJMZkAGFFPP2YqXZXPbMlMBgsxzE8ILs4lMIX/2o0L9UBw9O/Y3o6wFw/i9YLapcUJWwqbi3kdxIPdC62TIA==}
     hasBin: true
@@ -6720,6 +6704,7 @@ packages:
     dependencies:
       buffer-from: 1.1.2
       source-map: 0.6.1
+    dev: false
 
   /source-map/0.6.1:
     resolution: {integrity: sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==}
@@ -7104,38 +7089,9 @@ packages:
     dependencies:
       nopt: 1.0.10
 
-  /tree-kill/1.2.2:
-    resolution: {integrity: sha512-L0Orpi8qGpRG//Nd+H90vFB+3iHnue1zSSGmNOOCh1GLJ7rUKVwV2HvijphGQS2UmhUZewS9VgvxYIdgr+fG1A==}
-    hasBin: true
-    dev: true
-
   /trim-newlines/3.0.1:
     resolution: {integrity: sha512-c1PTsA3tYrIsLGkJkzHF+w9F2EyxfXGo4UyJc4pFL++FMjnq0HJS69T3M7d//gKrFKwy429bouPescbjecU+Zw==}
     engines: {node: '>=8'}
-
-  /ts-node-dev/1.1.8_typescript@4.7.4:
-    resolution: {integrity: sha512-Q/m3vEwzYwLZKmV6/0VlFxcZzVV/xcgOt+Tx/VjaaRHyiBcFlV0541yrT09QjzzCxlDZ34OzKjrFAynlmtflEg==}
-    engines: {node: '>=0.8.0'}
-    hasBin: true
-    peerDependencies:
-      node-notifier: '*'
-      typescript: '*'
-    peerDependenciesMeta:
-      node-notifier:
-        optional: true
-    dependencies:
-      chokidar: 3.5.3
-      dynamic-dedupe: 0.3.0
-      minimist: 1.2.6
-      mkdirp: 1.0.4
-      resolve: 1.22.1
-      rimraf: 2.7.1
-      source-map-support: 0.5.21
-      tree-kill: 1.2.2
-      ts-node: 9.1.1_typescript@4.7.4
-      tsconfig: 7.0.0
-      typescript: 4.7.4
-    dev: true
 
   /ts-node/10.8.2_fxk5i3xm3ivo7fjwhcizcinpla:
     resolution: {integrity: sha512-LYdGnoGddf1D6v8REPtIH+5iq/gTDuZqv2/UJUU7tKjuEU8xVZorBM+buCGNjj+pGEud+sOoM4CX3/YzINpENA==}
@@ -7182,22 +7138,6 @@ packages:
       yn: 2.0.0
     dev: false
 
-  /ts-node/9.1.1_typescript@4.7.4:
-    resolution: {integrity: sha512-hPlt7ZACERQGf03M253ytLY3dHbGNGrAq9qIHWUY9XHYl1z7wYngSr3OQ5xmui8o2AaxsONxIzjafLUiWBo1Fg==}
-    engines: {node: '>=10.0.0'}
-    hasBin: true
-    peerDependencies:
-      typescript: '>=2.7'
-    dependencies:
-      arg: 4.1.3
-      create-require: 1.1.1
-      diff: 4.0.2
-      make-error: 1.3.6
-      source-map-support: 0.5.21
-      typescript: 4.7.4
-      yn: 3.1.1
-    dev: true
-
   /tsconfig-paths/3.14.1:
     resolution: {integrity: sha512-fxDhWnFSLt3VuTwtvJt5fpwxBHg5AdKWMsgcPOOIilyjymcYVZoCQF8fvFRezCNfblEXmi+PcM1eYHeOAgXCOQ==}
     dependencies:
@@ -7205,15 +7145,6 @@ packages:
       json5: 1.0.1
       minimist: 1.2.6
       strip-bom: 3.0.0
-    dev: true
-
-  /tsconfig/7.0.0:
-    resolution: {integrity: sha512-vZXmzPrL+EmC4T/4rVlT2jNVMWCi/O4DIiSj3UHg1OE5kCKbk4mfrXc6dZksLgRM/TZlKnousKH9bbTazUWRRw==}
-    dependencies:
-      '@types/strip-bom': 3.0.0
-      '@types/strip-json-comments': 0.0.30
-      strip-bom: 3.0.0
-      strip-json-comments: 2.0.1
     dev: true
 
   /tslib/1.14.1:

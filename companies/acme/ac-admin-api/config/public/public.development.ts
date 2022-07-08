@@ -1,6 +1,6 @@
 import { PublicConfig } from "../types";
 
-export const publicConfig: PublicConfig = new (class Blah {
+export const publicConfig: PublicConfig = new (class ThisConfig {
   port = 3250;
   url = `http://localhost:${this.port}`;
 })();
