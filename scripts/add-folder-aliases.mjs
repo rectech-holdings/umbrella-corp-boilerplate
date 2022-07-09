@@ -3,16 +3,13 @@ import fs from "fs";
 import chalk from "chalk";
 import os from "os";
 import _ from "lodash";
-import { getWorkspaceInfo } from "./getWorkspaceInfo.mjs";
+import { getWorkspaceInfo } from "./utils/getWorkspaceInfo.mjs";
 import path from "path";
 import yesno from "yesno";
 
 const packages = await getWorkspaceInfo();
 
-const aliases = Object.keys(packages).map((name) => [
-  name.replace(/-/g, ""),
-  path.join(process.cwd(), packages[name].location),
-]);
+const aliases = Object.keys(packages).map((name) => [name.replace(/-/g, ""), path.join(packages[name].location)]);
 
 const rootAlias = JSON.parse(fs.readFileSync("package.json"))
   .name.split("-")
