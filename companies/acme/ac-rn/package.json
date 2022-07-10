@@ -3,26 +3,35 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "android": "react-native run-android",
+    "dev": "run-p dev:*",
+    "dev:rn": "react-native start",
+    "dev:ts": "tsc-watch --noClear",
+    "prepare": "node scripts/ensure-pods.mjs || (cd ios && pod install)",
+    "android": "react-native run-android --active-arch-only",
     "ios": "react-native run-ios",
-    "start": "react-native start",
     "test": "jest"
   },
   "dependencies": {
+    "@babel/runtime": "7.12.5",
     "react": "18.2.0",
     "react-native": "0.69.1"
   },
   "devDependencies": {
     "@babel/core": "7.12.9",
-    "@babel/runtime": "7.12.5",
+    "@babel/preset-env": "7.18.6",
     "@react-native-community/cli-platform-ios": "8.0.2",
-    "@react-native-community/eslint-config": "2.0.0",
     "@rnx-kit/metro-config": "1.2.34",
     "@rnx-kit/metro-resolver-symlinks": "0.1.21",
+    "@types/react": "18.0.15",
+    "@types/react-native": "0.69.2",
     "babel-jest": "26.6.3",
     "jest": "26.6.3",
+    "metro-config": "0.71.3",
     "metro-react-native-babel-preset": "0.70.3",
-    "react-test-renderer": "18.0.0"
+    "npm-run-all": "4.1.5",
+    "react-test-renderer": "18.0.0",
+    "tsc-watch": "5.0.3",
+    "typescript": "4.7.4"
   },
   "jest": {
     "preset": "react-native"
