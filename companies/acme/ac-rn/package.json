@@ -14,7 +14,10 @@
   "dependencies": {
     "@babel/runtime": "7.12.5",
     "react": "18.2.0",
-    "react-native": "0.69.1"
+    "react-native": "0.69.1",
+    "ac-api": "workspace:*",
+    "ac-shared-backend": "workspace:*",
+    "ac-shared-universal": "workspace:*"
   },
   "devDependencies": {
     "@babel/core": "7.12.9",

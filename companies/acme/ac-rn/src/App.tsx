@@ -1,6 +1,6 @@
-import React from "react";
+import { createApiSDK } from "ac-api";
 import type { ReactNode } from "react";
-import { SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, useColorScheme, View } from "react-native";
+import { Button, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, useColorScheme, View } from "react-native";
 
 import {
   Colors,
@@ -9,6 +9,8 @@ import {
   LearnMoreLinks,
   ReloadInstructions,
 } from "react-native/Libraries/NewAppScreen";
+
+const sdk = createApiSDK();
 
 function Section(p: { children: ReactNode; title: string }) {
   const isDarkMode = useColorScheme() === "dark";
@@ -50,6 +52,13 @@ export default function App() {
       <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
       <ScrollView contentInsetAdjustmentBehavior="automatic" style={backgroundStyle}>
         <Header />
+        <Button
+          title="CLICK ME"
+          onPress={async () => {
+            const allLoans = await (await sdk).ApiSDK.loans.getAllLoans({});
+            console.log(allLoans);
+          }}
+        />
         <View
           style={{
             backgroundColor: isDarkMode ? Colors.black : Colors.white,

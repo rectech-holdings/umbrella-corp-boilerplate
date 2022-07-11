@@ -207,6 +207,9 @@ importers:
       '@rnx-kit/metro-resolver-symlinks': 0.1.21
       '@types/react': 18.0.15
       '@types/react-native': 0.69.2
+      ac-api: workspace:*
+      ac-shared-backend: workspace:*
+      ac-shared-universal: workspace:*
       babel-jest: 26.6.3
       jest: 26.6.3
       metro-config: 0.71.3
@@ -219,6 +222,9 @@ importers:
       typescript: 4.7.4
     dependencies:
       '@babel/runtime': 7.12.5
+      ac-api: link:../ac-api
+      ac-shared-backend: link:../ac-shared-backend
+      ac-shared-universal: link:../ac-shared-universal
       react: 18.2.0
       react-native: 0.69.1_xkwn5kfn4p5g5vhhoajshjctr4
     devDependencies:

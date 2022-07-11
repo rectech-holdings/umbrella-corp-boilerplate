@@ -5,8 +5,9 @@
   "packageManager": "pnpm@7.5.0",
   "scripts": {
     "build": "turbo run build",
-    "dev:ac": "turbo run dev --filter ac-spa...",
-    "dev:acadmin": "turbo run dev --filter ac-admin-spa...",
+    "dev:ac-spa": "turbo run dev --filter ac-spa...",
+    "dev:ac-rn": "turbo run dev --filter ac-rn...",
+    "dev:ac-admin-spa": "turbo run dev --filter ac-admin-spa...",
     "dev:cy": "turbo run dev --filter cy-spa...",
     "dev:cyadmin": "turbo run dev --filter cy-admin-spa...",
     "install:ac": "pnpm -F . -F ac-spa... install",
