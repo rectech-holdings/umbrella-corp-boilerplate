@@ -7,7 +7,8 @@
   "types": "./dist/apiSDK.d.ts",
   "scripts": {
     "dev": "tsc-watch --noClear --onSuccess 'node ./dist/server.js'",
-    "build": "tsc"
+    "build": "tsc",
+    "build-dev": "pnpm build"
   },
   "devDependencies": {
     "@types/node": "18.0.3",

@@ -4,10 +4,9 @@
   "type": "module",
   "version": "0.0.0",
   "scripts": {
-    "dev": "pnpm build:ts && node dist/dev.js",
-    "build": "pnpm build:ts && pnpm build:vite",
-    "build:ts": "tsc",
-    "build:vite": "vite build",
+    "dev": "node dist/dev.js",
+    "build": "tsc --noEmit && vite build",
+    "build-dev": "tsc",
     "serve": "vite preview"
   },
   "dependencies": {

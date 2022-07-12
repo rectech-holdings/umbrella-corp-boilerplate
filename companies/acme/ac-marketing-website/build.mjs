@@ -48,7 +48,7 @@ export function doBuild() {
     fs.unlinkSync(`${root}/dist`);
   } catch (e) {}
 
-  build(esbuildConfig);
+  build(esbuildConfig).catch((e) => console.error("Error building!", e));
   ejsFiles.forEach((a) => compileEJSFileToDist(a));
 }
 

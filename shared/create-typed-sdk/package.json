@@ -42,7 +42,8 @@
     "build": "run-p build:*",
     "build:cjs": "node build.mjs --format cjs --outdir dist/cjs --platform node",
     "build:esm": "node build.mjs --format esm --outdir dist/esm --platform browser",
-    "build:ts": "tsc --outDir dist/cjs && tsc --outDir dist/esm"
+    "build:ts": "tsc --outDir dist/cjs && tsc --outDir dist/esm",
+    "build-dev": "pnpm build"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "5.30.5",

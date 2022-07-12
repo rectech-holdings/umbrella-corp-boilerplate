@@ -6,8 +6,9 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
+    "dev": "tsc -w --preserveWatchOutput",
     "build": "tsc",
-    "dev": "tsc -w --preserveWatchOutput"
+    "build-dev": "pnpm build"
   },
   "dependencies": {
     "typescript": "4.7.4"

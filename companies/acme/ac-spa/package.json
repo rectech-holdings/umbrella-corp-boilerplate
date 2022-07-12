@@ -4,13 +4,11 @@
   "type": "module",
   "version": "0.0.0",
   "scripts": {
-    "dev": "pnpm build:ts && node dist/dev.js",
-    "build": "pnpm build:ts && pnpm build:vite",
-    "build:ts": "tsc",
-    "build:vite": "vite build",
-    "preview": "vite preview",
-    "test": "vitest",
-    "test:coverage": "vitest --coverage"
+    "dev": "node ./dist/dev.js",
+    "test-dev": "concurrently -p none -k 'npm:dev' 'vitest'",
+    "build": "tsc --noEmit && vite build",
+    "build-dev": "tsc",
+    "test": "vitest run"
   },
   "dependencies": {
     "ac-shared-frontend": "workspace:*",
@@ -20,13 +18,15 @@
   "devDependencies": {
     "@testing-library/react": "13.3.0",
     "@testing-library/react-hooks": "8.0.1",
-    "jsdom": "20.0.0",
     "@types/node": "18.0.3",
     "@types/react": "18.0.15",
     "@types/react-dom": "18.0.6",
     "@types/react-test-renderer": "18.0.0",
     "@vitejs/plugin-react": "2.0.0-beta.0",
     "c8": "7.11.3",
+    "happy-dom": "6.0.3",
+    "concurrently": "7.2.2",
+    "jsdom": "20.0.0",
     "typescript": "4.7.4",
     "vite": "3.0.0-beta.6",
     "vitest": "0.18.0"

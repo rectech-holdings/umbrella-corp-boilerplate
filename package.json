@@ -15,7 +15,7 @@
     "install:cy": "pnpm -F . -F cy-spa... install",
     "install:cyadmin": "pnpm -F . -F cy-admin-spa... install",
     "lint": "eslint",
-    "clean": "rm -rf node_modules && pnpm -r exec rm -rf node_modules",
+    "clean": "rm -rf node_modules && pnpm -r exec rm -rf node_modules dist",
     "prepare": "husky install && node ./scripts/post-install.mjs",
     "encrypt": "node ./shared/config-helper/index.mjs encrypt",
     "decrypt": "config-helper decrypt"

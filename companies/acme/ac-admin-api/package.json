@@ -7,7 +7,8 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "wait-on tcp:5432 && sleep 0.2 && tsc-watch --noClear --onSuccess 'node ./dist/server.js'",
-    "build": "tsc"
+    "build": "tsc",
+    "build-dev": "pnpm build"
   },
   "devDependencies": {
     "@types/node": "18.0.3",
