@@ -1,5 +1,6 @@
 node_modules
 dist
+coverage
 tsconfig.tsbuildinfo
 yarn.lock
 package-lock.json
