@@ -1,6 +1,9 @@
 import { useState } from "react";
 import logo from "./logo.svg";
 import "./App.css";
+import { publicConfig } from "./config/public/index.js";
+
+publicConfig.then((a) => {}).catch((e) => {});
 
 function App() {
   const [count, setCount] = useState(0);

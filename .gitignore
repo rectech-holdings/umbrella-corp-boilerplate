@@ -1,5 +1,7 @@
+.env
 node_modules
 dist
+build
 coverage
 tsconfig.tsbuildinfo
 yarn.lock
