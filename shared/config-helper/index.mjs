@@ -130,8 +130,8 @@ program
   .action(async (options) => {
     const readPath = path.join(process.cwd(), options.path || "config/public/index.ts");
     if (!fs.existsSync(readPath)) {
-      const msg = `Unable to find ${readPath}! Aborting`;
-      throw new Error(msg);
+      console.error(`Unable to find ${readPath}! Aborting`);
+      process.exit(1);
     }
 
     const writePath = path.join(os.tmpdir(), Math.random() * Math.random() + ".mjs");

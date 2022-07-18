@@ -1,1 +1,1 @@
-export default "asdfasdf";
+export default "";

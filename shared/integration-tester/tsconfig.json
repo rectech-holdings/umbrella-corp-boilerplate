@@ -3,5 +3,5 @@
   "compilerOptions": {
     "outDir": "dist"
   },
-  "include": ["src/**/*"]
+  "include": ["global.d.ts", "src/**/*", "cli.ts"]
 }

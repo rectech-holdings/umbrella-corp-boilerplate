@@ -6,7 +6,6 @@ export function createDOMContext() {
     global: window,
     globalThis: window,
     process,
-    _$_$_TEST_RESULT_$_$_: "",
   });
 
   return window;
