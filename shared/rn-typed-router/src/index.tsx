@@ -19,7 +19,7 @@ import { deferred, Deferred } from "./utils/deferred.js";
 import { usePreviousValue } from "./utils/usePreviousValue.js";
 import { useIsMountedRef } from "./utils/useIsMountedRef.js";
 import { RouteDef, LeafRouteDef, StackRouteDef, TabRouteDef } from "./components/routes.js";
-import { GetInputParamsFromPath, ParamsBase, ParamsInputObj, ParamsOutputObj } from "./components/params.js";
+import { GetInputParamsFromPath, ParamsBase, ParamsInputObj, ParamsOutputObj, useParams } from "./components/params.js";
 import { PathObj, PathObjResult } from "./components/path.js";
 
 enableFreeze(true);
@@ -27,7 +27,7 @@ enableFreeze(true);
 type Router<T extends RouteDef> = {
   navigation: NavigationObj<T>;
   paths: PathObj<T>;
-  useParams<D extends ParamsBase>(paramsSelector: (paramsObj: ParamsOutputObj<T>) => D): D;
+  useParams: useParams<T>;
   goBack: () => boolean;
   navigateToStringUrl: (urlPath: string) => void;
   generateUrl: <F extends PathObjResult<any, any, any, any, any, any, any, any>>(

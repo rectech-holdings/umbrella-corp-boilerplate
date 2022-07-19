@@ -108,3 +108,7 @@ export type GetInputParamsFromPath<
   T extends RouteDef,
   F extends PathObjResult<any, any, any, any, any, any, any, any>,
 > = ExtractObjectPath<ParamsInputObj<T>, F[$pathType]>[$paramsType];
+
+export type useParams<T extends RouteDef> = <Path extends PathObjResult<any, any, any, any, any, any, any, any>>(
+  path: Path,
+) => ExtractObjectPath<ParamsOutputObj<T>, Path[$pathType]>[$paramsType];

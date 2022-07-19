@@ -16,7 +16,7 @@ const routeDef = createRouteDefinition({
     bloop: {
       type: "tab",
       params: {
-        bloop: ParamTypes.number().default(123),
+        bloop: ParamTypes.number().optional(),
       },
       routes: {
         baz: {
@@ -65,7 +65,6 @@ generateUrl(paths.bloop.baz.burp, {
   burp: "asdf",
 });
 
-// type asdasdf = InferParamsInputObjAtPath<ParamsInputObj<RouteDef>, PathObjResult<"bloop", "baz", "burp">>;
-// type asdasdf2 = InferParamsOutputObjAtPath<ParamsInputObj<RouteDef>, PathObjResult<"bloop", "baz", "burp">>;
-
-type qwerqwerd = ParamsInputObj<RouteDef>;
+function Blah() {
+  const asdf = useParams(paths.bloop.baz.burp);
+}
