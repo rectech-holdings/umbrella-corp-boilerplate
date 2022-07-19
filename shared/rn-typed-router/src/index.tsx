@@ -19,8 +19,16 @@ import { deferred, Deferred } from "./utils/deferred.js";
 import { usePreviousValue } from "./utils/usePreviousValue.js";
 import { useIsMountedRef } from "./utils/useIsMountedRef.js";
 import { RouteDef, LeafRouteDef, StackRouteDef, TabRouteDef } from "./components/routes.js";
-import { GetInputParamsFromPath, ParamsBase, ParamsInputObj, ParamsOutputObj, useParams } from "./components/params.js";
-import { PathObj, PathObjResult } from "./components/path.js";
+import {
+  $paramsType,
+  GetInputParamsFromPath,
+  ParamsBase,
+  ParamsInputObj,
+  ParamsOutputObj,
+  useParams,
+} from "./components/params.js";
+import { $pathType, PathObj, PathObjResultLeaf } from "./components/path.js";
+import { ExtractObjectPath } from "./utils/typescriptHelpers.js";
 
 enableFreeze(true);
 
@@ -29,15 +37,19 @@ type Router<T extends RouteDef> = {
   paths: PathObj<T>;
   useParams: useParams<T>;
   goBack: () => boolean;
+  goTo<Path extends PathObjResultLeaf<any, any, any, any, any, any, any, any>>(
+    p: Path,
+    params: ExtractObjectPath<ParamsOutputObj<T>, Path[$pathType]>[$paramsType],
+  ): void;
   navigateToStringUrl: (urlPath: string) => void;
-  generateUrl: <F extends PathObjResult<any, any, any, any, any, any, any, any>>(
+  generateUrl: <F extends PathObjResultLeaf<any, any, any, any, any, any, any, any>>(
     path: F,
     params: GetInputParamsFromPath<T, F>,
   ) => string;
   Navigator: (a: { getInitialState?: () => NavigationState<T> | null | undefined }) => JSX.Element | null;
   useIsFocused: () => boolean;
   useOnFocusChange: (fn: (isFocused: boolean) => void) => void;
-  getCurrentlyFocusedUrl: () => string;
+  getCurrentlyFocusedUrl: () => string | null;
   subscribeToCurrentlyFocusedPath: (subFn: (currPath: string) => any) => () => void;
 };
 
@@ -154,7 +166,7 @@ function getDefAtPath(rootDef: RouteDef, path: string[]): RouteDef | null {
           ).toString()}`,
         );
       }
-      currDef = currDef.routes[nextPath];
+      // currDef = currDef.routes[nextPath];
     }
   }
 
@@ -454,88 +466,88 @@ const modifyStateForNavigation = (p: ModifyStateForNavigationProps) => {
 
     const mustSpecifyAllParams = isLastIteration ? true : p.opts?.mustSpecifyAllParams ?? false; //Default to false on non leaf routes
 
-    const thisRoutePath = thisPath.concat(route);
-    const thisRouteDef = getDefAtPath(p.rootDef, thisRoutePath)!;
+    // const thisRoutePath = thisPath.concat(route);
+    // const thisRouteDef = getDefAtPath(p.rootDef, thisRoutePath)!;
 
-    if ("stack" in thisState) {
-      const perfectMatchIndex = thisState.stack.findIndex((thisStackState) => {
-        const hasRouteMatch = thisStackState.path === route;
-        const hasParamsMatch = mustSpecifyAllParams
-          ? Object.keys(thisStackState.params || {}).every(
-              (k) => (thisStackState.params || {})[k] === ((p.params as any) || {})[k],
-            )
-          : true;
-        return hasRouteMatch && hasParamsMatch;
-      });
+    // if ("stack" in thisState) {
+    //   const perfectMatchIndex = thisState.stack.findIndex((thisStackState) => {
+    //     const hasRouteMatch = thisStackState.path === route;
+    //     const hasParamsMatch = mustSpecifyAllParams
+    //       ? Object.keys(thisStackState.params || {}).every(
+    //           (k) => (thisStackState.params || {})[k] === ((p.params as any) || {})[k],
+    //         )
+    //       : true;
+    //     return hasRouteMatch && hasParamsMatch;
+    //   });
 
-      const decentMatchIndex = thisState.stack.findIndex((thisStackState) => {
-        const hasRouteMatch = thisStackState.path === route;
-        return hasRouteMatch;
-      });
+    //   const decentMatchIndex = thisState.stack.findIndex((thisStackState) => {
+    //     const hasRouteMatch = thisStackState.path === route;
+    //     return hasRouteMatch;
+    //   });
 
-      const shouldReplaceStackParams = p.opts?.shouldReplaceStackParams ?? true; //$navigate called by itself will replace stack params
+    //   const shouldReplaceStackParams = p.opts?.shouldReplaceStackParams ?? true; //$navigate called by itself will replace stack params
 
-      if (perfectMatchIndex !== -1) {
-        if (perfectMatchIndex !== thisState.stack.length - 1) {
-          thisState.stack = thisState.stack.slice(0, perfectMatchIndex + 1);
-        }
-      } else if (decentMatchIndex !== -1 && shouldReplaceStackParams) {
-        if (thisRouteDef.params) {
-          const requiredParams = Object.keys(thisRouteDef.params);
-          if (!requiredParams.every((k) => k in p.params)) {
-            throw new Error(
-              `Unable to navigate to stack path ${route}! Only have parameters ${Object.keys(
-                p.params,
-              )} but must have ${requiredParams}`,
-            );
-          }
-          thisState.stack[decentMatchIndex].params = _.pick(p.params, Object.keys(thisRouteDef.params));
-        }
+    //   if (perfectMatchIndex !== -1) {
+    //     if (perfectMatchIndex !== thisState.stack.length - 1) {
+    //       thisState.stack = thisState.stack.slice(0, perfectMatchIndex + 1);
+    //     }
+    //   } else if (decentMatchIndex !== -1 && shouldReplaceStackParams) {
+    //     if (thisRouteDef.params) {
+    //       const requiredParams = Object.keys(thisRouteDef.params);
+    //       if (!requiredParams.every((k) => k in p.params)) {
+    //         throw new Error(
+    //           `Unable to navigate to stack path ${route}! Only have parameters ${Object.keys(
+    //             p.params,
+    //           )} but must have ${requiredParams}`,
+    //         );
+    //       }
+    //       thisState.stack[decentMatchIndex].params = _.pick(p.params, Object.keys(thisRouteDef.params));
+    //     }
 
-        if (decentMatchIndex !== thisState.stack.length - 1) {
-          thisState.stack = thisState.stack.slice(0, decentMatchIndex + 1);
-        }
-      } else {
-        const initState = generateInitialState(p.rootDef, thisRoutePath, p.params);
-        thisState.stack.push(initState);
-      }
-    } else if ("tabs" in thisState) {
-      const existingIndex = thisState.tabs.findIndex((a) => a.path === route);
-      if (existingIndex !== -1) {
-        if (thisState.focusedTabIndex !== existingIndex) {
-          thisState.focusedTabIndex = existingIndex;
-        }
+    //     if (decentMatchIndex !== thisState.stack.length - 1) {
+    //       thisState.stack = thisState.stack.slice(0, decentMatchIndex + 1);
+    //     }
+    //   } else {
+    //     const initState = generateInitialState(p.rootDef, thisRoutePath, p.params);
+    //     thisState.stack.push(initState);
+    //   }
+    // } else if ("tabs" in thisState) {
+    //   const existingIndex = thisState.tabs.findIndex((a) => a.path === route);
+    //   if (existingIndex !== -1) {
+    //     if (thisState.focusedTabIndex !== existingIndex) {
+    //       thisState.focusedTabIndex = existingIndex;
+    //     }
 
-        if (thisRouteDef.params) {
-          const requiredParams = Object.keys(thisRouteDef.params);
-          if (!requiredParams.every((k) => k in p.params)) {
-            throw new Error(
-              `Unable to navigate to tab path ${route} due to missing parameters! Only supplied ${Object.keys(
-                p.params,
-              )} but must have ${requiredParams}`,
-            );
-          }
-          thisState.tabs[existingIndex].params = _.pick(p.params, Object.keys(thisRouteDef.params || {}));
-        }
-      } else {
-        const thisTabPath = thisPath.concat(route);
-        const initState = generateInitialState(p.rootDef, thisTabPath, p.params);
+    //     if (thisRouteDef.params) {
+    //       const requiredParams = Object.keys(thisRouteDef.params);
+    //       if (!requiredParams.every((k) => k in p.params)) {
+    //         throw new Error(
+    //           `Unable to navigate to tab path ${route} due to missing parameters! Only supplied ${Object.keys(
+    //             p.params,
+    //           )} but must have ${requiredParams}`,
+    //         );
+    //       }
+    //       thisState.tabs[existingIndex].params = _.pick(p.params, Object.keys(thisRouteDef.params || {}));
+    //     }
+    //   } else {
+    //     const thisTabPath = thisPath.concat(route);
+    //     const initState = generateInitialState(p.rootDef, thisTabPath, p.params);
 
-        if (thisDef.type === "switch") {
-          thisState.tabs = [initState];
-        } else {
-          thisState.tabs.push(initState);
-          thisState.focusedTabIndex = thisState.tabs.length - 1;
-        }
-      }
-    } else {
-      throw new Error("Router internal logic is bad somewhere. Tried to navigate on leaf state");
-    }
+    //     if (thisDef.type === "switch") {
+    //       thisState.tabs = [initState];
+    //     } else {
+    //       thisState.tabs.push(initState);
+    //       thisState.focusedTabIndex = thisState.tabs.length - 1;
+    //     }
+    //   }
+    // } else {
+    //   throw new Error("Router internal logic is bad somewhere. Tried to navigate on leaf state");
+    // }
 
-    if (isLastIteration && p.opts?.shouldResetFinalRoute) {
-      setStateAtPath(p.currState, thisRoutePath, generateInitialState(p.rootDef, thisRoutePath, p.params));
-      break;
-    }
+    // if (isLastIteration && p.opts?.shouldResetFinalRoute) {
+    //   setStateAtPath(p.currState, thisRoutePath, generateInitialState(p.rootDef, thisRoutePath, p.params));
+    //   break;
+    // }
   }
 };
 
@@ -650,43 +662,44 @@ function generateInitialState<T extends RouteDef>(
   rootDef: T,
   path: string[],
   params?: ParamsBase,
-): NavigationState<any> {
+): //  NavigationState<any>
+any {
   const def = getDefAtPath(rootDef, path);
 
   if (!def) {
     throw new Error("Invalid path passed to generateInitialState: " + path.join("/"));
   }
 
-  let initState: NavigationState<any>;
-  const pathStr = path.slice().pop() as any;
-  if (def.type === "stack") {
-    const initialRouteName = def.initialRoute || Object.keys(def.routes)[0];
+  // let initState: NavigationState<any>;
+  // const pathStr = path.slice().pop() as any;
+  // if (def.type === "stack") {
+  //   const initialRouteName = def.initialRoute || Object.keys(def.routes)[0];
 
-    const stack = [generateInitialState(rootDef, path.concat(initialRouteName), params)];
-    initState = {
-      path: pathStr as any,
-      stack,
-    };
-  } else if (def.type === "tab" || def.type === "switch") {
-    const initialRouteName = def.initialRoute || Object.keys(def.routes)[0];
+  //   const stack = [generateInitialState(rootDef, path.concat(initialRouteName), params)];
+  //   initState = {
+  //     path: pathStr as any,
+  //     stack,
+  //   };
+  // } else if (def.type === "tab" || def.type === "switch") {
+  //   const initialRouteName = def.initialRoute || Object.keys(def.routes)[0];
 
-    const tabs = [generateInitialState(rootDef, path.concat(initialRouteName), params)];
-    initState = {
-      focusedTabIndex: 0,
-      path: pathStr as any,
-      tabs,
-    };
-  } else {
-    initState = {
-      path: pathStr as any,
-    };
-  }
+  //   const tabs = [generateInitialState(rootDef, path.concat(initialRouteName), params)];
+  //   initState = {
+  //     focusedTabIndex: 0,
+  //     path: pathStr as any,
+  //     tabs,
+  //   };
+  // } else {
+  //   initState = {
+  //     path: pathStr as any,
+  //   };
+  // }
 
-  if (params) {
-    initState.params = _.pick(params, Object.keys(def.params || {}));
-  }
+  // if (params) {
+  //   initState.params = _.pick(params, Object.keys(def.params || {}));
+  // }
 
-  return initState;
+  // return initState;
 }
 
 type RouteInfoType = { params: ParamsBase; path: string[] };
@@ -978,59 +991,60 @@ export function createRouter<T extends RouteDef>(
     });
   }
 
-  const ret: Router<T> = {
-    generateUrl() {
-      return "";
-    },
-    navigateToUrl,
-    useIsFocused,
-    useOnFocusChange,
-    useNavigationState,
-    useParams(paramsSelector) {
-      const { params: theseParams } = useRouteInfoContext();
+  // const ret: Router<T> = {
+  //   generateUrl() {
+  //     return "";
+  //   },
+  //   navigateToUrl,
+  //   useIsFocused,
+  //   useOnFocusChange,
+  //   useNavigationState,
+  //   useParams(paramsSelector) {
+  //     const { params: theseParams } = useRouteInfoContext();
 
-      const selectedParams = paramsSelector(paramsObj) as ParamsBase | null;
+  //     const selectedParams = paramsSelector(paramsObj) as ParamsBase | null;
 
-      if (!selectedParams) {
-        throw new Error("Unable to find selected params!");
-      }
+  //     if (!selectedParams) {
+  //       throw new Error("Unable to find selected params!");
+  //     }
 
-      Object.keys(selectedParams).forEach((k) => {
-        if (!(k in theseParams)) {
-          throw new Error("Unable to find parameters!" + Object.keys(selectedParams).toString());
-        }
-      });
+  //     Object.keys(selectedParams).forEach((k) => {
+  //       if (!(k in theseParams)) {
+  //         throw new Error("Unable to find parameters!" + Object.keys(selectedParams).toString());
+  //       }
+  //     });
 
-      return theseParams as any;
-    },
-    Navigator: RootNavigator,
-    navigation,
-    goBack,
-    // manuallyModifyNavigationState: (modifyFn) => {
-    //   if (!deferredDataProm.resolvedValue?.stateStore.modifyImmutably) {
-    //     throw new Error("Unable to modify state before the first render has occurred!");
-    //   }
+  //     return theseParams as any;
+  //   },
+  //   Navigator: RootNavigator,
+  //   navigation,
+  //   goBack,
+  //   manuallyModifyNavigationState: (modifyFn) => {
+  //     if (!deferredDataProm.resolvedValue?.stateStore.modifyImmutably) {
+  //       throw new Error("Unable to modify state before the first render has occurred!");
+  //     }
 
-    //   //TODO: Verify that they don't empty a stack or a tab or do an invalid focusedTabIndex
+  //     //TODO: Verify that they don't empty a stack or a tab or do an invalid focusedTabIndex
 
-    //   Keyboard.dismiss();
-    //   deferredDataProm.resolvedValue?.stateStore.modifyImmutably((a) => {
-    //     modifyFn(a as any);
-    //   });
-    // },
-    getCurrentlyFocusedPath: () => {
-      const state = (deferredDataProm.resolvedValue?.stateStore.get() as any) ?? null;
+  //     Keyboard.dismiss();
+  //     deferredDataProm.resolvedValue?.stateStore.modifyImmutably((a) => {
+  //       modifyFn(a as any);
+  //     });
+  //   },
+  //   getCurrentlyFocusedUrl: () => {
+  //     const state = (deferredDataProm.resolvedValue?.stateStore.get() as any) ?? null;
 
-      return state ? extractFocusedPathFromNavigationState(state) : null;
-    },
-    subscribeToCurrentlyFocusedPath: (subFn) => {
-      return subscribeToRawNavigationState((s) => {
-        subFn(extractFocusedPathFromNavigationState(s));
-      });
-    },
-  };
+  //     return state ? extractFocusedPathFromNavigationState(state) : null;
+  //   },
+  //   subscribeToCurrentlyFocusedPath: (subFn) => {
+  //     return subscribeToRawNavigationState((s) => {
+  //       subFn(extractFocusedPathFromNavigationState(s));
+  //     });
+  //   },
+  // };
 
-  return ret;
+  // return ret;
+  return null as any;
 }
 
 function invariantFn<T>(val: T, errMsg: string) {

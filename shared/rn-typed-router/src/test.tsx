@@ -1,11 +1,17 @@
 import React from "react";
-import { ParamsInputObj, ParamTypes } from "./components/params.js";
+import { $paramsType, ParamsInputObj, ParamsOutputObj, ParamTypes } from "./components/params.js";
+import { $pathType, PathObjResult, PathObjResultLeaf } from "./components/path.js";
+import { RouteDef } from "./components/routes.js";
 import { createRouter, createRouteDefinition } from "./index.js";
 import { ExtractObjectPath } from "./utils/typescriptHelpers.js";
 
 const routeDef = createRouteDefinition({
   type: "stack",
   routes: {
+    withoutParams: {
+      type: "leaf",
+      Component: () => null,
+    },
     qwer: {
       type: "leaf",
       Component: () => null,
@@ -39,7 +45,7 @@ const routeDef = createRouteDefinition({
   },
 });
 
-type RouteDef = typeof routeDef;
+type thisRouteDef = typeof routeDef;
 
 const {
   Navigator,
@@ -50,21 +56,19 @@ const {
   navigation,
   subscribeToCurrentlyFocusedPath,
   useIsFocused,
+  goTo,
   useOnFocusChange,
   useParams,
 } = createRouter(routeDef, {});
 
-generateUrl(paths.bloop.baz, {
-  baz: "asdf",
-  bloop: 123,
+generateUrl(paths.withoutParams, {});
+generateUrl(paths.bloop.baz.burp, {
+  baz: "qwer",
+  burp: "",
 });
 
-generateUrl(paths.bloop.baz.burp, {
-  baz: "asdf",
-  bloop: 123,
-  burp: "asdf",
-});
+goTo(paths.withoutParams, {});
 
 function Blah() {
-  const asdf = useParams(paths.bloop.baz.burp);
+  const { baz, bloop } = useParams(paths.bloop.baz);
 }
