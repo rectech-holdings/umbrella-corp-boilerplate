@@ -1,7 +1,10 @@
 import { ExtractObjectPath, OptionalNullable } from "../utils/typescriptHelpers.js";
 import { LeafRouteDef, RouteDef } from "./routes.js";
 import { Simplify } from "type-fest";
-import { PathObjResult } from "./path.js";
+import { $pathType, PathObjResult } from "./path.js";
+
+const $params = Symbol("$params");
+export type $paramsType = typeof $params;
 
 //We have to use private symbol accessors so that we expose a small typescript surface area to the outside world
 //but can still access the data we need within this file. A bit weird but likely the best approach for DX.
@@ -11,7 +14,7 @@ const defaultValue = Symbol("defaultValue");
 const isRequired = Symbol("isRequired");
 
 class ParamTypesClass<
-  T extends string | number,
+  T extends PropertyKey,
   isRequired extends boolean = true,
   hasDefaultValue extends boolean = false,
 > {
@@ -46,7 +49,7 @@ export const ParamTypes = {
     return new ParamTypesClass<string>();
   },
 
-  enum<F extends Record<string, true>>(enumObj: F) {
+  enum<F extends Record<PropertyKey, true>>(enumObj: F) {
     return new ParamTypesClass<keyof F>({ enumOptions: Object.keys(enumObj) as any });
   },
 
@@ -85,18 +88,23 @@ export type ParamsBase = Record<string, ParamTypesClass<any, any, any>>;
 
 //Used when consuming params in code
 export type ParamsOutputObj<T extends RouteDef, ParentParams extends ParamsBase = {}> = T extends LeafRouteDef
-  ? { $params: InferParamsOutput<T["params"] & ParentParams> }
+  ? { [$params]: InferParamsOutput<T["params"] & ParentParams> }
   : T extends { routes: any }
   ? {
       [key in keyof T["routes"]]: ParamsOutputObj<T["routes"][key], T["params"] & ParentParams>;
-    } & { $params: InferParamsOutput<T["params"] & ParentParams> }
+    } & { [$params]: InferParamsOutput<T["params"] & ParentParams> }
   : never;
 
 //Used when generating urls
 export type ParamsInputObj<T extends RouteDef, ParentParams extends ParamsBase = {}> = T extends LeafRouteDef
-  ? { $params: InferParamsInput<T["params"] & ParentParams> }
+  ? { [$params]: InferParamsInput<T["params"] & ParentParams> }
   : T extends { routes: any }
   ? {
       [key in keyof T["routes"]]: ParamsInputObj<T["routes"][key], T["params"] & ParentParams>;
-    } & { $params: InferParamsInput<T["params"] & ParentParams> }
+    } & { [$params]: InferParamsInput<T["params"] & ParentParams> }
   : never;
+
+export type GetInputParamsFromPath<
+  T extends RouteDef,
+  F extends PathObjResult<any, any, any, any, any, any, any, any>,
+> = ExtractObjectPath<ParamsInputObj<T>, F[$pathType]>[$paramsType];

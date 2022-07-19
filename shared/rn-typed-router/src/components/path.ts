@@ -2,6 +2,10 @@ import { ExtractObjectPath, FilterNullable } from "../utils/typescriptHelpers.js
 import { RouteDef, LeafRouteDef } from "./routes.js";
 import { Simplify } from "type-fest";
 
+const $path = Symbol("$path");
+
+export type $pathType = typeof $path;
+
 export type PathObjResult<
   P1 extends string | null = null,
   P2 extends string | null = null,
@@ -11,7 +15,7 @@ export type PathObjResult<
   P6 extends string | null = null,
   P7 extends string | null = null,
   P8 extends string | null = null,
-> = Simplify<{ $path: FilterNullable<[P1, P2, P3, P4, P5, P6, P7, P8]> }>;
+> = Simplify<{ [$path]: FilterNullable<[P1, P2, P3, P4, P5, P6, P7, P8]> }>;
 
 export type PathObj<
   T extends RouteDef,

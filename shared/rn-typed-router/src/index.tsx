@@ -19,9 +19,8 @@ import { deferred, Deferred } from "./utils/deferred.js";
 import { usePreviousValue } from "./utils/usePreviousValue.js";
 import { useIsMountedRef } from "./utils/useIsMountedRef.js";
 import { RouteDef, LeafRouteDef, StackRouteDef, TabRouteDef } from "./components/routes.js";
-import { ParamsBase, ParamsInputObj, ParamsOutputObj } from "./components/params.js";
+import { GetInputParamsFromPath, ParamsBase, ParamsInputObj, ParamsOutputObj } from "./components/params.js";
 import { PathObj, PathObjResult } from "./components/path.js";
-import { ExtractObjectPath } from "./utils/typescriptHelpers.js";
 
 enableFreeze(true);
 
@@ -33,7 +32,7 @@ type Router<T extends RouteDef> = {
   navigateToStringUrl: (urlPath: string) => void;
   generateUrl: <F extends PathObjResult<any, any, any, any, any, any, any, any>>(
     path: F,
-    params: ExtractObjectPath<ParamsInputObj<T>, F["$path"]>["$params"],
+    params: GetInputParamsFromPath<T, F>,
   ) => string;
   Navigator: (a: { getInitialState?: () => NavigationState<T> | null | undefined }) => JSX.Element | null;
   useIsFocused: () => boolean;

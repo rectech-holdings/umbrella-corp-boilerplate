@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  InferParamsInputObjAtPath,
-  InferParamsOutputObjAtPath,
-  ParamsInputObj,
-  ParamTypes,
-} from "./components/params.js";
+import { ParamsInputObj, ParamTypes } from "./components/params.js";
 import { createRouter, createRouteDefinition } from "./index.js";
 import { ExtractObjectPath } from "./utils/typescriptHelpers.js";
 
@@ -61,6 +56,13 @@ const {
 
 generateUrl(paths.bloop.baz, {
   baz: "asdf",
+  bloop: 123,
+});
+
+generateUrl(paths.bloop.baz.burp, {
+  baz: "asdf",
+  bloop: 123,
+  burp: "asdf",
 });
 
 // type asdasdf = InferParamsInputObjAtPath<ParamsInputObj<RouteDef>, PathObjResult<"bloop", "baz", "burp">>;
