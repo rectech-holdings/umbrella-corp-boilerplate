@@ -8,6 +8,7 @@
     "pretty": true,
     "strict": true,
     "strictFunctionTypes": true,
+    "keyofStringsOnly": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,

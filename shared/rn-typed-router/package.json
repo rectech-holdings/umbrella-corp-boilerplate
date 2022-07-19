@@ -1,0 +1,28 @@
+{
+  "name": "rn-typed-router",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dequal": "2.0.3",
+    "immer": "9.0.15",
+    "lodash": "4.17.21",
+    "path-to-regexp": "6.2.1",
+    "react-freeze": "1.0.0",
+    "react-native-screens": "3.15.0",
+    "zustand": "4.0.0-rc.1"
+  },
+  "devDependencies": {
+    "type-fest": "2.16.0"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "*"
+  }
+}
