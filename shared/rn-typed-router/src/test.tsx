@@ -52,6 +52,7 @@ const {
   generateUrl,
   getCurrentlyFocusedUrl,
   goBack,
+  paths,
   navigation,
   subscribeToCurrentlyFocusedPath,
   useIsFocused,
@@ -64,7 +65,4 @@ const {
 
 type qwerqwerd = ParamsInputObj<RouteDef>;
 
-generateUrl((a) => a.bloop.baz.burp, {
-  baaaz: "adf",
-  bloop: "qwer",
-});
+generateUrl(paths.bloop.baz.burp, { baaaz: "asdf", bloop: "asdf" });

@@ -26,11 +26,12 @@ enableFreeze(true);
 
 type Router<T extends RouteDef> = {
   navigation: NavigationObj<T>;
+  paths: PathObj<T>;
   useParams<D extends ParamsBase>(paramsSelector: (paramsObj: ParamsOutputObj<T>) => D): D;
   goBack: () => boolean;
   navigateToStringUrl: (urlPath: string) => void;
-  generateUrl: <F extends Record<string, any> & PathObjResult<any, any, any, any, any, any, any, any>>(
-    fn: (a: PathObj<T>) => F,
+  generateUrl: <F extends PathObjResult<any, any, any, any, any, any, any, any>>(
+    path: F,
     params: InferParamsInputObjAtPath<ParamsInputObj<T>, F>,
   ) => string;
   Navigator: (a: { getInitialState?: () => NavigationState<T> | null | undefined }) => JSX.Element | null;
