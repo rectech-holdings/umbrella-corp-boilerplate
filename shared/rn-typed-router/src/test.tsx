@@ -1,6 +1,13 @@
 import React from "react";
-import { ParamTypes } from "./components/params.js";
+import {
+  InferParamsInputObjAtPath,
+  InferParamsOutputObjAtPath,
+  ParamsInputObj,
+  ParamTypes,
+} from "./components/params.js";
+import { GetSecretArrayPathFromPathObjResult, PathObjResult } from "./components/path.js";
 import { createRouter, createRouteDefinition } from "./index.js";
+import { ExtractObjectPath } from "./utils/typescriptHelpers.js";
 
 const routeDef = createRouteDefinition({
   type: "stack",
@@ -38,15 +45,26 @@ const routeDef = createRouteDefinition({
   },
 });
 
+type RouteDef = typeof routeDef;
+
 const {
   Navigator,
-  getCurrentlyFocusedPath,
+  generateUrl,
+  getCurrentlyFocusedUrl,
   goBack,
-  navigateToUrl,
   navigation,
   subscribeToCurrentlyFocusedPath,
   useIsFocused,
-  useNavigationState,
   useOnFocusChange,
   useParams,
 } = createRouter(routeDef, {});
+
+// type asdasdf = InferParamsInputObjAtPath<ParamsInputObj<RouteDef>, PathObjResult<"bloop", "baz", "burp">>;
+// type asdasdf2 = InferParamsOutputObjAtPath<ParamsInputObj<RouteDef>, PathObjResult<"bloop", "baz", "burp">>;
+
+type qwerqwerd = ParamsInputObj<RouteDef>;
+
+generateUrl((a) => a.bloop.baz.burp, {
+  baaaz: "adf",
+  bloop: "qwer",
+});

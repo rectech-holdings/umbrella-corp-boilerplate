@@ -11,3 +11,23 @@ export type OptionalNullable<T> = {
 } & {
   [K in keyof PickNotNullable<T>]: T[K];
 };
+
+export type FilterNullable<T extends any[]> = T extends []
+  ? []
+  : T extends [infer Head, ...infer Tail]
+  ? Head extends null
+    ? FilterNullable<Tail>
+    : [Head, ...FilterNullable<Tail>]
+  : [];
+
+export type ExtractObjectPath<T extends object, K extends readonly PropertyKey[]> = K extends []
+  ? T
+  : K extends readonly [infer K1, ...infer KR]
+  ? K1 extends keyof T
+    ? NonNullable<T[K1]> extends object
+      ? KR extends readonly PropertyKey[]
+        ? ExtractObjectPath<NonNullable<T[K1]>, KR>
+        : never
+      : NonNullable<T[K1]>
+    : never
+  : never;

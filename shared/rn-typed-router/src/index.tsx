@@ -19,7 +19,8 @@ import { deferred, Deferred } from "./utils/deferred.js";
 import { usePreviousValue } from "./utils/usePreviousValue.js";
 import { useIsMountedRef } from "./utils/useIsMountedRef.js";
 import { RouteDef, LeafRouteDef, StackRouteDef, TabRouteDef } from "./components/routes.js";
-import { ParamsBase, ParamsOutputObj } from "./components/params.js";
+import { InferParamsInputObjAtPath, ParamsBase, ParamsInputObj, ParamsOutputObj } from "./components/params.js";
+import { PathObj, PathObjResult } from "./components/path.js";
 
 enableFreeze(true);
 
@@ -27,14 +28,15 @@ type Router<T extends RouteDef> = {
   navigation: NavigationObj<T>;
   useParams<D extends ParamsBase>(paramsSelector: (paramsObj: ParamsOutputObj<T>) => D): D;
   goBack: () => boolean;
-  navigateToUrl: (urlPath: string) => void;
-  generateUrl: () => string;
+  navigateToStringUrl: (urlPath: string) => void;
+  generateUrl: <F extends Record<string, any> & PathObjResult<any, any, any, any, any, any, any, any>>(
+    fn: (a: PathObj<T>) => F,
+    params: InferParamsInputObjAtPath<ParamsInputObj<T>, F>,
+  ) => string;
   Navigator: (a: { getInitialState?: () => NavigationState<T> | null | undefined }) => JSX.Element | null;
-  useNavigationState(): NavigationState<T>;
-  useNavigationState<D>(selector: (obj: StateSelectorObj<T>) => D): D;
   useIsFocused: () => boolean;
   useOnFocusChange: (fn: (isFocused: boolean) => void) => void;
-  getCurrentlyFocusedPath: () => string | null;
+  getCurrentlyFocusedUrl: () => string;
   subscribeToCurrentlyFocusedPath: (subFn: (currPath: string) => any) => () => void;
 };
 
@@ -721,68 +723,6 @@ function useRouteInfoContext(o?: { optional?: true }) {
 
   return context;
 }
-
-//Maybe a truly great Typescscript ninja could use recursive conditional types here, but I don't see any way...
-type ConcatenateLiterals<
-  P1 extends string,
-  P2 extends string | null = null,
-  P3 extends string | null = null,
-  P4 extends string | null = null,
-  P5 extends string | null = null,
-  P6 extends string | null = null,
-  P7 extends string | null = null,
-  P8 extends string | null = null,
-> = P8 extends string
-  ? `${ConcatenateLiterals<P1, P2, P3, P4, P5, P6, P7>}/${P8}`
-  : P7 extends string
-  ? `${ConcatenateLiterals<P1, P2, P3, P4, P5, P6>}/${P7}`
-  : P6 extends string
-  ? `${ConcatenateLiterals<P1, P2, P3, P4, P5>}/${P6}`
-  : P5 extends string
-  ? `${ConcatenateLiterals<P1, P2, P3, P4>}/${P5}`
-  : P4 extends string
-  ? `${ConcatenateLiterals<P1, P2, P3>}/${P4}`
-  : P3 extends string
-  ? `${ConcatenateLiterals<P1, P2>}/${P3}`
-  : P2 extends string
-  ? `${P1}/${P2}`
-  : P1;
-
-type TrimLeadingSlash<T extends string> = T extends `/${infer R}` ? R : T;
-
-type PathObjInner<
-  T extends RouteDef,
-  P1 extends string,
-  P2 extends string | null = null,
-  P3 extends string | null = null,
-  P4 extends string | null = null,
-  P5 extends string | null = null,
-  P6 extends string | null = null,
-  P7 extends string | null = null,
-  P8 extends string | null = null,
-> = T extends LeafRouteDef
-  ? TrimLeadingSlash<ConcatenateLiterals<P1, P2, P3, P4, P5, P6, P7, P8>>
-  : T extends { routes: any }
-  ? {
-      [K in keyof T["routes"]]: P7 extends string
-        ? PathObjInner<T["routes"][K], P1, P2, P3, P4, P5, P6, P7, K extends string ? K : never>
-        : P6 extends string
-        ? PathObjInner<T["routes"][K], P1, P2, P3, P4, P5, P6, K extends string ? K : never>
-        : P5 extends string
-        ? PathObjInner<T["routes"][K], P1, P2, P3, P4, P5, K extends string ? K : never>
-        : P4 extends string
-        ? PathObjInner<T["routes"][K], P1, P2, P3, P4, K extends string ? K : never>
-        : P3 extends string
-        ? PathObjInner<T["routes"][K], P1, P2, P3, K extends string ? K : never>
-        : P2 extends string
-        ? PathObjInner<T["routes"][K], P1, P2, K extends string ? K : never>
-        : PathObjInner<T["routes"][K], P1, K extends string ? K : never>;
-    } & {
-      $partialPath: TrimLeadingSlash<ConcatenateLiterals<P1, P2, P3, P4, P5, P6, P7, P8>>;
-    }
-  : never;
-
-export type PathObj<T extends RouteDef> = PathObjInner<T, "">;
 
 type DeferredDataProm = Deferred<{
   stateStore: ZustandStore<NavigationState<any>>;
