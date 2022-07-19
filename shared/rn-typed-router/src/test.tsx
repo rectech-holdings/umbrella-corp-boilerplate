@@ -5,7 +5,6 @@ import {
   ParamsInputObj,
   ParamTypes,
 } from "./components/params.js";
-import { GetSecretArrayPathFromPathObjResult, PathObjResult } from "./components/path.js";
 import { createRouter, createRouteDefinition } from "./index.js";
 import { ExtractObjectPath } from "./utils/typescriptHelpers.js";
 
@@ -16,26 +15,26 @@ const routeDef = createRouteDefinition({
       type: "leaf",
       Component: () => null,
       params: {
-        first: ParamTypes.string().default("bloah"),
+        qwer: ParamTypes.string().default("bloah"),
       },
     },
     bloop: {
       type: "tab",
       params: {
-        bleep: ParamTypes.number().default(123),
+        bloop: ParamTypes.number().default(123),
       },
       routes: {
         baz: {
           type: "stack",
           params: {
-            bloop: ParamTypes.enum({ asdf: true, qwer: true }),
+            baz: ParamTypes.enum({ asdf: true, qwer: true }),
           },
           routes: {
             burp: {
               type: "leaf",
               Component: () => null,
               params: {
-                baaaz: ParamTypes.string(),
+                burp: ParamTypes.string(),
               },
             },
           },
@@ -60,9 +59,11 @@ const {
   useParams,
 } = createRouter(routeDef, {});
 
+generateUrl(paths.bloop.baz, {
+  baz: "asdf",
+});
+
 // type asdasdf = InferParamsInputObjAtPath<ParamsInputObj<RouteDef>, PathObjResult<"bloop", "baz", "burp">>;
 // type asdasdf2 = InferParamsOutputObjAtPath<ParamsInputObj<RouteDef>, PathObjResult<"bloop", "baz", "burp">>;
 
 type qwerqwerd = ParamsInputObj<RouteDef>;
-
-generateUrl(paths.bloop.baz.burp, { baaaz: "asdf", bloop: "asdf" });

@@ -1,7 +1,7 @@
 import { ExtractObjectPath, OptionalNullable } from "../utils/typescriptHelpers.js";
 import { LeafRouteDef, RouteDef } from "./routes.js";
 import { Simplify } from "type-fest";
-import { PathObjResult, GetSecretArrayPathFromPathObjResult } from "./path.js";
+import { PathObjResult } from "./path.js";
 
 //We have to use private symbol accessors so that we expose a small typescript surface area to the outside world
 //but can still access the data we need within this file. A bit weird but likely the best approach for DX.
@@ -85,28 +85,18 @@ export type ParamsBase = Record<string, ParamTypesClass<any, any, any>>;
 
 //Used when consuming params in code
 export type ParamsOutputObj<T extends RouteDef, ParentParams extends ParamsBase = {}> = T extends LeafRouteDef
-  ? InferParamsOutput<T["params"] & ParentParams>
+  ? { $params: InferParamsOutput<T["params"] & ParentParams> }
   : T extends { routes: any }
-  ? { [key in keyof T["routes"]]: ParamsOutputObj<T["routes"][key], T["params"] & ParentParams> } & {
-      $partialPath: InferParamsOutput<T["params"] & ParentParams>;
-    }
+  ? {
+      [key in keyof T["routes"]]: ParamsOutputObj<T["routes"][key], T["params"] & ParentParams>;
+    } & { $params: InferParamsOutput<T["params"] & ParentParams> }
   : never;
 
 //Used when generating urls
 export type ParamsInputObj<T extends RouteDef, ParentParams extends ParamsBase = {}> = T extends LeafRouteDef
-  ? InferParamsInput<T["params"] & ParentParams>
+  ? { $params: InferParamsInput<T["params"] & ParentParams> }
   : T extends { routes: any }
-  ? { [key in keyof T["routes"]]: ParamsInputObj<T["routes"][key], T["params"] & ParentParams> } & {
-      $partialPath: InferParamsInput<T["params"] & ParentParams>;
-    }
+  ? {
+      [key in keyof T["routes"]]: ParamsInputObj<T["routes"][key], T["params"] & ParentParams>;
+    } & { $params: InferParamsInput<T["params"] & ParentParams> }
   : never;
-
-export type InferParamsInputObjAtPath<
-  T extends ParamsInputObj<any>,
-  Path extends PathObjResult<any, any, any, any, any, any, any, any>,
-> = ExtractObjectPath<T, GetSecretArrayPathFromPathObjResult<Path>>;
-
-export type InferParamsOutputObjAtPath<
-  T extends ParamsOutputObj<any>,
-  Path extends PathObjResult<any, any, any, any, any, any, any, any>,
-> = ExtractObjectPath<T, GetSecretArrayPathFromPathObjResult<Path>>;
