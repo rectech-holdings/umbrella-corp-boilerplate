@@ -22,126 +22,9 @@ import { RouteDef, LeafRouteDef, StackRouteDef, TabRouteDef } from "./types/rout
 import { $paramsType, GetInputParamsFromPath, ParamsBase, ParamsInputObj, ParamsOutputObj } from "./types/params.js";
 import { $pathType, PathObj, PathObjResult, PathObjResultLeaf } from "./types/path.js";
 import { ExtractObjectPath, FilterNullable, UrlString } from "./types/typescript-utils.js";
-import { Simplify } from "type-fest";
+import { Router } from "./types/router.js";
 
 enableFreeze(true);
-
-type NavigationAction<T extends RouteDef, Path extends PathObjResultLeaf<any, any, any, any, any, any, any, any>> = [
-  Path,
-  GetInputParamsFromPath<T, Path>,
-];
-
-type Router<T extends RouteDef> = {
-  PATHS: PathObj<T>;
-
-  /**
-   * Function that returns params satisfying the `pathConstraint` found at the nearest parent navigator.
-   * Throws an error if the component has no parent navigator satisfying the `pathConstraint`.
-   * Optionally also supply a selector function as the second parameter to reduce re-renders
-   *
-   * @example
-   * // ✅ Satisfies constraint
-   * function BazPage(){
-   *    const { bloopParam, bazParam } = useParams(PATHS.bloop.baz);
-   * }
-   *
-   * @example
-   * // ❌ FooPage does not satisfy constraint PATHS.bloop.baz
-   * function FooPage(){
-   *    const { bazParam } = useParams(PATHS.bloop.baz);
-   * }
-   *
-   * @example
-   * // Also note, it's okay to use less specific path selectors if you don't need all the params. This can potentially make a component easier to re-use within a component subtree.
-   * function BazPage(){
-   *    const { bloopParam } = useParams(PATHS.bloop);
-   * }
-   *
-   * @example
-   * //Use a selector to reduce re-renders
-   * function BazPage(){
-   *    const yesNo = useParams(PATHS.bloop.baz, a => a.bazParam > 5 ? 'yes' : 'no');
-   * }
-   */
-  useParams<Path extends PathObjResult<any, any, any, any, any, any, any, any>>(
-    pathConstraint: Path,
-  ): ExtractObjectPath<ParamsOutputObj<T>, Path[$pathType]>[$paramsType];
-  useParams<Path extends PathObjResult<any, any, any, any, any, any, any, any>, Ret>(
-    pathConstraint: Path,
-    selector: (params: ExtractObjectPath<ParamsOutputObj<T>, Path[$pathType]>[$paramsType]) => Ret,
-  ): Ret;
-
-  /**
-   *  The untyped analogue of useParams. Simply returns all the params it can find in the nearest parent
-   *  navigator. You're on your own with typing though.
-   */
-  useUntypedParams: () => Record<string, unknown>;
-
-  /**
-   * The non hook equivalent to useParams. See {@link Router#useParams}
-   */
-  getCurrentParams<Path extends PathObjResult<any, any, any, any, any, any, any, any>>(
-    pathConstraint: Path,
-  ): ExtractObjectPath<ParamsOutputObj<T>, Path[$pathType]>[$paramsType];
-
-  /**
-   * The non hook equivalent to useUntypedParams. See {@link Router#useUntypedParams}
-   */
-  getUntypedCurrentParams: () => Record<string, unknown>;
-
-  generateUrl: <F extends PathObjResultLeaf<any, any, any, any, any, any, any, any>>(
-    path: F,
-    params: GetInputParamsFromPath<T, F>,
-  ) => UrlString;
-
-  //Equivalent to closing the keyboard if open and then pressing the Android back arrow.
-  goBack: () => boolean;
-
-  navigate<Path extends PathObjResultLeaf<any, any, any, any, any, any, any, any>>(
-    p: Path,
-    params: ExtractObjectPath<ParamsOutputObj<T>, Path[$pathType]>[$paramsType],
-  ): void;
-
-  /**
-   * Function w/ callback that lets you to REPLACE the entire navigation state tree. Only the screens navigated to inside the callback will be present.
-   * The last screen navigated to will become the current visible screen.
-   *
-   * @example
-   * navigate(PATHS.some.screen, {coolParam: 123})
-   * // Time passes...
-   * reset(() => {
-   *    navigate(PATHS.bloop.baz, {someParam: 1});
-   *    navigate(PATHS.foo.bar, {anotherParam: 1});
-   * })
-   * // `PATHS.foo.bar` is the visible screen now.
-   * // `PATHS.bloop.baz` exists in the navigation state tree but is not visible.
-   * // `PATHS.some.screen` no longer is mounted.
-   */
-  reset(doNavigationActions: () => void): void;
-
-  /**
-   * Navigate to a string url. To try and enforce consistency, by default only accepts
-   * inputs from the {@link Router#generateUrl} function.
-   *
-   * @example
-   * import { UrlString } from 'rn-typed-router';
-   * // Typical
-   * navigateToUrl(generateUrl(PATHS.baz, { bazParam: 1}))
-   * // Cast string to UrlString
-   * navigateToUrl("baz?bazParam=1" as UrlString)
-   *
-   */
-  navigateToUrl: (stringUrl: UrlString) => void;
-
-  Navigator: (a: { getInitialState?: () => NavigationState<T> | null | undefined }) => JSX.Element | null;
-
-  useIsFocused: <Ret>(selector: (isFocused: boolean) => Ret) => Ret;
-  useFocusEffect: (effect: (isFocused: boolean) => void) => void;
-
-  getCurrentUrl: () => string | null;
-  subscribeToCurrentUrl: (subFn: (currPath: string) => any) => () => void;
-  useCurrentUrl: <Ret>(selector: (currUrl: string) => Ret) => Ret;
-};
 
 type NavigateFn<T extends StackRouteDef | TabRouteDef> = <Defs extends T["routes"], R extends keyof Defs>(
   r: R,
@@ -1013,49 +896,49 @@ export function createRouter<T extends RouteDef>(
     return goBackInner(deferredDataProm.resolvedValue.stateStore);
   }
 
-  const RootNavigator: Router<T>["Navigator"] = (p) => {
-    if (!deferredDataProm.resolvedValue?.stateStore) {
-      const gottenInitState = wrapInTryCatch(() => p.getInitialState?.(), "Unable to get initial state");
+  // const RootNavigator: Router<T>["Navigator"] = (p) => {
+  //   if (!deferredDataProm.resolvedValue?.stateStore) {
+  //     const gottenInitState = wrapInTryCatch(() => p.getInitialState?.(), "Unable to get initial state");
 
-      const initState = gottenInitState || generateInitialState(rootDef, [""]);
+  //     const initState = gottenInitState || generateInitialState(rootDef, [""]);
 
-      try {
-        deferredNavigationActions.forEach((a) => {
-          modifyStateForNavigation({ ...a, currState: initState });
-        });
-      } catch (e) {
-        console.error("Unable to apply initial deferred navigation actions");
-        console.error(e);
-      }
+  //     try {
+  //       deferredNavigationActions.forEach((a) => {
+  //         modifyStateForNavigation({ ...a, currState: initState });
+  //       });
+  //     } catch (e) {
+  //       console.error("Unable to apply initial deferred navigation actions");
+  //       console.error(e);
+  //     }
 
-      const stateStore = createZustandStore(initState);
-      const stateSelectorObj = createStateSelectorObj(rootDef, () => stateStore.get());
+  //     const stateStore = createZustandStore(initState);
+  //     const stateSelectorObj = createStateSelectorObj(rootDef, () => stateStore.get());
 
-      deferredDataProm.resolve({
-        stateStore,
-        stateSelectorObj,
-      });
-    }
+  //     deferredDataProm.resolve({
+  //       stateStore,
+  //       stateSelectorObj,
+  //     });
+  //   }
 
-    //Note: We use layout effect b/c it's important to start the subscription to the back handler as soon as possible so
-    //that components can subscribe to the BackHandler themselves and override the default behavior if desired
-    useLayoutEffect(() => {
-      if (Platform.OS === "android") {
-        BackHandler.addEventListener("hardwareBackPress", goBack);
-      }
-      return () => {
-        BackHandler.removeEventListener("hardwareBackPress", goBack);
-      };
-    });
+  //   //Note: We use layout effect b/c it's important to start the subscription to the back handler as soon as possible so
+  //   //that components can subscribe to the BackHandler themselves and override the default behavior if desired
+  //   useLayoutEffect(() => {
+  //     if (Platform.OS === "android") {
+  //       BackHandler.addEventListener("hardwareBackPress", goBack);
+  //     }
+  //     return () => {
+  //       BackHandler.removeEventListener("hardwareBackPress", goBack);
+  //     };
+  //   });
 
-    const state = deferredDataProm.resolvedValue!.stateStore.useStore();
+  //   const state = deferredDataProm.resolvedValue!.stateStore.useStore();
 
-    return (
-      <RouteInfoProvider path={[]}>
-        <InnerNavigator thisState={state} thisPath={[]} />
-      </RouteInfoProvider>
-    );
-  };
+  //   return (
+  //     <RouteInfoProvider path={[]}>
+  //       <InnerNavigator thisState={state} thisPath={[]} />
+  //     </RouteInfoProvider>
+  //   );
+  // };
 
   function getNavigationState(selector?: any) {
     if (!deferredDataProm.resolvedValue) {
