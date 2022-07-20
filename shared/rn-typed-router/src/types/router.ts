@@ -1,14 +1,21 @@
 import { ParamsOutputObj, $paramsType, GetInputParamsFromPath } from "./params.js";
-import { PathObj, PathObjResult, $pathType, PathObjResultLeaf } from "./path.js";
+import { PathObj, PathObjResult, $pathType, PathObjResultLeaf, GenerateUrlFn, UrlString } from "./path.js";
 import { RouteDef } from "./routes.js";
-import { ExtractObjectPath, UrlString } from "./typescript-utils.js";
+import { ExtractObjectPath } from "../utils/typescript-utils.js";
 
-export type Router<T extends RouteDef> = {
+export type CoreRouter<T extends RouteDef> = {
   /**
    * An object containing all the page paths in the app. Used as an input in many methods
    */
   PATHS: PathObj<T>;
 
+  /**
+   * Generate a url from path and params.
+   */
+  generateUrl: GenerateUrlFn<T>;
+};
+
+export interface Router<T extends RouteDef> extends CoreRouter<T> {
   /**
    * Function that returns params satisfying the `pathConstraint` found at the nearest parent navigator.
    * Throws an error if the component has no parent navigator satisfying the `pathConstraint`.
@@ -62,14 +69,6 @@ export type Router<T extends RouteDef> = {
    * The non hook equivalent to useUntypedParams. See {@link Router#useUntypedParams}
    */
   getUntypedCurrentParams: () => Record<string, unknown>;
-
-  /**
-   * Generate a url from path and params. Suitable for
-   */
-  generateUrl: <F extends PathObjResultLeaf<any, any, any, any, any, any, any, any>>(
-    path: F,
-    params: GetInputParamsFromPath<T, F>,
-  ) => UrlString;
 
   /**
    * Equivalent to closing the keyboard if open and then pressing the Android back arrow.
@@ -141,4 +140,4 @@ export type Router<T extends RouteDef> = {
    * Returns the current url of the app. Requires a selector to prevent unneccessary renders
    */
   useCurrentUrl: <Ret>(selector: (currUrl: string) => Ret) => Ret;
-};
+}

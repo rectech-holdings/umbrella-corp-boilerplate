@@ -1,6 +1,9 @@
-import { ExtractObjectPath, FilterNullable } from "./typescript-utils.js";
+import { ExtractObjectPath, FilterNullable } from "../utils/typescript-utils.js";
 import { RouteDef, LeafRouteDef, TabRouteDef, StackRouteDef } from "./routes.js";
 import { Simplify } from "type-fest";
+import { GetInputParamsFromPath } from "./params.js";
+
+export type UrlString = string & { __isUrlString: true };
 
 const $path = Symbol("$path");
 const $routeDef = Symbol("$routeDef");
@@ -102,3 +105,8 @@ type PathObjWithRoutes<
     ? PathObj<T["routes"][K], P1, K extends string ? K : never>
     : PathObj<T["routes"][K], K extends string ? K : never>;
 };
+
+export type GenerateUrlFn<T extends RouteDef> = <F extends PathObjResultLeaf<any, any, any, any, any, any, any, any>>(
+  path: F,
+  params: GetInputParamsFromPath<T, F>,
+) => UrlString;

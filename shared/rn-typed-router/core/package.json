@@ -2,6 +2,6 @@
   "name": "create-typed-sdk-core",
   "private": true,
   "type": "module",
-  "main": "index.cjs",
-  "types": "index.d.ts"
+  "main": "../dist/core.js",
+  "types": "../dist/core.d.ts"
 }

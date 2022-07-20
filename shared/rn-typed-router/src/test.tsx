@@ -1,9 +1,5 @@
-import React from "react";
-import { $paramsType, ParamsInputObj, ParamsOutputObj, ParamTypes } from "./components/params.js";
-import { $pathType, PathObjResult, PathObjResultLeaf } from "./components/path.js";
-import { RouteDef } from "./components/routes.js";
+import { ParamTypes } from "./types/params.js";
 import { createRouter, createRouteDefinition } from "./index.js";
-import { ExtractObjectPath } from "./types/typescript-utils.js";
 
 const routeDef = createRouteDefinition({
   type: "stack",

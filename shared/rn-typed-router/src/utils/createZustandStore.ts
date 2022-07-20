@@ -23,7 +23,7 @@ export function createZustandStore<StoreState extends object>(initState: StoreSt
     subscribe: ((a: any) => useStore.subscribe(a)) as any,
     modifyImmutably: (modifyFn) => {
       const patches: Patch[] = [];
-      const nextStateRaw = immer(useStore.getState(), modifyFn, (ptc) => {
+      const nextStateRaw = immer(useStore.getState(), modifyFn as any, (ptc) => {
         patches.push(...ptc);
       });
 

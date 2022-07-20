@@ -21,35 +21,9 @@ import { useIsMountedRef } from "./utils/useIsMountedRef.js";
 import { RouteDef, LeafRouteDef, StackRouteDef, TabRouteDef } from "./types/routes.js";
 import { $paramsType, GetInputParamsFromPath, ParamsBase, ParamsInputObj, ParamsOutputObj } from "./types/params.js";
 import { $pathType, PathObj, PathObjResult, PathObjResultLeaf } from "./types/path.js";
-import { ExtractObjectPath, FilterNullable, UrlString } from "./types/typescript-utils.js";
 import { Router } from "./types/router.js";
 
 enableFreeze(true);
-
-type NavigateFn<T extends StackRouteDef | TabRouteDef> = <Defs extends T["routes"], R extends keyof Defs>(
-  r: R,
-  params?: Defs[R]["params"],
-) => void;
-
-export type NavigationObj<T extends RouteDef> = T extends LeafRouteDef
-  ? never
-  : T extends StackRouteDef
-  ? {
-      [key in keyof T["routes"]]: NavigationObj<T["routes"][key]>;
-    } & {
-      //TODO: Getting types on the params isn't working... Not sure why... Fix it.
-      $push: NavigateFn<T>;
-      $navigate: NavigateFn<T>;
-      $pop: (numToPop?: number) => void;
-      $popToTop: () => void;
-    }
-  : T extends TabRouteDef
-  ? { [key in keyof T["routes"]]: NavigationObj<T["routes"][key]> } & {
-      $goTo: NavigateFn<T>;
-      $goToWithReset: NavigateFn<T>;
-      $navigate: NavigateFn<T>;
-    }
-  : never;
 
 export function createRouteDefinition<T extends RouteDef>(def: T) {
   //TODO: Verify paths with params (e.g. :someParam) also have a param object with the named properties
@@ -529,7 +503,7 @@ function createNavigationObj<T extends RouteDef>(
   rootDef: T,
   deferredDataProm: DeferredDataProm,
   navObjectPath = [] as string[],
-): NavigationObj<T> {
+): any {
   const def = getDefAtPath(rootDef, navObjectPath);
 
   if (!def) {

@@ -1,4 +1,4 @@
-import { ExtractObjectPath, OptionalNullable } from "./typescript-utils.js";
+import { ExtractObjectPath, OptionalNullable } from "../utils/typescript-utils.js";
 import { LeafRouteDef, RouteDef } from "./routes.js";
 import { Simplify } from "type-fest";
 import { $pathType, PathObjResult } from "./path.js";
@@ -15,7 +15,7 @@ const isRequired = Symbol("isRequired");
 
 class ParamTypesClass<
   T extends PropertyKey,
-  isRequired extends boolean = true,
+  willBeRequired extends boolean = true,
   hasDefaultValue extends boolean = false,
 > {
   [validators]: (((val: T) => string) | ((val: T) => Promise<string>))[] = [];

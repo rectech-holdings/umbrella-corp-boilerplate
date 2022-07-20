@@ -31,5 +31,3 @@ export type ExtractObjectPath<T extends object, K extends readonly PropertyKey[]
       : NonNullable<T[K1]>
     : never
   : never;
-
-export type UrlString = string & { __isUrlString: true };
