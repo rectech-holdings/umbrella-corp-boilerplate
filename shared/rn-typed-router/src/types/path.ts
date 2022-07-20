@@ -72,11 +72,11 @@ export type PathObj<
   P7 extends string | null = null,
   P8 extends string | null = null,
 > = T extends LeafRouteDef
-  ? PathObjResultLeaf<P1, P2, P3, P4, P5, P6, P7, P8>
+  ? Simplify<PathObjResultLeaf<P1, P2, P3, P4, P5, P6, P7, P8>>
   : T extends TabRouteDef
-  ? PathObjWithRoutes<T, P1, P2, P3, P4, P5, P6, P7> & PathObjResultTab<P1, P2, P3, P4, P5, P6, P7, P8>
+  ? Simplify<PathObjWithRoutes<T, P1, P2, P3, P4, P5, P6, P7> & PathObjResultTab<P1, P2, P3, P4, P5, P6, P7, P8>>
   : T extends StackRouteDef
-  ? PathObjWithRoutes<T, P1, P2, P3, P4, P5, P6, P7> & PathObjResultTab<P1, P2, P3, P4, P5, P6, P7, P8>
+  ? Simplify<PathObjWithRoutes<T, P1, P2, P3, P4, P5, P6, P7> & PathObjResultTab<P1, P2, P3, P4, P5, P6, P7, P8>>
   : never;
 
 type PathObjWithRoutes<

@@ -257,7 +257,10 @@ importers:
       typescript: 4.7.4
 
   companies/acme/ac-shared-universal:
-    specifiers: {}
+    specifiers:
+      rn-typed-router-core: workspace:*
+    dependencies:
+      rn-typed-router-core: link:../../../shared/rn-typed-router/core
 
   companies/acme/ac-spa:
     specifiers:
@@ -370,6 +373,9 @@ importers:
       typescript: 4.7.4
       yargs-parser: 21.0.1
 
+  shared/create-typed-sdk/core:
+    specifiers: {}
+
   shared/deploy-static-website:
     specifiers:
       '@pulumi/gcp': 6.30.0
@@ -430,6 +436,14 @@ importers:
       zustand: 4.0.0-rc.1_immer@9.0.15
     devDependencies:
       type-fest: 2.16.0
+
+  shared/rn-typed-router/core:
+    specifiers:
+      rn-typed-router: workspace:*
+      typescript: 4.7.4
+    dependencies:
+      rn-typed-router: link:..
+      typescript: 4.7.4
 
   shared/shared-backend:
     specifiers:

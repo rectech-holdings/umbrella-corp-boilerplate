@@ -8,6 +8,7 @@ yarn.lock
 package-lock.json
 .turbo
 .pnpm-debug.log
+index.tsbuildinfo
 yarn-error.log
 secret.*.ts
 !secret.development.ts

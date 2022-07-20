@@ -3,7 +3,7 @@ import { PathObj, PathObjResult, $pathType, PathObjResultLeaf, GenerateUrlFn, Ur
 import { RouteDef } from "./routes.js";
 import { ExtractObjectPath } from "../utils/typescript-utils.js";
 
-export type CoreRouter<T extends RouteDef> = {
+export interface Router<T extends RouteDef> {
   /**
    * An object containing all the page paths in the app. Used as an input in many methods
    */
@@ -13,9 +13,7 @@ export type CoreRouter<T extends RouteDef> = {
    * Generate a url from path and params.
    */
   generateUrl: GenerateUrlFn<T>;
-};
 
-export interface Router<T extends RouteDef> extends CoreRouter<T> {
   /**
    * Function that returns params satisfying the `pathConstraint` found at the nearest parent navigator.
    * Throws an error if the component has no parent navigator satisfying the `pathConstraint`.

@@ -1,7 +1,18 @@
 {
-  "name": "create-typed-sdk-core",
+  "name": "rn-typed-router-core",
+  "//NOTE:": "This package exists to create an entry point that doesn't require react runtime peer dependencies",
   "private": true,
   "type": "module",
-  "main": "../dist/core.js",
-  "types": "../dist/core.d.ts"
+  "main": "./dist/core/core.js",
+  "module": "./dist/core/core.js",
+  "types": "./dist/core/core.d.ts",
+  "scripts": {
+    "dev": "tsc -w --preserveWatchOutput",
+    "build": "tsc",
+    "build-dev": "pnpm build"
+  },
+  "dependencies": {
+    "rn-typed-router": "workspace:*",
+    "typescript": "4.7.4"
+  }
 }

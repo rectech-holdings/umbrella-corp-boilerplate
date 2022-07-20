@@ -13,7 +13,7 @@ const enumOptions = Symbol("enumOptions");
 const defaultValue = Symbol("defaultValue");
 const isRequired = Symbol("isRequired");
 
-class ParamTypesClass<
+export class ParamTypesClass<
   T extends PropertyKey,
   willBeRequired extends boolean = true,
   hasDefaultValue extends boolean = false,
