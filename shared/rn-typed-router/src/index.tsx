@@ -25,32 +25,113 @@ import {
   ParamsBase,
   ParamsInputObj,
   ParamsOutputObj,
-  useParams,
 } from "./components/params.js";
-import { $pathType, PathObj, PathObjResultLeaf } from "./components/path.js";
-import { ExtractObjectPath } from "./utils/typescriptHelpers.js";
+import { $pathType, PathObj, PathObjResult, PathObjResultLeaf } from "./components/path.js";
+import { ExtractObjectPath, FilterNullable } from "./utils/typescriptHelpers.js";
+import { Simplify } from "type-fest";
 
 enableFreeze(true);
 
+type NavigationAction<T extends RouteDef, Path extends PathObjResultLeaf<any, any, any, any, any, any, any, any>> = [
+  Path,
+  GetInputParamsFromPath<T, Path>,
+];
+
 type Router<T extends RouteDef> = {
-  navigation: NavigationObj<T>;
-  paths: PathObj<T>;
-  useParams: useParams<T>;
-  goBack: () => boolean;
-  goTo<Path extends PathObjResultLeaf<any, any, any, any, any, any, any, any>>(
-    p: Path,
-    params: ExtractObjectPath<ParamsOutputObj<T>, Path[$pathType]>[$paramsType],
-  ): void;
-  navigateToStringUrl: (urlPath: string) => void;
+  PATHS: PathObj<T>;
+
+  /**
+   * Function that returns params satisfying the `pathConstraint` found at the nearest parent navigator.
+   * Throws an error if the component has no parent navigator satisfying the `pathConstraint`.
+   * Optionally also supply a selector function as the second parameter to reduce re-renders
+   *
+   * @example
+   * // ✅ Satisfies constraint
+   * function BazPage(){
+   *    const { bloopParam, bazParam } = useParams(PATHS.bloop.baz);
+   * }
+   *
+   * @example
+   * // ❌ FooPage does not satisfy constraint PATHS.bloop.baz
+   * function FooPage(){
+   *    const { bazParam } = useParams(PATHS.bloop.baz);
+   * }
+   *
+   * @example
+   * // Also note, it's okay to use less specific path selectors if you don't need all the params. This can potentially make a component easier to re-use within a component subtree.
+   * function BazPage(){
+   *    const { bloopParam } = useParams(PATHS.bloop);
+   * }
+   *
+   * @example
+   * //Use a selector to reduce re-renders
+   * function BazPage(){
+   *    const yesNo = useParams(PATHS.bloop.baz, a => a.bazParam > 5 ? 'yes' : 'no');
+   * }
+   */
+  useParams<Path extends PathObjResult<any, any, any, any, any, any, any, any>>(
+    pathConstraint: Path,
+  ): ExtractObjectPath<ParamsOutputObj<T>, Path[$pathType]>[$paramsType];
+  useParams<Path extends PathObjResult<any, any, any, any, any, any, any, any>, Ret>(
+    pathConstraint: Path,
+    selector: (params: ExtractObjectPath<ParamsOutputObj<T>, Path[$pathType]>[$paramsType]) => Ret,
+  ): Ret;
+
+  /**
+   *  The untyped analogue of useParams. Simply returns all the params it can find in the nearest parent
+   *  navigator. You're on your own with typing though.
+   */
+  useUntypedParams: () => Record<string, unknown>;
+
+  /**
+   * The non hook equivalent to useParams. See
+   * @see Router
+   */
+  getCurrentParams<Path extends PathObjResult<any, any, any, any, any, any, any, any>>(
+    pathConstraint: Path,
+  ): ExtractObjectPath<ParamsOutputObj<T>, Path[$pathType]>[$paramsType];
+  getUntypedCurrentParams: () => Record<string, unknown>;
+
   generateUrl: <F extends PathObjResultLeaf<any, any, any, any, any, any, any, any>>(
     path: F,
     params: GetInputParamsFromPath<T, F>,
   ) => string;
+
+  //Equivalent to closing the keyboard if open and then pressing the Android back arrow.
+  goBack: () => boolean;
+
+  navigate<Path extends PathObjResultLeaf<any, any, any, any, any, any, any, any>>(
+    p: Path,
+    params: ExtractObjectPath<ParamsOutputObj<T>, Path[$pathType]>[$paramsType],
+  ): void;
+
+  /**
+   * Function w/ callback that lets you to REPLACE the entire navigation state tree. Only the screens navigated to inside the callback will be present.
+   * The last screen navigated to will become the current visible screen.
+   *
+   * @example
+   * navigate(PATHS.some.screen, {coolParam: 123})
+   * // Time passes...
+   * reset(() => {
+   *    navigate(PATHS.bloop.baz, {someParam: 1});
+   *    navigate(PATHS.foo.bar, {anotherParam: 1});
+   * })
+   * // `PATHS.foo.bar` is the visible screen now.
+   * // `PATHS.bloop.baz` exists in the navigation state tree but is not visible.
+   * // `PATHS.some.screen` no longer is mounted.
+   */
+  reset(doNavigationActions: () => void): void;
+
+  navigateToStringUrl: (stringUrl: string) => void;
+
   Navigator: (a: { getInitialState?: () => NavigationState<T> | null | undefined }) => JSX.Element | null;
-  useIsFocused: () => boolean;
-  useOnFocusChange: (fn: (isFocused: boolean) => void) => void;
-  getCurrentlyFocusedUrl: () => string | null;
-  subscribeToCurrentlyFocusedPath: (subFn: (currPath: string) => any) => () => void;
+
+  useIsFocused: <Ret>(selector: (isFocused: boolean) => Ret) => Ret;
+  useFocusEffect: (effect: (isFocused: boolean) => void) => void;
+
+  getCurrentUrl: () => string | null;
+  subscribeToCurrentUrl: (subFn: (currPath: string) => any) => () => void;
+  useCurrentUrl: <Ret>(selector: (currUrl: string) => Ret) => Ret;
 };
 
 type NavigateFn<T extends StackRouteDef | TabRouteDef> = <Defs extends T["routes"], R extends keyof Defs>(

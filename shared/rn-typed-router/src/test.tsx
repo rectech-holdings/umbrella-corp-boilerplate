@@ -47,28 +47,28 @@ const routeDef = createRouteDefinition({
 
 type thisRouteDef = typeof routeDef;
 
-const {
-  Navigator,
-  generateUrl,
-  getCurrentlyFocusedUrl,
-  goBack,
-  paths,
-  navigation,
-  subscribeToCurrentlyFocusedPath,
-  useIsFocused,
-  goTo,
-  useOnFocusChange,
-  useParams,
-} = createRouter(routeDef, {});
+const { Navigator, getCurrentParams, generateUrl, goBack, PATHS, useIsFocused, reset, navigate, useParams } =
+  createRouter(routeDef, {});
 
-generateUrl(paths.withoutParams, {});
-generateUrl(paths.bloop.baz.burp, {
+generateUrl(PATHS.withoutParams, {});
+generateUrl(PATHS.bloop.baz.burp, {
   baz: "qwer",
   burp: "",
 });
 
-goTo(paths.withoutParams, {});
+generateUrl(PATHS.bloop.baz.burp, {
+  ...getCurrentParams(PATHS.bloop.baz),
+  burp: "qwer",
+});
+
+generateUrl(PATHS.bloop.baz.burp, {
+  baz: "asdf",
+  burp: "qwer",
+});
+
+navigate(PATHS.withoutParams, {});
 
 function Blah() {
-  const { baz, bloop } = useParams(paths.bloop.baz);
+  const { baz, bloop } = useParams(PATHS.bloop.baz);
+  const selectedVal = useParams(PATHS.bloop.baz, (a) => a.baz);
 }
