@@ -9,14 +9,30 @@ import yesno from "yesno";
 
 const packages = await getWorkspaceInfo();
 
-const aliases = Object.keys(packages).map((name) => [name.replace(/-/g, ""), path.join(packages[name].location)]);
+const packageInfoArr = Object.keys(packages).map((name) => {
+  const nameWODashes = name.replace(/-/g, "");
 
-const rootAlias = JSON.parse(fs.readFileSync("package.json"))
-  .name.split("-")
-  .map((a) => a[0])
-  .join("");
+  const thisLocation = packages[name].location;
+  const thisPath = path.join(thisLocation);
+  return {
+    name,
+    alias: `alias ${nameWODashes}='cd ${thisPath}'`,
+    devalias: thisLocation.match(/shared/)
+      ? null
+      : `alias dev${nameWODashes}='(cd ${process.cwd()} && pnpm turbo run dev --filter ${name})'`,
+  };
+});
 
-aliases.unshift([rootAlias, process.cwd()]);
+const rootPkgName = JSON.parse(fs.readFileSync("package.json").toString()).name;
+
+packageInfoArr.unshift({
+  name: rootPkgName,
+  alias: `alias ${rootPkgName
+    .split("-")
+    .map((a) => a[0])
+    .join("")}='cd ${process.cwd()}'`,
+  devalias: "",
+});
 
 const orderedTerminalFiles = [".zshrc", ".zprofile", ".bashrc", ".bash_profile", ".profile"];
 const terminalFiles = _(fs.readdirSync(os.homedir()))
@@ -32,8 +48,13 @@ if (!terminalFiles.length) {
 const START_DELIMITER = "##### UMBRELLA CORP FOLDER ALIASES #####";
 const END_DELIMITER = "##### END UMBRELLA CORP FOLDER ALIASES #####";
 
+const aliases = _(packageInfoArr)
+  .map((a) => [a.alias, a.devalias].filter((b) => b))
+  .flatten()
+  .value();
+
 const yes = await yesno({
-  question: chalk.yellow(`Okay to add ${aliases.length + 1} aliases to your ${terminalFiles[0]}? (y/n)`),
+  question: chalk.yellow(`Okay to add ${aliases.length} aliases to your ${terminalFiles[0]}? (y/n)`),
 });
 
 const writePath = path.join(os.homedir(), terminalFiles[0]);
@@ -43,19 +64,15 @@ if (yes) {
     .replace(new RegExp(`${START_DELIMITER}[\\S\\s]*${END_DELIMITER}`), "")
     .trimEnd();
 
-  const aliasCommands = aliases.map((a) => `alias ${a[0]}='cd ${a[1]}'`);
-
   const newFile =
-    fileWOPrev +
-    "\n\n" +
-    [START_DELIMITER, `#compdef ${aliases.map((a) => a[0]).join(" ")}`, ...aliasCommands, END_DELIMITER].join("\n");
+    fileWOPrev + "\n\n" + [START_DELIMITER, `#compdef ${aliases.join(" ")}`, ...aliases, END_DELIMITER].join("\n");
 
   fs.writeFileSync(writePath, newFile);
 
   console.info(
     [
       chalk.yellow("Wrote aliases!\n"),
-      ...aliasCommands,
+      ...aliases,
       chalk.yellow(`\nCall "source ~/${terminalFiles[0]}" to load the aliases to your current shell session.`),
     ].join("\n"),
   );
