@@ -4,7 +4,7 @@
   "type": "module",
   "version": "1.0.0",
   "main": "./dist/apiSDK.js",
-  "types": "./dist/apiSDK.d.ts",
+  "types": "./src/apiSDK.ts",
   "scripts": {
     "dev": "tsc-watch --noClear --onSuccess 'node ./dist/server.js'",
     "build": "tsc",

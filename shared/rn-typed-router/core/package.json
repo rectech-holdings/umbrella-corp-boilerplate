@@ -4,8 +4,7 @@
   "private": true,
   "type": "module",
   "main": "./dist/core/core.js",
-  "module": "./dist/core/core.js",
-  "types": "./dist/core/core.d.ts",
+  "types": "./core.ts",
   "scripts": {
     "dev": "tsc -w --preserveWatchOutput",
     "build": "tsc",

@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "main": "./dist/adminApiSDK.js",
-  "types": "./dist/adminApiSDK.d.ts",
+  "types": "./src/adminApiSDK.ts",
   "version": "1.0.0",
   "scripts": {
     "dev": "wait-on tcp:5432 && sleep 0.2 && tsc-watch --noClear --onSuccess 'node ./dist/server.js'",
