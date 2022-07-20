@@ -1,4 +1,4 @@
-import { ExtractObjectPath, OptionalNullable } from "../utils/typescriptHelpers.js";
+import { ExtractObjectPath, OptionalNullable } from "./typescript-utils.js";
 import { LeafRouteDef, RouteDef } from "./routes.js";
 import { Simplify } from "type-fest";
 import { $pathType, PathObjResult } from "./path.js";

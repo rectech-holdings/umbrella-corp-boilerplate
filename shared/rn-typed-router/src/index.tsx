@@ -18,16 +18,10 @@ import { createZustandStore, ZustandStore } from "./utils/createZustandStore.js"
 import { deferred, Deferred } from "./utils/deferred.js";
 import { usePreviousValue } from "./utils/usePreviousValue.js";
 import { useIsMountedRef } from "./utils/useIsMountedRef.js";
-import { RouteDef, LeafRouteDef, StackRouteDef, TabRouteDef } from "./components/routes.js";
-import {
-  $paramsType,
-  GetInputParamsFromPath,
-  ParamsBase,
-  ParamsInputObj,
-  ParamsOutputObj,
-} from "./components/params.js";
-import { $pathType, PathObj, PathObjResult, PathObjResultLeaf } from "./components/path.js";
-import { ExtractObjectPath, FilterNullable } from "./utils/typescriptHelpers.js";
+import { RouteDef, LeafRouteDef, StackRouteDef, TabRouteDef } from "./types/routes.js";
+import { $paramsType, GetInputParamsFromPath, ParamsBase, ParamsInputObj, ParamsOutputObj } from "./types/params.js";
+import { $pathType, PathObj, PathObjResult, PathObjResultLeaf } from "./types/path.js";
+import { ExtractObjectPath, FilterNullable, UrlString } from "./types/typescript-utils.js";
 import { Simplify } from "type-fest";
 
 enableFreeze(true);
@@ -84,18 +78,21 @@ type Router<T extends RouteDef> = {
   useUntypedParams: () => Record<string, unknown>;
 
   /**
-   * The non hook equivalent to useParams. See
-   * @see Router
+   * The non hook equivalent to useParams. See {@link Router#useParams}
    */
   getCurrentParams<Path extends PathObjResult<any, any, any, any, any, any, any, any>>(
     pathConstraint: Path,
   ): ExtractObjectPath<ParamsOutputObj<T>, Path[$pathType]>[$paramsType];
+
+  /**
+   * The non hook equivalent to useUntypedParams. See {@link Router#useUntypedParams}
+   */
   getUntypedCurrentParams: () => Record<string, unknown>;
 
   generateUrl: <F extends PathObjResultLeaf<any, any, any, any, any, any, any, any>>(
     path: F,
     params: GetInputParamsFromPath<T, F>,
-  ) => string;
+  ) => UrlString;
 
   //Equivalent to closing the keyboard if open and then pressing the Android back arrow.
   goBack: () => boolean;
@@ -122,7 +119,19 @@ type Router<T extends RouteDef> = {
    */
   reset(doNavigationActions: () => void): void;
 
-  navigateToStringUrl: (stringUrl: string) => void;
+  /**
+   * Navigate to a string url. To try and enforce consistency, by default only accepts
+   * inputs from the {@link Router#generateUrl} function.
+   *
+   * @example
+   * import { UrlString } from 'rn-typed-router';
+   * // Typical
+   * navigateToUrl(generateUrl(PATHS.baz, { bazParam: 1}))
+   * // Cast string to UrlString
+   * navigateToUrl("baz?bazParam=1" as UrlString)
+   *
+   */
+  navigateToUrl: (stringUrl: UrlString) => void;
 
   Navigator: (a: { getInitialState?: () => NavigationState<T> | null | undefined }) => JSX.Element | null;
 
