@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { ScreenProps } from "react-native-screens";
-import { ParamsBase } from "./params.js";
+import { ParamsTypeRecord } from "../implementations/params.js";
 
 export type RouteDef = StackRouteDef | TabRouteDef | LeafRouteDef;
 
@@ -11,7 +11,7 @@ type CommonRouteDef = {
   getWrapper?: () => (a: { children: ReactNode }) => ReactNode;
   Header?: () => ReactNode;
   getHeader?: () => () => ReactNode;
-  params?: ParamsBase;
+  params?: ParamsTypeRecord;
 };
 
 export type StackRouteDef = {

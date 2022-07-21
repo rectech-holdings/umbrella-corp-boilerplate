@@ -19,8 +19,14 @@ import { deferred, Deferred } from "./utils/deferred.js";
 import { usePreviousValue } from "./utils/usePreviousValue.js";
 import { useIsMountedRef } from "./utils/useIsMountedRef.js";
 import { RouteDef, LeafRouteDef, StackRouteDef, TabRouteDef } from "./types/routes.js";
-import { $paramsType, GetInputParamsFromPath, ParamsBase, ParamsInputObj, ParamsOutputObj } from "./types/params.js";
-import { $pathType, PathObj, PathObjResult, PathObjResultLeaf } from "./types/path.js";
+import {
+  $paramsType,
+  GetInputParamsFromPath,
+  ParamsTypeRecord,
+  ParamsInputObj,
+  ParamsOutputObj,
+} from "./implementations/params.js";
+import { $pathType, PathObj, PathObjResultLeaf } from "./types/path.js";
 import { Router } from "./types/router.js";
 
 enableFreeze(true);
@@ -220,7 +226,7 @@ type RouteDefRecord = Record<string, RouteDef>;
 
 type StackNavigationState<
   K extends string | number | symbol,
-  Params extends ParamsBase | undefined,
+  Params extends ParamsTypeRecord | undefined,
   RouteRecord extends RouteDefRecord,
 > = {
   path: K;
@@ -230,7 +236,7 @@ type StackNavigationState<
 
 type TabNavigationState<
   K extends string | number | symbol,
-  Params extends ParamsBase | undefined,
+  Params extends ParamsTypeRecord | undefined,
   RouteRecord extends RouteDefRecord,
 > = {
   path: K;
@@ -239,7 +245,7 @@ type TabNavigationState<
   tabs: NavigationStateInner<RouteRecord>[];
 };
 
-type LeafNavigationState<K extends string | number | symbol, Params extends ParamsBase | undefined> = {
+type LeafNavigationState<K extends string | number | symbol, Params extends ParamsTypeRecord | undefined> = {
   path: K;
   params?: Params;
 };
@@ -387,7 +393,7 @@ type ModifyStateForNavigationProps = {
   currState: NavigationState<any>;
   routeParentPath: string[];
   routeToNavigateTo: string;
-  params: ParamsBase;
+  params: ParamsTypeRecord;
   opts: {
     shouldReplaceStackParams?: boolean; // E.g. False for the $push method which will add a new stack screen while $navigate will replace params if possible
     mustSpecifyAllParams?: boolean; // E.g.
@@ -549,7 +555,7 @@ function createNavigationObj<T extends RouteDef>(
     ret = {
       ...ret,
       // $navigate,
-      $push: (route: string, params?: ParamsBase) => {
+      $push: (route: string, params?: ParamsTypeRecord) => {
         // return $navigate(route, params, {
         //   mustSpecifyAllParams: false,
         //   shouldReplaceStackParams: false,
@@ -608,7 +614,7 @@ function createNavigationObj<T extends RouteDef>(
 function generateInitialState<T extends RouteDef>(
   rootDef: T,
   path: string[],
-  params?: ParamsBase,
+  params?: ParamsTypeRecord,
 ): //  NavigationState<any>
 any {
   const def = getDefAtPath(rootDef, path);
@@ -649,10 +655,10 @@ any {
   // return initState;
 }
 
-type RouteInfoType = { params: ParamsBase; path: string[] };
+type RouteInfoType = { params: ParamsTypeRecord; path: string[] };
 const RouteInfoContext = createContext<null | RouteInfoType>(null);
 
-const RouteInfoProvider = (p: { children: ReactNode; path: string[]; currParams?: ParamsBase }) => {
+const RouteInfoProvider = (p: { children: ReactNode; path: string[]; currParams?: ParamsTypeRecord }) => {
   // const { params } = useContext(RouteInfoContext) || {};
 
   // let theseParams = { ...(params || {}), ...(p.currParams || {}) };

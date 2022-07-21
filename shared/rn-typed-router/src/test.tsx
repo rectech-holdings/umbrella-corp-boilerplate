@@ -1,4 +1,4 @@
-import { ParamTypes } from "./types/params.js";
+import { ParamTypes } from "./implementations/params.js";
 import { createRouter, createRouteDefinition } from "./index.js";
 
 const routeDef = createRouteDefinition({

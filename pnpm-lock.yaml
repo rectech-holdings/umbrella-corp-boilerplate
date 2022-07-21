@@ -208,7 +208,7 @@ importers:
       '@types/react': 18.0.15
       '@types/react-native': 0.69.2
       ac-api: workspace:*
-      ac-shared-backend: workspace:*
+      ac-shared-frontend: workspace:*
       ac-shared-universal: workspace:*
       jest: 28.1.2
       metro-config: 0.71.3
@@ -217,16 +217,18 @@ importers:
       react: 18.2.0
       react-native: 0.69.1
       react-test-renderer: 18.0.0
+      rn-typed-router: workspace:*
       ts-jest: 28.0.5
       tsc-watch: 5.0.3
       typescript: 4.7.4
     dependencies:
       '@babel/runtime': 7.12.5
       ac-api: link:../ac-api
-      ac-shared-backend: link:../ac-shared-backend
+      ac-shared-frontend: link:../ac-shared-frontend
       ac-shared-universal: link:../ac-shared-universal
       react: 18.2.0
       react-native: 0.69.1_xkwn5kfn4p5g5vhhoajshjctr4
+      rn-typed-router: link:../../../shared/rn-typed-router
     devDependencies:
       '@babel/core': 7.12.9
       '@babel/preset-env': 7.18.6_@babel+core@7.12.9
@@ -420,6 +422,8 @@ importers:
       immer: 9.0.15
       lodash: 4.17.21
       path-to-regexp: 6.2.1
+      query-string: 7.1.1
+      react: 18.2.0
       react-freeze: 1.0.0
       react-native-screens: 3.15.0
       type-fest: 2.16.0
@@ -431,11 +435,13 @@ importers:
       immer: 9.0.15
       lodash: 4.17.21
       path-to-regexp: 6.2.1
-      react-freeze: 1.0.0
-      react-native-screens: 3.15.0
-      use-event-callback: 0.1.0
-      use-sync-external-store: 1.2.0
-      zustand: 4.0.0-rc.1_immer@9.0.15
+      query-string: 7.1.1
+      react: 18.2.0
+      react-freeze: 1.0.0_react@18.2.0
+      react-native-screens: 3.15.0_react@18.2.0
+      use-event-callback: 0.1.0_react@18.2.0
+      use-sync-external-store: 1.2.0_react@18.2.0
+      zustand: 4.0.0-rc.1_immer@9.0.15+react@18.2.0
     devDependencies:
       type-fest: 2.16.0
 
@@ -6168,6 +6174,11 @@ packages:
     dependencies:
       to-regex-range: 5.0.1
 
+  /filter-obj/1.1.0:
+    resolution: {integrity: sha512-8rXg1ZnX7xzy2NGDVkBVaAy+lSlPNwad13BtgSlLuxfIslyt5Vg64U7tFcCt4WS1R0hvtnQybT/IyCkGZ3DpXQ==}
+    engines: {node: '>=0.10.0'}
+    dev: false
+
   /finalhandler/1.1.2:
     resolution: {integrity: sha512-aAWcW57uxVNrQZqFXjITpW3sIUQmHGG3qSb9mUah9MgMC4NeWhNOlNjXEYq3HjRAvL6arUviZGGJsBg6z0zsWA==}
     engines: {node: '>= 0.8'}
@@ -10054,6 +10065,16 @@ packages:
       side-channel: 1.0.4
     dev: false
 
+  /query-string/7.1.1:
+    resolution: {integrity: sha512-MplouLRDHBZSG9z7fpuAAcI7aAYjDLhtsiVZsevsfaHWDS2IDdORKbSd1kWUA+V4zyva/HZoSfpwnYMMQDhb0w==}
+    engines: {node: '>=6'}
+    dependencies:
+      decode-uri-component: 0.2.0
+      filter-obj: 1.1.0
+      split-on-first: 1.1.0
+      strict-uri-encode: 2.0.0
+    dev: false
+
   /queue-microtask/1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
 
@@ -10102,11 +10123,13 @@ packages:
       scheduler: 0.23.0
     dev: false
 
-  /react-freeze/1.0.0:
+  /react-freeze/1.0.0_react@18.2.0:
     resolution: {integrity: sha512-yQaiOqDmoKqks56LN9MTgY06O0qQHgV4FUrikH357DydArSZHQhl0BJFqGKIZoTqi8JizF9Dxhuk1FIZD6qCaw==}
     engines: {node: '>=10'}
     peerDependencies:
       react: ^17.0.0
+    dependencies:
+      react: 18.2.0
     dev: false
 
   /react-is/16.13.1:
@@ -10134,13 +10157,14 @@ packages:
   /react-native-gradle-plugin/0.0.7:
     resolution: {integrity: sha512-+4JpbIx42zGTONhBTIXSyfyHICHC29VTvhkkoUOJAh/XHPEixpuBduYgf6Y4y9wsN1ARlQhBBoptTvXvAFQf5g==}
 
-  /react-native-screens/3.15.0:
+  /react-native-screens/3.15.0_react@18.2.0:
     resolution: {integrity: sha512-ezC5TibsUYyqPuuHpZoM3iEl6bRzCVBMJeGaFkn7xznuOt1VwkZVub0BvafIEYR/+AQC/RjxzMSQPs1qal0+wA==}
     peerDependencies:
       react: '*'
       react-native: '*'
     dependencies:
-      react-freeze: 1.0.0
+      react: 18.2.0
+      react-freeze: 1.0.0_react@18.2.0
       warn-once: 0.1.0
     dev: false
 
@@ -10979,6 +11003,11 @@ packages:
   /spdx-license-ids/3.0.11:
     resolution: {integrity: sha512-Ctl2BrFiM0X3MANYgj3CkygxhRmr9mi6xhejbdO960nF6EDJApTYpn0BQnDKlnNBULKiCN1n3w9EBkHK8ZWg+g==}
 
+  /split-on-first/1.1.0:
+    resolution: {integrity: sha512-43ZssAJaMusuKWL8sKUBQXHWOpq8d6CfN/u1p4gUzfJkM05C8rxTmYrkIPTXapZpORA6LkkzcUulJ8FqA7Uudw==}
+    engines: {node: '>=6'}
+    dev: false
+
   /split-string/3.1.0:
     resolution: {integrity: sha512-NzNVhJDYpwceVVii8/Hu6DKfD2G+NrQHlS/V/qgv763EYudVwEcMQNxd2lh+0VrUByXN/oJkl5grOhYWvQUYiw==}
     engines: {node: '>=0.10.0'}
@@ -11054,6 +11083,11 @@ packages:
     dependencies:
       duplexer: 0.1.2
     dev: true
+
+  /strict-uri-encode/2.0.0:
+    resolution: {integrity: sha512-QwiXZgpRcKkhTj2Scnn++4PKtWsH0kpzZ62L2R6c/LUVYv7hVnZqcg2+sMuT6R7Jusu1vviK/MFsu6kNJfWlEQ==}
+    engines: {node: '>=4'}
+    dev: false
 
   /string-argv/0.1.2:
     resolution: {integrity: sha512-mBqPGEOMNJKXRo7z0keX0wlAhbBAjilUdPW13nN0PecVryZxdHIeM7TqbsSUA7VYuS00HGC6mojP7DlQzfa9ZA==}
@@ -11886,16 +11920,12 @@ packages:
       prepend-http: 2.0.0
     dev: true
 
-  /use-event-callback/0.1.0:
+  /use-event-callback/0.1.0_react@18.2.0:
     resolution: {integrity: sha512-5fTzY5UEXHMK5UR0NRkUz6TPfWmmX9fO8Tx3SnHrfMPdrQ7Rna0gDBy0r56SP68TwsP9DgwSBzeysCu3A/Z2NA==}
     peerDependencies:
       react: '>=16.8'
-    dev: false
-
-  /use-sync-external-store/1.1.0:
-    resolution: {integrity: sha512-SEnieB2FPKEVne66NpXPd1Np4R1lTNKfjuy3XdIoPQKYBAFdzbzSZlSn1KJZUiihQLQC5Znot4SBz1EOTBwQAQ==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0
+    dependencies:
+      react: 18.2.0
     dev: false
 
   /use-sync-external-store/1.1.0_react@18.2.0:
@@ -11904,12 +11934,6 @@ packages:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0
     dependencies:
       react: 18.2.0
-    dev: false
-
-  /use-sync-external-store/1.2.0:
-    resolution: {integrity: sha512-eEgnFxGQ1Ife9bzYs6VLi8/4X6CObHMw9Qr9tPY43iKwsPw8xE8+EFsf/2cFZ5S3esXgpWgtSCtLNS41F+sKPA==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0
     dev: false
 
   /use-sync-external-store/1.2.0_react@18.2.0:
@@ -12274,7 +12298,7 @@ packages:
     resolution: {integrity: sha512-4oKP5zvG6GGbMlqBkI5FESOAweldEhSOZ6LI6cG+JzUT7ofj1ZOC0PJudpQOpT1iqOFpYYtX5Pw0+o403y4bcg==}
     dev: false
 
-  /zustand/4.0.0-rc.1_immer@9.0.15:
+  /zustand/4.0.0-rc.1_immer@9.0.15+react@18.2.0:
     resolution: {integrity: sha512-qgcs7zLqBdHu0PuT3GW4WCIY5SgXdsv30GQMu9Qpp1BA2aS+sNS8l4x0hWuyEhjXkN+701aGWawhKDv6oWJAcw==}
     engines: {node: '>=12.7.0'}
     peerDependencies:
@@ -12287,7 +12311,8 @@ packages:
         optional: true
     dependencies:
       immer: 9.0.15
-      use-sync-external-store: 1.1.0
+      react: 18.2.0
+      use-sync-external-store: 1.1.0_react@18.2.0
     dev: false
 
   /zustand/4.0.0-rc.1_react@18.2.0:

@@ -7,7 +7,8 @@ export type ZustandStore<T extends object> = {
   set: (newState: T) => void;
   get: () => T;
   subscribe: T extends State ? Subscribe<T> : never;
-  useStore: T extends State ? UseBoundStore<StoreApi<T>> : never;
+  useStore(): T;
+  useStore<U>(selector: (s: T) => U): U;
   //Returns whether any change was made
   modifyImmutably(modifyFn: (currState: T) => void): boolean;
   modifyImmutably(modifyFn: (currState: T) => Promise<void>): Promise<boolean>;

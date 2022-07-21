@@ -11,12 +11,7 @@ const errors = await getPackageErrors();
 
 if (errors.length) {
   console.error(chalk.red("Monorepo configuration errors found!"));
-  errors.map((a) => console.error(chalk.red(a.msg)));
-  console.error(
-    chalk.yellow(
-      "To fix, either run `pnpm update --interactive --latest --recursive` or `node ./scripts/fix-incorrect-deps`",
-    ),
-  );
+  errors.map((a) => console.error(chalk.red(a.msg.match(/.{1,80}/g).join("\n "))));
 
   process.exit(1);
 }

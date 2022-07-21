@@ -1,7 +1,7 @@
 import { ExtractObjectPath, FilterNullable } from "../utils/typescript-utils.js";
 import { RouteDef, LeafRouteDef, TabRouteDef, StackRouteDef } from "./routes.js";
 import { Simplify } from "type-fest";
-import { GetInputParamsFromPath } from "./params.js";
+import { GetInputParamsFromPath } from "../implementations/params.js";
 
 export type UrlString = string & { __isUrlString: true };
 
@@ -11,7 +11,7 @@ const $routeDef = Symbol("$routeDef");
 export type $pathType = typeof $path;
 export type $routeDefType = typeof $routeDef;
 
-export type PathObjResult<
+export type PathObjResultBase<
   P1 extends string | null = null,
   P2 extends string | null = null,
   P3 extends string | null = null,
@@ -31,7 +31,7 @@ export type PathObjResultLeaf<
   P6 extends string | null = null,
   P7 extends string | null = null,
   P8 extends string | null = null,
-> = PathObjResult<P1, P2, P3, P4, P5, P6, P7, P8> & {
+> = PathObjResultBase<P1, P2, P3, P4, P5, P6, P7, P8> & {
   [$routeDef]: "leaf";
 };
 
@@ -44,7 +44,7 @@ export type PathObjResultTab<
   P6 extends string | null = null,
   P7 extends string | null = null,
   P8 extends string | null = null,
-> = PathObjResult<P1, P2, P3, P4, P5, P6, P7, P8> & {
+> = PathObjResultBase<P1, P2, P3, P4, P5, P6, P7, P8> & {
   [$routeDef]: "tab";
 };
 
@@ -57,9 +57,24 @@ export type PathObjResultStack<
   P6 extends string | null = null,
   P7 extends string | null = null,
   P8 extends string | null = null,
-> = PathObjResult<P1, P2, P3, P4, P5, P6, P7, P8> & {
+> = PathObjResultBase<P1, P2, P3, P4, P5, P6, P7, P8> & {
   [$routeDef]: "stack";
 };
+
+export type PathObjResult<
+  P1 extends string | null = null,
+  P2 extends string | null = null,
+  P3 extends string | null = null,
+  P4 extends string | null = null,
+  P5 extends string | null = null,
+  P6 extends string | null = null,
+  P7 extends string | null = null,
+  P8 extends string | null = null,
+> =
+  | PathObjResultStack<P1, P2, P3, P4, P5, P6, P7, P8>
+  | PathObjResultTab<P1, P2, P3, P4, P5, P6, P7, P8>
+  | PathObjResultLeaf<P1, P2, P3, P4, P5, P6, P7, P8>
+  | PathObjResultBase<P1, P2, P3, P4, P5, P6, P7, P8>;
 
 export type PathObj<
   T extends RouteDef,

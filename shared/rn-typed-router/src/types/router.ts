@@ -1,7 +1,13 @@
-import { ParamsOutputObj, $paramsType, GetInputParamsFromPath } from "./params.js";
-import { PathObj, PathObjResult, $pathType, PathObjResultLeaf, GenerateUrlFn, UrlString } from "./path.js";
+import { ParamsOutputObj, $paramsType, GetInputParamsFromPath } from "../implementations/params.js";
+import { PathObj, $pathType, PathObjResultLeaf, GenerateUrlFn, UrlString, PathObjResult } from "./path.js";
 import { RouteDef } from "./routes.js";
 import { ExtractObjectPath } from "../utils/typescript-utils.js";
+import { RootNavigationState } from "./navigationState.js";
+
+export type RouterOptions = {
+  rememberDevState?: boolean; //Defaults to true
+  initialNavigationState?: RootNavigationState<any>;
+};
 
 export interface Router<T extends RouteDef> {
   /**
@@ -52,21 +58,11 @@ export interface Router<T extends RouteDef> {
   ): Ret;
 
   /**
-   *  The untyped analogue of useParams. Simply returns all the params it can find in the nearest parent navigator. You're on your own with typing though.
-   */
-  useUntypedParams: () => Record<string, unknown>;
-
-  /**
    * The non hook equivalent to useParams. See {@link Router#useParams}
    */
-  getCurrentParams<Path extends PathObjResult<any, any, any, any, any, any, any, any>>(
+  getFocusedParams<Path extends PathObjResult<any, any, any, any, any, any, any, any>>(
     pathConstraint: Path,
   ): ExtractObjectPath<ParamsOutputObj<T>, Path[$pathType]>[$paramsType];
-
-  /**
-   * The non hook equivalent to useUntypedParams. See {@link Router#useUntypedParams}
-   */
-  getUntypedCurrentParams: () => Record<string, unknown>;
 
   /**
    * Equivalent to closing the keyboard if open and then pressing the Android back arrow.
@@ -128,14 +124,14 @@ export interface Router<T extends RouteDef> {
   /**
    * Returns the current url of the app.
    */
-  getCurrentUrl: () => string | null;
+  getFocusedUrl: () => string | null;
 
   /**
    * Subscribe to changes to the current url of the app
    */
-  subscribeToCurrentUrl: (subFn: (currPath: string) => any) => () => void;
+  subscribeToFocusedUrl: (subFn: (currPath: string) => any) => () => void;
   /**
    * Returns the current url of the app. Requires a selector to prevent unneccessary renders
    */
-  useCurrentUrl: <Ret>(selector: (currUrl: string) => Ret) => Ret;
+  useFocusedUrl: <Ret>(selector: (currUrl: string) => Ret) => Ret;
 }
