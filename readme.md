@@ -4,6 +4,7 @@
 1. Docker: E.g. `brew install docker --cask` and then configure the Docker app to ensure it always starts on bootup.
 1. Node >= v16: E.g. `brew install node` or nvm (https://github.com/nvm-sh/nvm#installing-and-updating)
 1. Enable node corepack: `corepack enable`
+1. Install pnpm: `curl -fsSL https://get.pnpm.io/install.sh | sh -` (See https://pnpm.io/installation)
 1. Install node deps at root: `pnpm install`
 1. (Optional) Add convenience aliases: `node ./scripts/add-aliases.mjs`
 
