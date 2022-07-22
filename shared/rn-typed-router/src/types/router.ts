@@ -113,7 +113,7 @@ export interface Router<T extends RouteDef> {
   /**
    * Returns the current focused state of the screen.
    */
-  useIsFocused: <Ret = boolean>(selector?: (isFocused: boolean) => Ret) => Ret;
+  useIsFocused: () => boolean;
 
   /**
    * An effect that runs whenever the focus state changes. Internally uses the proposed

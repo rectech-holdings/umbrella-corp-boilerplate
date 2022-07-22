@@ -3,8 +3,9 @@ import { PathObjResult, PathObjResultLeaf, UrlString } from "../types/path.js";
 import { Router, RouterOptions } from "../types/router.js";
 import { RouteDef } from "../types/routes.js";
 import queryString from "query-string";
+import useEvent from "use-event-callback";
 import _ from "lodash";
-import React, { createContext, ReactNode, useContext, useLayoutEffect, useRef, useState } from "react";
+import React, { createContext, ReactNode, useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { BackHandler, Keyboard, Platform, StyleSheet, View } from "react-native";
 import {
   InnerNavigationState,
@@ -26,7 +27,7 @@ export function createRouter(rootDefinition: RouteDef, opts: RouterOptions) {
 class RouterClass implements Router<any> {
   private rootDef: RouteDef;
 
-  private getDefAtPath: any = _.memoize(
+  private getDefAtPath = _.memoize(
     (pathArr: string[]) => {
       let retDef: RouteDef;
       forEachRouteDefUsingPathArray(this.rootDef, pathArr, (def) => {
@@ -195,9 +196,10 @@ class RouterClass implements Router<any> {
     return Component;
   }
 
-  private extractFocusedAbsoluteNavStatePath(state: RootNavigationState<any> | InnerNavigationState) {
+  private getFocusedAbsoluteNavStatePath() {
+    const rootState = this.navigationStateStore.get();
     let path: (number | string)[] = [];
-    let currState: RootNavigationState<any> | InnerNavigationState = state;
+    let currState: RootNavigationState<any> | InnerNavigationState = rootState;
     while (currState) {
       if ("tabs" in currState) {
         const nextState = currState.tabs[currState.focusedTabIndex]!;
@@ -228,9 +230,9 @@ class RouterClass implements Router<any> {
 
   private useAbsoluteNavStatePathHasEverBeenFocused = (absoluteNavStatePath: (string | number)[]) => {
     const hasEverBeenFocused = useRef(false);
-    return this.navigationStateStore.useStore((s) => {
+    return this.navigationStateStore.useStore(() => {
       //A bit gross to do a side effect in a selector, but it's the best place for the side effect
-      if (this.extractFocusedAbsoluteNavStatePath(s) === absoluteNavStatePath) {
+      if (_.isEqual(this.getFocusedAbsoluteNavStatePath(), absoluteNavStatePath)) {
         hasEverBeenFocused.current = true;
       }
       return hasEverBeenFocused.current;
@@ -238,7 +240,7 @@ class RouterClass implements Router<any> {
   };
 
   //NOTE: This is the root navigator
-  public Navigator: any = () => {
+  public Navigator = () => {
     //Note: We use layout effect b/c it's important to start the subscription to the back handler as soon as possible so
     //that components can subscribe to the BackHandler themselves and override the default behavior if desired
     useLayoutEffect(() => {
@@ -255,9 +257,13 @@ class RouterClass implements Router<any> {
     const routeStateArr = navState.type === "root-stack" ? navState.stack : navState.tabs;
     const stackOrTabsStr = navState.type === "root-stack" ? "stack" : "tabs";
 
-    return routeStateArr.map((s, i) => {
-      return <this.InnerNavigator state={s} path={[s.path]} absoluteNavStatePath={[stackOrTabsStr, i, s.path]} />;
-    });
+    return (
+      <>
+        {routeStateArr.map((s, i) => {
+          return <this.InnerNavigator state={s} path={[s.path]} absoluteNavStatePath={[stackOrTabsStr, i, s.path]} />;
+        })}
+      </>
+    );
   };
 
   private AbsoluteNavStatePathContext = createContext<(string | number)[]>([]);
@@ -480,7 +486,7 @@ class RouterClass implements Router<any> {
     },
   );
 
-  public PATHS: any = (() => {
+  public PATHS = (() => {
     const createProxyObj = (parentPaths: string[] = []): any =>
       new Proxy(
         {},
@@ -500,11 +506,7 @@ class RouterClass implements Router<any> {
     return createProxyObj();
   })();
 
-  public generateUrl: any = (
-    path: PathObjResultLeaf<any, any, any, any, any, any, any, any>,
-    inputParams: Record<string, any>,
-  ): UrlString => {
-    const pathArr = this.getPathArrFromPathObjResult(path);
+  private generateUrlFromPathArr(pathArr: string[], inputParams: Record<string, any>) {
     const paramTypes = this.getAccumulatedParamTypesAtPath(pathArr);
 
     const cleanedParams = validateAndCleanInputParams(inputParams, paramTypes);
@@ -516,6 +518,14 @@ class RouterClass implements Router<any> {
     const pathStr = pathArr.join("/");
 
     return (pathStr + queryStr) as UrlString;
+  }
+
+  public generateUrl = (
+    path: PathObjResultLeaf<any, any, any, any, any, any, any, any>,
+    inputParams: Record<string, any>,
+  ): UrlString => {
+    const pathArr = this.getPathArrFromPathObjResult(path);
+    return this.generateUrlFromPathArr(pathArr, inputParams);
   };
 
   assertPathConstraintIsSatisfied = (
@@ -525,47 +535,102 @@ class RouterClass implements Router<any> {
     const pathArr = this.getPathArrFromPathObjResult(pathConstraint);
   };
 
-  private absoluteNavStatePathToRegularPath(absNavStatePath: (string | number)[]) {
-    //Absolute nav state paths are always in pairs of 3. E.g. "tabs" -> 0 -> "someRouteName"
-    return _.filter(absNavStatePath, (a, i) => (i + 1) % 3 === 0) as string[];
-  }
-
   private useAssertPathConstraintIsSatisfied = (
     pathConstraint: PathObjResult<any, any, any, any, any, any, any, any>,
   ) => {
     const absNavStatePath = this.useAbsoluteNavStatePath();
-    const path = this.absoluteNavStatePathToRegularPath(absNavStatePath);
+    const path = absoluteNavStatePathToRegularPath(absNavStatePath);
     return this.assertPathConstraintIsSatisfied(pathConstraint, path);
   };
 
-  public useParams: any = (
+  public useParams = (
     pathConstraint: PathObjResult<any, any, any, any, any, any, any, any>,
     selector?: (a: Record<string, any>) => any,
   ) => {
     this.useAssertPathConstraintIsSatisfied(pathConstraint);
-    const path = this.getPathArrFromPathObjResult(pathConstraint);
-    const paramTypes = this.getAccumulatedParamTypesAtPath(path);
-    const absPath = this.useAbsoluteNavStatePath();
+    const constraintPath = this.getPathArrFromPathObjResult(pathConstraint);
+    const componentAbsPath = this.useAbsoluteNavStatePath();
+    const componentPath = absoluteNavStatePathToRegularPath(componentAbsPath);
 
-    return this.navigationStateStore.useStore((rootState) => {
-      const accumulatedParamsRaw = {};
-      absPath.forEach((__, i) => {
-        const rawVal = _.get(rootState, absPath.slice(0, i + 1));
-        if (rawVal && typeof rawVal === "object" && "params" in rawVal) {
-          const val: InnerNavigationState = rawVal;
-          Object.assign(accumulatedParamsRaw, val.params || {});
-        }
-      });
+    if (_.isEqual(componentPath, constraintPath)) {
+      throw new Error(`Cannot find params at path ${constraintPath}!`);
+    }
 
-      const accumulatedParams = validateAndCleanOutputParams(paramTypes, accumulatedParamsRaw);
+    return this.navigationStateStore.useStore(() => {
+      const params = this.getParamsAtAbsoluteNavStatePath(componentAbsPath);
 
-      return selector ? selector(accumulatedParams) : accumulatedParams;
+      return selector ? selector(params) : params;
     });
   };
 
-  public getFocusedParams: any;
+  private getParamsAtAbsoluteNavStatePath(navStatePath: (number | string)[]) {
+    const rootState = this.navigationStateStore.get();
+    const regularPath = absoluteNavStatePathToRegularPath(navStatePath);
+    const accumulatedParams: Record<string, any> = {};
+    navStatePath.forEach((__, i) => {
+      if ((i + 1) % 3 === 0) {
+        const val: InnerNavigationState = _.get(rootState, navStatePath.slice(0, i + 1));
+        if ("params" in val) {
+          const theseParamTypes = this.getDefAtPath(regularPath).params;
+          if (!theseParamTypes) {
+            throw new Error("No param types found for route! " + regularPath);
+          }
+          const theseParams = validateAndCleanOutputParams(theseParamTypes, val.params || {});
 
-  public getUntypedFocusedParams: any;
+          Object.assign(accumulatedParams, theseParams);
+        }
+      }
+    });
+
+    return accumulatedParams;
+  }
+
+  public getFocusedParams() {
+    return this.getParamsAtAbsoluteNavStatePath(this.getFocusedAbsoluteNavStatePath());
+  }
+
+  public useIsFocused = () => {
+    const thisAbsPath = this.useAbsoluteNavStatePath();
+    return this.navigationStateStore.useStore(() => {
+      return _.isEqual(thisAbsPath, this.getFocusedAbsoluteNavStatePath());
+    });
+  };
+
+  public useFocusEffect = (fn: (isFocused: boolean) => any) => {
+    const thisAbsPath = this.useAbsoluteNavStatePath();
+
+    const onFocus = useEvent(() => fn(_.isEqual(thisAbsPath, this.getFocusedAbsoluteNavStatePath())));
+
+    useEffect(() => {
+      return this.navigationStateStore.subscribe(onFocus);
+    }, []);
+  };
+
+  public getFocusedUrl() {
+    const absPath = this.getFocusedAbsoluteNavStatePath();
+    const path = absoluteNavStatePathToRegularPath(absPath);
+    const params = this.getFocusedParams();
+
+    return this.generateUrlFromPathArr(path, params);
+  }
+
+  public subscribeToFocusedUrl = (fn: (url: string) => void) => {
+    let currFocusedUrl: string;
+    return this.navigationStateStore.subscribe(() => {
+      const newFocusedUrl = this.getFocusedUrl();
+      if (newFocusedUrl !== currFocusedUrl) {
+        currFocusedUrl = newFocusedUrl;
+        fn(currFocusedUrl);
+      }
+    });
+  };
+
+  public useFocusedUrl = (selector?: (url: string) => any) => {
+    return this.navigationStateStore.useStore(() => {
+      const focusedUrl = this.getFocusedUrl();
+      return selector ? selector(focusedUrl) : focusedUrl;
+    });
+  };
 
   public goBack: any;
 
@@ -574,16 +639,6 @@ class RouterClass implements Router<any> {
   public reset: any;
 
   public navigateToUrl: any;
-
-  public useIsFocused: any;
-
-  public useFocusEffect: any;
-
-  public getFocusedUrl: any;
-
-  public subscribeToFocusedUrl: any;
-
-  public useFocusedUrl: any;
 }
 
 /**
@@ -615,4 +670,9 @@ function assertIsFn<T>(val: T, errMsg: string) {
   }
 
   return val;
+}
+
+function absoluteNavStatePathToRegularPath(absNavStatePath: (string | number)[]) {
+  //Absolute nav state paths are always in pairs of 3. E.g. "tabs" -> 0 -> "someRouteName"
+  return _.filter(absNavStatePath, (a, i) => (i + 1) % 3 === 0) as string[];
 }
