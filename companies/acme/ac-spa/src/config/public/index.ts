@@ -1,15 +1,13 @@
 import { PublicConfig } from "../types.js";
 
 let CONFIG_ENV = "";
-if (typeof require === "undefined") {
+if (typeof window !== "undefined") {
   //@ts-ignore
   CONFIG_ENV = window.VITE_CONFIG_ENV;
 } else {
   //@ts-ignore
   CONFIG_ENV = process.env.VITE_CONFIG_ENV || "";
 }
-
-console.log({ CONFIG_ENV });
 
 export const publicConfig = (async () => {
   let conf: PublicConfig;

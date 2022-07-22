@@ -6,6 +6,7 @@
     "dev": "run-p dev:*",
     "dev:rn": "react-native start",
     "dev:ts": "tsc-watch --noClear",
+    "build-dev": "tsc",
     "clean": "watchman watch-del-all",
     "prepare": "node scripts/ensure-pods.mjs || (cd ios && pod install)",
     "android": "react-native run-android --active-arch-only",
