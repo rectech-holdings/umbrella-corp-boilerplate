@@ -1,8 +1,10 @@
-import { ParamTypes } from "./implementations/params.js";
+import { ParamTypes, ParamTypesClass } from "./implementations/params.js";
 import { createRouter, createRouteDefinition } from "./index.js";
+import { InnerNavigationState, NavigateOptions, RootNavigationState } from "./types/navigationState.js";
+import { createZustandStore } from "./utils/createZustandStore.js";
 
 const routeDef = createRouteDefinition({
-  type: "stack",
+  type: "switch",
   routes: {
     withoutParams: {
       type: "leaf",
@@ -21,6 +23,10 @@ const routeDef = createRouteDefinition({
         bloop: ParamTypes.number().optional(),
       },
       routes: {
+        blerp: {
+          type: "leaf",
+          Component: () => null,
+        },
         baz: {
           type: "stack",
           params: {
@@ -43,8 +49,52 @@ const routeDef = createRouteDefinition({
 
 type thisRouteDef = typeof routeDef;
 
-const { Navigator, getCurrentParams, generateUrl, goBack, PATHS, useIsFocused, reset, navigate, useParams } =
+const { Navigator, getFocusedParams, generateUrl, goBack, PATHS, useIsFocused, reset, navigate, useParams } =
   createRouter(routeDef, {});
+
+const navState: RootNavigationState<thisRouteDef> = {
+  type: "root-switch",
+  focusedTabIndex: 1,
+  tabs: [
+    {
+      path: "withoutParams",
+      type: "leaf",
+    },
+    {
+      path: "qwer",
+      type: "leaf",
+      params: {
+        qwer: "asdfasdf",
+      },
+    },
+    {
+      path: "bloop",
+      type: "tab",
+      focusedTabIndex: 0,
+      params: {
+        bloop: 123,
+      },
+      tabs: [
+        {
+          path: "baz",
+          type: "stack",
+          params: {
+            baz: "qwer",
+          },
+          stack: [
+            {
+              path: "burp",
+              type: "leaf",
+              params: {
+                burp: "asdfasdrewr",
+              },
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};
 
 generateUrl(PATHS.withoutParams, {});
 generateUrl(PATHS.bloop.baz.burp, {
@@ -53,7 +103,7 @@ generateUrl(PATHS.bloop.baz.burp, {
 });
 
 generateUrl(PATHS.bloop.baz.burp, {
-  ...getCurrentParams(PATHS.bloop.baz),
+  ...getFocusedParams(PATHS.bloop.baz),
   burp: "qwer",
 });
 

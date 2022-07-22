@@ -2,7 +2,7 @@ import { ParamsOutputObj, $paramsType, GetInputParamsFromPath } from "../impleme
 import { PathObj, $pathType, PathObjResultLeaf, GenerateUrlFn, UrlString, PathObjResult } from "./path.js";
 import { RouteDef } from "./routes.js";
 import { ExtractObjectPath } from "../utils/typescript-utils.js";
-import { RootNavigationState } from "./navigationState.js";
+import { NavigateOptions, RootNavigationState } from "./navigationState.js";
 
 export type RouterOptions = {
   rememberDevState?: boolean; //Defaults to true
@@ -72,6 +72,7 @@ export interface Router<T extends RouteDef> {
   navigate<Path extends PathObjResultLeaf<any, any, any, any, any, any, any, any>>(
     p: Path,
     params: ExtractObjectPath<ParamsOutputObj<T>, Path[$pathType]>[$paramsType],
+    opts?: NavigateOptions,
   ): void;
 
   /**
@@ -103,7 +104,9 @@ export interface Router<T extends RouteDef> {
    * navigateToUrl("baz?bazParam=1" as UrlString)
    *
    */
-  navigateToUrl: (stringUrl: UrlString) => void;
+  navigateToUrl: (stringUrl: UrlString, options?: NavigateOptions) => void;
+
+  validateUrl: (url: string) => { isValid: true } | { isValid: false; errors: string[] };
 
   /**
    * The root navigator. Should be rendered at the root your app.

@@ -1,36 +1,38 @@
-import { ParamsTypeRecord as ParamsTypeRecord } from "../implementations/params.js";
+import { InferParamsOutput, ParamsTypeRecord as ParamsTypeRecord } from "../implementations/params.js";
 import { DistributiveOmit } from "../utils/typescript-utils.js";
 import { LeafRouteDef, RouteDef, StackRouteDef, TabRouteDef } from "./routes.js";
 
 type RouteDefRecord = Record<string, RouteDef>;
 
+type ParamsValueRecord<T extends ParamsTypeRecord> = InferParamsOutput<T>;
+
 export type StackNavigationState<
   K extends string | number | symbol,
-  Params extends ParamsTypeRecord | undefined,
+  ParamsType extends ParamsTypeRecord | undefined,
   RouteRecord extends RouteDefRecord,
 > = {
   type: "stack";
   path: K;
-  params?: Params;
+  params?: ParamsType extends ParamsTypeRecord ? ParamsValueRecord<ParamsType> : undefined;
   stack: InnerNavigationStateRecord<RouteRecord>[];
 };
 
 export type TabNavigationState<
   K extends PropertyKey,
-  Params extends ParamsTypeRecord | undefined,
+  ParamsType extends ParamsTypeRecord | undefined,
   RouteRecord extends RouteDefRecord,
 > = {
   type: "tab" | "switch";
   path: K;
-  params?: Params;
+  params?: ParamsType extends ParamsTypeRecord ? ParamsValueRecord<ParamsType> : undefined;
   focusedTabIndex: number;
   tabs: InnerNavigationStateRecord<RouteRecord>[];
 };
 
-export type LeafNavigationState<K extends PropertyKey, Params extends ParamsTypeRecord | undefined> = {
+export type LeafNavigationState<K extends PropertyKey, ParamsType extends ParamsTypeRecord | undefined> = {
   type: "leaf";
   path: K;
-  params?: Params;
+  params?: ParamsType extends ParamsTypeRecord ? ParamsValueRecord<ParamsType> : undefined;
 };
 
 export type InnerNavigationState =
@@ -58,3 +60,19 @@ export type RootNavigationState<T extends RouteDef> = T extends TabRouteDef
       stack: InnerNavigationStateRecord<T["routes"]>[];
     }
   : never;
+
+/**
+ * An array that maps _exactly_ to a nav state path, suitable for accessing or setting with lodash.
+ * Is composed of triplets of form: `['stack' | 'tabs', number, string]` where the third value is the route name
+ * E.g. `_.get(rootNavState, someAbsNavStatePath)`
+ * E.g. `_.set(rootNavState, someAbsNavStatePath, someDeepStateVal)`
+ */
+export type AbsNavStatePath = (number | string)[];
+
+export type NavigateOptions = {
+  /**
+   * If true will reset all stack navigators (that match the navigation path) to their initial state before adding.
+   * By default is true for the `navigateToUrl` method and false for the `navigate` method
+   **/
+  resetTouchedStackNavigators?: boolean;
+};

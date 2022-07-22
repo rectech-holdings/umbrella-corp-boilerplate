@@ -61,14 +61,16 @@ export const ParamTypes = {
 export function validateAndCleanInputParams(
   inputParams: Record<string, any>,
   paramTypes: Record<string, ParamTypesClass<any, any, any>>,
-): Record<string, any> {
+): { isValid: false; errors: string[] } | { isValid: true; params: Record<string, any> } {
+  //TODO!!
   return null as any;
 }
 
 export function validateAndCleanOutputParams(
   inputParams: Record<string, any>,
   paramTypes: Record<string, ParamTypesClass<any, any, any>>,
-): Record<string, any> {
+): { isValid: false; errors: string[] } | { isValid: true; params: Record<string, any> } {
+  //TODO!!
   return null as any;
 }
 
@@ -86,13 +88,13 @@ type InferOutputField<T extends ParamTypesClass<any, any, any>> = InferIsRequire
     : InferType<T>
   : InferType<T>;
 
-type InferParamsInput<T extends ParamsTypeRecord> = Simplify<
+export type InferParamsInput<T extends ParamsTypeRecord> = Simplify<
   OptionalNullable<{
     [prop in keyof T]: InferInputField<T[prop]>;
   }>
 >;
 
-type InferParamsOutput<T extends ParamsTypeRecord> = Simplify<
+export type InferParamsOutput<T extends ParamsTypeRecord> = Simplify<
   OptionalNullable<{
     [prop in keyof T]: InferOutputField<T[prop]>;
   }>

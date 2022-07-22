@@ -2,21 +2,24 @@ import { validateAndCleanInputParams, ParamTypesClass, validateAndCleanOutputPar
 import { PathObjResult, PathObjResultLeaf, UrlString } from "../types/path.js";
 import { Router, RouterOptions } from "../types/router.js";
 import { RouteDef } from "../types/routes.js";
-import queryString from "query-string";
 import useEvent from "use-event-callback";
 import _ from "lodash";
 import React, { createContext, ReactNode, useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { BackHandler, Keyboard, Platform, StyleSheet, View } from "react-native";
 import {
+  AbsNavStatePath,
   InnerNavigationState,
+  NavigateOptions,
   RootNavigationState,
   StackNavigationState,
   TabNavigationState,
 } from "../types/navigationState.js";
+import queryString from "query-string";
 import { createZustandStore, ZustandStore } from "../utils/createZustandStore.js";
 import { useIsMountedRef } from "../utils/useIsMountedRef.js";
 import { usePreviousValue } from "../utils/usePreviousValue.js";
 import { Screen, ScreenContainer, ScreenStack } from "react-native-screens";
+import { URL } from "url";
 
 export function createRouter(rootDefinition: RouteDef, opts: RouterOptions) {
   const thisRouter: Router<any> = new RouterClass(rootDefinition, opts);
@@ -30,7 +33,10 @@ class RouterClass implements Router<any> {
   private getDefAtPath = _.memoize(
     (pathArr: string[]) => {
       let retDef: RouteDef;
-      forEachRouteDefUsingPathArray(this.rootDef, pathArr, (def) => {
+      forEachRouteDefUsingPathArray(this.rootDef, pathArr, (def, route) => {
+        if (!def) {
+          throw new Error(`Unable to find route definitition ${route} for the path ${pathArr.join("/")}`);
+        }
         retDef = def;
       });
       return retDef!;
@@ -42,7 +48,11 @@ class RouterClass implements Router<any> {
   private getAccumulatedParamTypesAtPath = _.memoize(
     (pathArr: string[]): Record<string, any> => {
       const paramTypes: Record<string, ParamTypesClass<any, any, any>> = {};
-      forEachRouteDefUsingPathArray(this.rootDef, pathArr, (def) => {
+      forEachRouteDefUsingPathArray(this.rootDef, pathArr, (def, route) => {
+        if (!def) {
+          throw new Error(`Unable to find route definitition ${route} for the path ${pathArr.join("/")}`);
+        }
+
         Object.assign(paramTypes, def.params || {});
       });
       return paramTypes;
@@ -70,7 +80,7 @@ class RouterClass implements Router<any> {
 
   private generateInitialRootState(rootDef: RouteDef): RootNavigationState<any> {
     if (!("routes" in rootDef) || !rootDef.routes) {
-      throw new Error();
+      throw new Error("The root of your route definition must be a switch, tab, or stack navigator!");
     }
 
     const initialRoute = rootDef.initialRoute || Object.keys(rootDef.routes)[0]!;
@@ -93,7 +103,13 @@ class RouterClass implements Router<any> {
     }
   }
 
-  private generateInitialInnerState(def: RouteDef, path: string, params?: Record<string, any>): InnerNavigationState {
+  private generateInitialInnerState(
+    def: RouteDef,
+    path: string,
+    allAccumulatedParams?: Record<string, any>,
+  ): InnerNavigationState {
+    const params = def.params ? _.pick(allAccumulatedParams, Object.keys(def.params)) : undefined;
+
     if (def.type === "leaf") {
       return {
         type: "leaf",
@@ -198,7 +214,7 @@ class RouterClass implements Router<any> {
 
   private getFocusedAbsoluteNavStatePath() {
     const rootState = this.navigationStateStore.get();
-    let path: (number | string)[] = [];
+    let path: AbsNavStatePath = [];
     let currState: RootNavigationState<any> | InnerNavigationState = rootState;
     while (currState) {
       if ("tabs" in currState) {
@@ -509,7 +525,13 @@ class RouterClass implements Router<any> {
   private generateUrlFromPathArr(pathArr: string[], inputParams: Record<string, any>) {
     const paramTypes = this.getAccumulatedParamTypesAtPath(pathArr);
 
-    const cleanedParams = validateAndCleanInputParams(inputParams, paramTypes);
+    const pr = validateAndCleanInputParams(inputParams, paramTypes);
+
+    if (!pr.isValid) {
+      throw new Error(pr.errors.join("\n"));
+    }
+
+    const { params: cleanedParams } = pr;
 
     const queryStr = Object.keys(cleanedParams).length
       ? `?${queryString.stringify(cleanedParams, { skipNull: true, skipEmptyString: true })}`
@@ -520,6 +542,26 @@ class RouterClass implements Router<any> {
     return (pathStr + queryStr) as UrlString;
   }
 
+  public validateUrl = (url: string) => {
+    const { path, params } = parseUrl(url);
+
+    const errors: string[] = [];
+
+    forEachRouteDefUsingPathArray(this.rootDef, path, (def, route) => {
+      if (!def) {
+        errors.push(`Unable to find route ${route} for the url path ${path.join("/")}`);
+      }
+    });
+
+    const pr = validateAndCleanOutputParams(params, this.getAccumulatedParamTypesAtPath(path));
+
+    if (!pr.isValid) {
+      errors.push(...pr.errors);
+    }
+
+    return errors.length ? { isValid: false, errors } : { isValid: true as const };
+  };
+
   public generateUrl = (
     path: PathObjResultLeaf<any, any, any, any, any, any, any, any>,
     inputParams: Record<string, any>,
@@ -528,11 +570,17 @@ class RouterClass implements Router<any> {
     return this.generateUrlFromPathArr(pathArr, inputParams);
   };
 
-  assertPathConstraintIsSatisfied = (
+  private assertPathConstraintIsSatisfied = (
     pathConstraint: PathObjResult<any, any, any, any, any, any, any, any>,
     path: string[],
   ) => {
-    const pathArr = this.getPathArrFromPathObjResult(pathConstraint);
+    const constraintPathStr = this.getPathArrFromPathObjResult(pathConstraint).join("/");
+    const pathStr = path.join("/");
+    if (pathStr !== constraintPathStr) {
+      throw new Error(
+        `Invalid path accessed! The path ${pathStr} does not satisfy the required path ${constraintPathStr}`,
+      );
+    }
   };
 
   private useAssertPathConstraintIsSatisfied = (
@@ -557,13 +605,13 @@ class RouterClass implements Router<any> {
     }
 
     return this.navigationStateStore.useStore(() => {
-      const params = this.getParamsAtAbsoluteNavStatePath(componentAbsPath);
+      const params = this.getAccumulatedParamsAtAbsoluteNavStatePath(componentAbsPath);
 
       return selector ? selector(params) : params;
     });
   };
 
-  private getParamsAtAbsoluteNavStatePath(navStatePath: (number | string)[]) {
+  private getAccumulatedParamsAtAbsoluteNavStatePath(navStatePath: AbsNavStatePath) {
     const rootState = this.navigationStateStore.get();
     const regularPath = absoluteNavStatePathToRegularPath(navStatePath);
     const accumulatedParams: Record<string, any> = {};
@@ -575,9 +623,13 @@ class RouterClass implements Router<any> {
           if (!theseParamTypes) {
             throw new Error("No param types found for route! " + regularPath);
           }
-          const theseParams = validateAndCleanOutputParams(theseParamTypes, val.params || {});
+          const pr = validateAndCleanOutputParams(val.params || {}, theseParamTypes);
 
-          Object.assign(accumulatedParams, theseParams);
+          if (!pr.isValid) {
+            throw new Error(pr.errors.join("\n"));
+          }
+
+          Object.assign(accumulatedParams, pr.params);
         }
       }
     });
@@ -585,8 +637,12 @@ class RouterClass implements Router<any> {
     return accumulatedParams;
   }
 
-  public getFocusedParams() {
-    return this.getParamsAtAbsoluteNavStatePath(this.getFocusedAbsoluteNavStatePath());
+  public getFocusedParams(pathConstraint: PathObjResult<any, any, any, any, any, any, any, any>) {
+    const absPath = this.getFocusedAbsoluteNavStatePath();
+    const focusedPath = absoluteNavStatePathToRegularPath(absPath);
+
+    this.assertPathConstraintIsSatisfied(pathConstraint, focusedPath);
+    return this.getAccumulatedParamsAtAbsoluteNavStatePath(absPath);
   }
 
   public useIsFocused = () => {
@@ -609,7 +665,7 @@ class RouterClass implements Router<any> {
   public getFocusedUrl() {
     const absPath = this.getFocusedAbsoluteNavStatePath();
     const path = absoluteNavStatePathToRegularPath(absPath);
-    const params = this.getFocusedParams();
+    const params = this.getAccumulatedParamsAtAbsoluteNavStatePath(absPath);
 
     return this.generateUrlFromPathArr(path, params);
   }
@@ -632,35 +688,134 @@ class RouterClass implements Router<any> {
     });
   };
 
-  public goBack: any;
+  public goBack = () => {
+    Keyboard.dismiss();
+    return this.navigationStateStore.modifyImmutably((rootState) => {
+      const focusedAbsPath = this.getFocusedAbsoluteNavStatePath();
 
-  public navigate: any;
+      const pathToGoBackIndex = _.findLastIndex(focusedAbsPath, (a) => typeof a === "number" && a !== 0);
 
-  public reset: any;
+      if (pathToGoBackIndex >= 0) {
+        const statePath = focusedAbsPath.slice(0, pathToGoBackIndex - 1);
+        const navigatorState: StackNavigationState<any, any, any> | TabNavigationState<any, any, any> = _.get(
+          rootState,
+          statePath,
+        );
 
-  public navigateToUrl: any;
+        if (navigatorState.type === "stack") {
+          navigatorState.stack.pop();
+        } else {
+          navigatorState.focusedTabIndex = 0;
+        }
+      }
+    });
+  };
+
+  private navigateToPath = (path: string[], params: Record<string, any>, opts?: NavigateOptions) => {
+    const { resetTouchedStackNavigators = true } = opts || {};
+
+    if (this.getDefAtPath(path).type !== "leaf") {
+      throw new Error(
+        `Unable to navigate to non leaf path ${path.join("/")}! Make sure you completely specify the path.`,
+      );
+    }
+
+    this.navigationStateStore.modifyImmutably((rootState) => {
+      let currState = rootState as RootNavigationState<any> | InnerNavigationState;
+      for (let i = 0; i < path.length - 1; i++) {
+        const thisDef = this.getDefAtPath(path.slice(0, i + 1));
+        const thisPath = path[i]!;
+        const theseParams = thisDef.params ? _.pick(params, Object.keys(thisDef.params)) : undefined;
+
+        if ("stack" in currState) {
+          if (resetTouchedStackNavigators) {
+            currState.stack = currState.stack.slice(0, 1);
+            if (currState.stack[0]!.path !== thisPath) {
+              currState.stack.push(this.generateInitialInnerState(thisDef, thisPath, params));
+            }
+          } else {
+            const existingPerfectMatchIndex = currState.stack.findIndex(
+              (a) => a.path === thisPath && _.isEqual(a.params, theseParams),
+            );
+
+            if (existingPerfectMatchIndex !== -1) {
+              currState.stack = currState.stack.slice(0, existingPerfectMatchIndex + 1);
+            } else {
+              currState.stack.push(this.generateInitialInnerState(thisDef, thisPath, params));
+            }
+          }
+        } else if ("tabs" in currState) {
+          if (!currState.tabs.find((a) => a.path === thisPath)) {
+            currState.tabs.push(this.generateInitialInnerState(thisDef, thisPath, params));
+          }
+
+          currState.focusedTabIndex = currState.tabs.findIndex((a) => a.path === thisPath);
+          if (thisDef.params) {
+            currState.tabs[currState.focusedTabIndex]!.params = theseParams;
+          }
+        } else if (currState.type === "leaf") {
+          throw new Error(
+            "Something wrong internally! navigateToPath should only be called with fully specified paths",
+          );
+        } else {
+          ((a: never) => {})(currState);
+          throw new Error("Unreachable");
+        }
+      }
+    });
+  };
+
+  public navigate = (
+    pathObj: PathObjResult<any, any, any, any, any, any, any, any>,
+    params: Record<string, any>,
+    opts?: NavigateOptions,
+  ) => {
+    const path = this.getPathArrFromPathObjResult(pathObj);
+
+    return this.navigateToPath(path, params, opts);
+  };
+
+  public navigateToUrl = (url: string) => {
+    const v = this.validateUrl(url);
+    if (!v.isValid) {
+      throw new Error(v.errors.join("\n"));
+    }
+
+    const { path, params } = parseUrl(url);
+
+    return this.navigateToPath(path, params);
+  };
+
+  public reset = () => {
+    //TODO...
+  };
 }
 
 /**
  * Iterates through the route definition with the given path, calling `process` for each route definition from root to leaf
  */
-function forEachRouteDefUsingPathArray(rootDef: RouteDef, pathArr: string[], processFn: (val: RouteDef) => void) {
+function forEachRouteDefUsingPathArray(
+  rootDef: RouteDef,
+  pathArr: string[],
+  processFn: (val: RouteDef | null, routeName: string) => void,
+) {
   if (!pathArr.length && __DEV__) {
     throw new Error("Unable to traverse empty path array!");
   }
 
-  processFn(rootDef);
+  processFn(rootDef, "");
 
-  let currDef: RouteDef = rootDef;
+  let currDef: RouteDef | null = rootDef;
   const arr = [...pathArr];
   while (arr.length) {
     const route = arr.shift();
-    if (route && "routes" in currDef && currDef.routes[route as any]) {
+    if (currDef && route && "routes" in currDef && currDef.routes[route as any]) {
       currDef = currDef.routes[route as any] as any;
     } else {
-      throw new Error(`Unable to find route definitition ${route} for the path ${pathArr.join("/")}`);
+      currDef = null;
+      break;
     }
-    processFn(currDef);
+    processFn(currDef, route);
   }
 }
 
@@ -675,4 +830,11 @@ function assertIsFn<T>(val: T, errMsg: string) {
 function absoluteNavStatePathToRegularPath(absNavStatePath: (string | number)[]) {
   //Absolute nav state paths are always in pairs of 3. E.g. "tabs" -> 0 -> "someRouteName"
   return _.filter(absNavStatePath, (a, i) => (i + 1) % 3 === 0) as string[];
+}
+
+function parseUrl(url: string) {
+  const prefix = url.match(/^[^.]+?:\/\//) ? "http://example.com/" : "";
+  const { search, pathname } = new URL(prefix + url);
+
+  return { path: pathname.split("/"), params: queryString.parse(search) };
 }
