@@ -20,10 +20,10 @@ import { useIsMountedRef } from "../utils/useIsMountedRef.js";
 import { usePreviousValue } from "../utils/usePreviousValue.js";
 import { Screen, ScreenContainer, ScreenStack } from "react-native-screens";
 
-export function createRouter(rootDefinition: RouteDef, opts?: RouterOptions) {
+export function createRouter<T extends RouteDef>(rootDefinition: T, opts?: RouterOptions): Router<T> {
   const thisRouter: Router<any> = new RouterClass(rootDefinition, opts);
 
-  return thisRouter;
+  return thisRouter as any as Router<T>;
 }
 
 class RouterClass implements Router<any> {
@@ -155,7 +155,7 @@ class RouterClass implements Router<any> {
         Component = assertIsFn(childDef.Component, "component was defined on a route but is not a react component");
       } else if ("getComponent" in childDef) {
         Component = assertIsFn(
-          childDef.getComponent(),
+          childDef.getComponent?.(),
           "getComponent was defined on route but does not return a react component! " + path.join("/"),
         );
       }

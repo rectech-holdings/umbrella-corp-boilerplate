@@ -1,15 +1,19 @@
-import { createUrlGenerator, createPathsObject, createRouteDefinition, ParamTypes } from "rn-typed-router-core";
+import {
+  createUrlGenerator,
+  createPathsObject,
+  createRouteDefinition,
+  ParamTypes,
+  createNonUIRouteDefinition,
+} from "rn-typed-router-core";
 
-export const RN_APP_ROOT_ROUTE_DEFINITION = createRouteDefinition({
+export const RN_APP_ROOT_ROUTE_DEFINITION = createNonUIRouteDefinition({
   type: "stack",
   routes: {
     withoutParams: {
       type: "leaf",
-      Component: () => null,
     },
     qwer: {
       type: "leaf",
-      Component: () => null,
       params: {
         qwer: ParamTypes.string().default("bloah"),
       },
@@ -28,7 +32,6 @@ export const RN_APP_ROOT_ROUTE_DEFINITION = createRouteDefinition({
           routes: {
             burp: {
               type: "leaf",
-              Component: () => null,
               params: {
                 burp: ParamTypes.string(),
               },

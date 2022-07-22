@@ -1,4 +1,4 @@
-import { ParamsOutputObj, $paramsType, GetInputParamsFromPath } from "../implementations/params.js";
+import { ParamsOutputObj, $paramsType, GetInputParamsFromPath, ParamsInputObj } from "../implementations/params.js";
 import { PathObj, $pathType, PathObjResultLeaf, GenerateUrlFn, UrlString, PathObjResult } from "./path.js";
 import { RouteDef } from "./routes.js";
 import { ExtractObjectPath } from "../utils/typescript-utils.js";
@@ -71,7 +71,7 @@ export interface Router<T extends RouteDef> {
 
   navigate<Path extends PathObjResultLeaf<any, any, any, any, any, any, any, any>>(
     p: Path,
-    params: ExtractObjectPath<ParamsOutputObj<T>, Path[$pathType]>[$paramsType],
+    params: ExtractObjectPath<ParamsInputObj<T>, Path[$pathType]>[$paramsType],
     opts?: NavigateOptions,
   ): void;
 

@@ -1,5 +1,5 @@
 import { ExtractObjectPath, FilterNullable } from "../utils/typescript-utils.js";
-import { RouteDef, LeafRouteDef, TabRouteDef, StackRouteDef } from "./routes.js";
+import { RouteDefWithoutUI, LeafRouteDefWithoutUI, TabRouteDefWithoutUI, StackRouteDefWithoutUI } from "./routes.js";
 import { Simplify } from "type-fest";
 import { GetInputParamsFromPath } from "../implementations/params.js";
 
@@ -77,7 +77,7 @@ export type PathObjResult<
   | PathObjResultBase<P1, P2, P3, P4, P5, P6, P7, P8>;
 
 export type PathObj<
-  T extends RouteDef,
+  T extends RouteDefWithoutUI,
   P1 extends string | null = null,
   P2 extends string | null = null,
   P3 extends string | null = null,
@@ -86,11 +86,11 @@ export type PathObj<
   P6 extends string | null = null,
   P7 extends string | null = null,
   P8 extends string | null = null,
-> = T extends LeafRouteDef
+> = T extends LeafRouteDefWithoutUI
   ? Simplify<PathObjResultLeaf<P1, P2, P3, P4, P5, P6, P7, P8>>
-  : T extends TabRouteDef
+  : T extends TabRouteDefWithoutUI
   ? Simplify<PathObjWithRoutes<T, P1, P2, P3, P4, P5, P6, P7> & PathObjResultTab<P1, P2, P3, P4, P5, P6, P7, P8>>
-  : T extends StackRouteDef
+  : T extends StackRouteDefWithoutUI
   ? Simplify<PathObjWithRoutes<T, P1, P2, P3, P4, P5, P6, P7> & PathObjResultTab<P1, P2, P3, P4, P5, P6, P7, P8>>
   : never;
 
@@ -121,7 +121,9 @@ type PathObjWithRoutes<
     : PathObj<T["routes"][K], K extends string ? K : never>;
 };
 
-export type GenerateUrlFn<T extends RouteDef> = <F extends PathObjResultLeaf<any, any, any, any, any, any, any, any>>(
+export type GenerateUrlFn<T extends RouteDefWithoutUI> = <
+  F extends PathObjResultLeaf<any, any, any, any, any, any, any, any>,
+>(
   path: F,
   params: GetInputParamsFromPath<T, F>,
 ) => UrlString;

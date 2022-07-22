@@ -1,5 +1,5 @@
 import { ExtractObjectPath, OptionalNullable } from "../utils/typescript-utils.js";
-import { LeafRouteDef, RouteDef } from "../types/routes.js";
+import { LeafRouteDefWithoutUI, RouteDefWithoutUI } from "../types/routes.js";
 import { Simplify } from "type-fest";
 import { $pathType, PathObjResultBase } from "../types/path.js";
 
@@ -150,7 +150,10 @@ export type InferParamsOutput<T extends ParamsTypeRecord> = Simplify<
 export type ParamsTypeRecord = Record<string, ParamTypesClass<any, any, any>>;
 
 //Used when consuming params in code
-export type ParamsOutputObj<T extends RouteDef, ParentParams extends ParamsTypeRecord = {}> = T extends LeafRouteDef
+export type ParamsOutputObj<
+  T extends RouteDefWithoutUI,
+  ParentParams extends ParamsTypeRecord = {},
+> = T extends LeafRouteDefWithoutUI
   ? { [$params]: InferParamsOutput<T["params"] & ParentParams> }
   : T extends { routes: any }
   ? {
@@ -159,7 +162,10 @@ export type ParamsOutputObj<T extends RouteDef, ParentParams extends ParamsTypeR
   : never;
 
 //Used when generating urls
-export type ParamsInputObj<T extends RouteDef, ParentParams extends ParamsTypeRecord = {}> = T extends LeafRouteDef
+export type ParamsInputObj<
+  T extends RouteDefWithoutUI,
+  ParentParams extends ParamsTypeRecord = {},
+> = T extends LeafRouteDefWithoutUI
   ? { [$params]: InferParamsInput<T["params"] & ParentParams> }
   : T extends { routes: any }
   ? {
@@ -168,6 +174,6 @@ export type ParamsInputObj<T extends RouteDef, ParentParams extends ParamsTypeRe
   : never;
 
 export type GetInputParamsFromPath<
-  T extends RouteDef,
+  T extends RouteDefWithoutUI,
   F extends PathObjResultBase<any, any, any, any, any, any, any, any>,
 > = ExtractObjectPath<ParamsInputObj<T>, F[$pathType]>[$paramsType];

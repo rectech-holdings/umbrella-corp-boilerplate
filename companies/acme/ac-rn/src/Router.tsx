@@ -1,6 +1,34 @@
 import { RN_APP_ROOT_ROUTE_DEFINITION } from "ac-shared-universal";
 
-import { createRouter } from "rn-typed-router";
+import { createRouter, extendNonUIRouteDefinition, ParamTypes } from "rn-typed-router";
+
+const routeDef = extendNonUIRouteDefinition(RN_APP_ROOT_ROUTE_DEFINITION, {
+  type: "stack",
+  routes: {
+    bloop: {
+      type: "tab",
+      routes: {
+        baz: {
+          type: "stack",
+          routes: {
+            burp: {
+              type: "leaf",
+              getComponent: () => () => null,
+            },
+          },
+        },
+      },
+    },
+    qwer: {
+      type: "leaf",
+      getComponent: () => () => null,
+    },
+    withoutParams: {
+      type: "leaf",
+      getComponent: () => () => null,
+    },
+  },
+});
 
 export const {
   Navigator,
@@ -18,4 +46,6 @@ export const {
   subscribeToFocusedUrl,
   useFocusedUrl,
   validateUrl,
-} = createRouter(RN_APP_ROOT_ROUTE_DEFINITION);
+} = createRouter(routeDef);
+
+navigate(PATHS.qwer, { qwer: "asdf" });
