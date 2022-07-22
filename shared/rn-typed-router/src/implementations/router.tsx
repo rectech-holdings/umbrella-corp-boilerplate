@@ -21,10 +21,7 @@ import { usePreviousValue } from "../utils/usePreviousValue.js";
 import { Screen, ScreenContainer, ScreenStack } from "react-native-screens";
 
 export function createRouter(rootDefinition: RouteDef, opts?: RouterOptions) {
-  console.log("CREATING ROUTER YO!!!!!!!!!");
-
   const thisRouter: Router<any> = new RouterClass(rootDefinition, opts);
-  console.log("GOT ROUTER!!!!", Object.keys(thisRouter));
 
   return thisRouter;
 }
@@ -144,6 +141,11 @@ class RouterClass implements Router<any> {
     }
   }
 
+  #getComponentAtPath(
+    path: string[],
+    type: "leaf" | "topTabBar" | "bottomTabBar" | "header",
+  ): { (): JSX.Element; Header?: () => JSX.Element } | null;
+  #getComponentAtPath(path: string[], type: "wrapper"): ((a: { children: ReactNode }) => JSX.Element) | null;
   #getComponentAtPath(path: string[], type: "leaf" | "topTabBar" | "bottomTabBar" | "header" | "wrapper"): any {
     const childDef = this.#getDefAtPath(path);
 
@@ -205,10 +207,6 @@ class RouterClass implements Router<any> {
           "header was defined on a route but is not a react component! " + path.join("/"),
         );
       }
-    }
-
-    if (!Component) {
-      throw new Error(`Unable to find ${type} component at path ${path.join("/")}`);
     }
 
     return Component;
@@ -279,7 +277,9 @@ class RouterClass implements Router<any> {
     return (
       <>
         {routeStateArr.map((s, i) => {
-          return <InnerNavigator state={s} path={[s.path]} absoluteNavStatePath={[stackOrTabsStr, i, s.path]} />;
+          return (
+            <InnerNavigator key={i} state={s} path={[s.path]} absoluteNavStatePath={[stackOrTabsStr, i, s.path]} />
+          );
         })}
       </>
     );
@@ -318,8 +318,8 @@ class RouterClass implements Router<any> {
   };
 
   #InnerLeafNavigator = React.memo((p: { path: string[] }) => {
-    const Leaf = this.#getComponentAtPath(p.path, "leaf") as any;
-    const LeafHeader = Leaf.Header ?? (this.#getComponentAtPath(p.path, "header") as any);
+    const Leaf = this.#getComponentAtPath(p.path, "leaf");
+    const LeafHeader = Leaf?.Header ?? this.#getComponentAtPath(p.path, "header");
 
     if (__DEV__) {
       if (LeafHeader && typeof LeafHeader !== "function") {
@@ -411,7 +411,7 @@ class RouterClass implements Router<any> {
 
   #InnerTabNavigator = React.memo(
     (p: { path: string[]; state: TabNavigationState<any, any, any>; absoluteNavStatePath: (string | number)[] }) => {
-      const Wrapper = (this.#getComponentAtPath(p.path, "wrapper") || React.Fragment) as any;
+      const Wrapper = this.#getComponentAtPath(p.path, "wrapper") || React.Fragment;
       const Header = this.#getComponentAtPath(p.path, "header");
       const TopTabBar = this.#getComponentAtPath(p.path, "topTabBar");
       const BottomTabBar = this.#getComponentAtPath(p.path, "bottomTabBar");
