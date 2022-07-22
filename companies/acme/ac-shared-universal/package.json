@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "version": "1.0.0",
+  "main": "./dist/index.js",
   "types": "./src/index.ts",
   "scripts": {
     "build": "tsc",

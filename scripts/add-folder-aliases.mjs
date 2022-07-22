@@ -19,7 +19,7 @@ const packageInfoArr = Object.keys(packages).map((name) => {
     alias: `alias ${nameWODashes}='cd ${thisPath}'`,
     devalias: thisLocation.match(/shared/)
       ? null
-      : `alias dev${nameWODashes}='(cd ${process.cwd()} && pnpm turbo run dev --filter ${name})'`,
+      : `alias dev${nameWODashes}='(cd ${process.cwd()} && pnpm turbo run dev --filter ${name}...)'`,
   };
 });
 

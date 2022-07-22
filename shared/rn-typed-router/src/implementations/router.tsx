@@ -19,21 +19,23 @@ import { createZustandStore, ZustandStore } from "../utils/createZustandStore.js
 import { useIsMountedRef } from "../utils/useIsMountedRef.js";
 import { usePreviousValue } from "../utils/usePreviousValue.js";
 import { Screen, ScreenContainer, ScreenStack } from "react-native-screens";
-import { URL } from "url";
 
-export function createRouter(rootDefinition: RouteDef, opts: RouterOptions) {
+export function createRouter(rootDefinition: RouteDef, opts?: RouterOptions) {
+  console.log("CREATING ROUTER YO!!!!!!!!!");
+
   const thisRouter: Router<any> = new RouterClass(rootDefinition, opts);
+  console.log("GOT ROUTER!!!!", Object.keys(thisRouter));
 
   return thisRouter;
 }
 
 class RouterClass implements Router<any> {
-  private rootDef: RouteDef;
+  #rootDef: RouteDef;
 
-  private getDefAtPath = _.memoize(
+  #getDefAtPath = _.memoize(
     (pathArr: string[]) => {
       let retDef: RouteDef;
-      forEachRouteDefUsingPathArray(this.rootDef, pathArr, (def, route) => {
+      forEachRouteDefUsingPathArray(this.#rootDef, pathArr, (def, route) => {
         if (!def) {
           throw new Error(`Unable to find route definitition ${route} for the path ${pathArr.join("/")}`);
         }
@@ -45,10 +47,10 @@ class RouterClass implements Router<any> {
   );
 
   //Returns an object with all the ParamTypes found at the path and the path's parents
-  private getAccumulatedParamTypesAtPath = _.memoize(
+  #getAccumulatedParamTypesAtPath = _.memoize(
     (pathArr: string[]): Record<string, any> => {
       const paramTypes: Record<string, ParamTypesClass<any, any, any>> = {};
-      forEachRouteDefUsingPathArray(this.rootDef, pathArr, (def, route) => {
+      forEachRouteDefUsingPathArray(this.#rootDef, pathArr, (def, route) => {
         if (!def) {
           throw new Error(`Unable to find route definitition ${route} for the path ${pathArr.join("/")}`);
         }
@@ -60,31 +62,31 @@ class RouterClass implements Router<any> {
     (a) => a.join(""),
   );
 
-  private PATHS_ACCESSOR = Symbol("PATHS_ACCESSOR");
-  private getPathArrFromPathObjResult(path: PathObjResult<any, any, any, any, any, any, any, any>) {
-    const pathArr: string[] = path[this.PATHS_ACCESSOR];
+  #PATHS_ACCESSOR = Symbol("PATHS_ACCESSOR");
+  #getPathArrFromPathObjResult(path: PathObjResult<any, any, any, any, any, any, any, any>) {
+    const pathArr: string[] = path[this.#PATHS_ACCESSOR];
     if (!pathArr) {
       throw new Error("Invalid path object passed to generateUrl!");
     }
     return pathArr;
   }
 
-  private navigationStateStore: ZustandStore<RootNavigationState<any>>;
+  #navigationStateStore: ZustandStore<RootNavigationState<any>>;
 
-  constructor(rootDef: RouteDef, opts: RouterOptions) {
-    this.rootDef = rootDef;
-    this.navigationStateStore = createZustandStore(
-      opts.initialNavigationState || this.generateInitialRootState(rootDef),
+  constructor(rootDef: RouteDef, opts?: RouterOptions) {
+    this.#rootDef = rootDef;
+    this.#navigationStateStore = createZustandStore(
+      opts?.initialNavigationState || this.#generateInitialRootState(rootDef),
     );
   }
 
-  private generateInitialRootState(rootDef: RouteDef): RootNavigationState<any> {
+  #generateInitialRootState(rootDef: RouteDef): RootNavigationState<any> {
     if (!("routes" in rootDef) || !rootDef.routes) {
       throw new Error("The root of your route definition must be a switch, tab, or stack navigator!");
     }
 
     const initialRoute = rootDef.initialRoute || Object.keys(rootDef.routes)[0]!;
-    const initialInnerState = this.generateInitialInnerState(rootDef.routes[initialRoute]!, initialRoute);
+    const initialInnerState = this.#generateInitialInnerState(rootDef.routes[initialRoute]!, initialRoute);
 
     if (rootDef.type === "stack") {
       return {
@@ -103,7 +105,7 @@ class RouterClass implements Router<any> {
     }
   }
 
-  private generateInitialInnerState(
+  #generateInitialInnerState(
     def: RouteDef,
     path: string,
     allAccumulatedParams?: Record<string, any>,
@@ -118,7 +120,7 @@ class RouterClass implements Router<any> {
       };
     } else if ("routes" in def) {
       const initialRoute = def.initialRoute || Object.keys(def.routes)[0]!;
-      const initialInnerState = this.generateInitialInnerState(def.routes[initialRoute]!, initialRoute);
+      const initialInnerState = this.#generateInitialInnerState(def.routes[initialRoute]!, initialRoute);
 
       if (def.type == "stack") {
         return {
@@ -142,8 +144,8 @@ class RouterClass implements Router<any> {
     }
   }
 
-  private getComponentAtPath(path: string[], type: "leaf" | "topTabBar" | "bottomTabBar" | "header" | "wrapper"): any {
-    const childDef = this.getDefAtPath(path);
+  #getComponentAtPath(path: string[], type: "leaf" | "topTabBar" | "bottomTabBar" | "header" | "wrapper"): any {
+    const childDef = this.#getDefAtPath(path);
 
     let Component: any;
     if (type === "leaf") {
@@ -212,8 +214,8 @@ class RouterClass implements Router<any> {
     return Component;
   }
 
-  private getFocusedAbsoluteNavStatePath() {
-    const rootState = this.navigationStateStore.get();
+  #getFocusedAbsoluteNavStatePath() {
+    const rootState = this.#navigationStateStore.get();
     let path: AbsNavStatePath = [];
     let currState: RootNavigationState<any> | InnerNavigationState = rootState;
     while (currState) {
@@ -244,11 +246,11 @@ class RouterClass implements Router<any> {
     return path;
   }
 
-  private useAbsoluteNavStatePathHasEverBeenFocused = (absoluteNavStatePath: (string | number)[]) => {
+  #useAbsoluteNavStatePathHasEverBeenFocused = (absoluteNavStatePath: (string | number)[]) => {
     const hasEverBeenFocused = useRef(false);
-    return this.navigationStateStore.useStore(() => {
+    return this.#navigationStateStore.useStore(() => {
       //A bit gross to do a side effect in a selector, but it's the best place for the side effect
-      if (_.isEqual(this.getFocusedAbsoluteNavStatePath(), absoluteNavStatePath)) {
+      if (_.isEqual(this.#getFocusedAbsoluteNavStatePath(), absoluteNavStatePath)) {
         hasEverBeenFocused.current = true;
       }
       return hasEverBeenFocused.current;
@@ -268,66 +270,63 @@ class RouterClass implements Router<any> {
       };
     });
 
-    const navState = this.navigationStateStore.useStore();
+    const navState = this.#navigationStateStore.useStore();
 
     const routeStateArr = navState.type === "root-stack" ? navState.stack : navState.tabs;
     const stackOrTabsStr = navState.type === "root-stack" ? "stack" : "tabs";
+    const InnerNavigator = this.#InnerNavigator;
 
     return (
       <>
         {routeStateArr.map((s, i) => {
-          return <this.InnerNavigator state={s} path={[s.path]} absoluteNavStatePath={[stackOrTabsStr, i, s.path]} />;
+          return <InnerNavigator state={s} path={[s.path]} absoluteNavStatePath={[stackOrTabsStr, i, s.path]} />;
         })}
       </>
     );
   };
 
-  private AbsoluteNavStatePathContext = createContext<(string | number)[]>([]);
-  private useAbsoluteNavStatePath = () => useContext(this.AbsoluteNavStatePathContext);
+  #AbsoluteNavStatePathContext = createContext<(string | number)[]>([]);
+  #useAbsoluteNavStatePath = () => useContext(this.#AbsoluteNavStatePathContext);
 
-  private InnerNavigator = (p: {
-    state: InnerNavigationState;
-    path: string[];
-    absoluteNavStatePath: (string | number)[];
-  }) => {
-    if (!this.useAbsoluteNavStatePathHasEverBeenFocused(p.absoluteNavStatePath)) {
+  #InnerNavigator = (p: { state: InnerNavigationState; path: string[]; absoluteNavStatePath: (string | number)[] }) => {
+    if (!this.#useAbsoluteNavStatePathHasEverBeenFocused(p.absoluteNavStatePath)) {
       return null;
     }
 
     let inner: any;
 
+    const InnerLeafNavigator = this.#InnerLeafNavigator;
+    const InnerTabNavigator = this.#InnerTabNavigator;
+    const InnerStackNavigator = this.#InnerStackNavigator;
+
     if (p.state.type === "leaf") {
-      inner = <this.InnerLeafNavigator path={p.path} />;
+      inner = <InnerLeafNavigator path={p.path} />;
     } else if (p.state.type === "tab" || p.state.type === "switch") {
-      inner = (
-        <this.InnerTabNavigator path={p.path} absoluteNavStatePath={p.absoluteNavStatePath} state={p.state as any} />
-      );
+      inner = <InnerTabNavigator path={p.path} absoluteNavStatePath={p.absoluteNavStatePath} state={p.state as any} />;
     } else if (p.state.type === "stack") {
       inner = (
-        <this.InnerStackNavigator path={p.path} absoluteNavStatePath={p.absoluteNavStatePath} state={p.state as any} />
+        <InnerStackNavigator path={p.path} absoluteNavStatePath={p.absoluteNavStatePath} state={p.state as any} />
       );
     } else {
       ((a: never) => {})(p.state.type);
       throw new Error("Unreachable");
     }
 
-    return (
-      <this.AbsoluteNavStatePathContext.Provider value={p.absoluteNavStatePath}>
-        {inner}
-      </this.AbsoluteNavStatePathContext.Provider>
-    );
+    const Provider = this.#AbsoluteNavStatePathContext.Provider;
+
+    return <Provider value={p.absoluteNavStatePath}>{inner}</Provider>;
   };
 
-  private InnerLeafNavigator = React.memo((p: { path: string[] }) => {
-    const Leaf = this.getComponentAtPath(p.path, "leaf") as any;
-    const LeafHeader = Leaf.Header ?? (this.getComponentAtPath(p.path, "header") as any);
+  #InnerLeafNavigator = React.memo((p: { path: string[] }) => {
+    const Leaf = this.#getComponentAtPath(p.path, "leaf") as any;
+    const LeafHeader = Leaf.Header ?? (this.#getComponentAtPath(p.path, "header") as any);
 
     if (__DEV__) {
       if (LeafHeader && typeof LeafHeader !== "function") {
         throw new Error(`Header at ${p.path.join("/")} does not return a valid react component!`);
       }
     }
-    const Wrapper = this.getComponentAtPath(p.path, "wrapper") || React.Fragment;
+    const Wrapper = this.#getComponentAtPath(p.path, "wrapper") || React.Fragment;
 
     if (!Leaf) {
       throw new Error("No component defined on leaf route definition!");
@@ -343,19 +342,21 @@ class RouterClass implements Router<any> {
     );
   });
 
-  private InnerStackNavigator = React.memo(
+  #InnerStackNavigator = React.memo(
     (p: { path: string[]; state: StackNavigationState<any, any, any>; absoluteNavStatePath: (string | number)[] }) => {
-      const Wrapper = this.getComponentAtPath(p.path, "wrapper") || React.Fragment;
+      const Wrapper = this.#getComponentAtPath(p.path, "wrapper") || React.Fragment;
 
-      const parentDef = this.getDefAtPath(p.path)!;
+      const parentDef = this.#getDefAtPath(p.path)!;
+
+      const InnerNavigator = this.#InnerNavigator;
 
       return (
         <Wrapper>
           <ScreenStack style={{ flex: 1 }}>
             {p.state.stack.map((thisNavigationState, i) => {
-              const Header = this.getComponentAtPath(p.path, "header");
+              const Header = this.#getComponentAtPath(p.path, "header");
               const thisRoutePath = p.path.concat(thisNavigationState.path);
-              const thisRouteDef = this.getDefAtPath(thisRoutePath)!;
+              const thisRouteDef = this.#getDefAtPath(thisRoutePath)!;
 
               const allScreenProps = {
                 ...(parentDef.childScreenProps || {}),
@@ -373,7 +374,7 @@ class RouterClass implements Router<any> {
                   stackAnimation={stackAnimation ?? Platform.OS === "android" ? "fade" : "slide_from_left"}
                   onDismissed={(e) => {
                     Keyboard.dismiss();
-                    this.navigationStateStore.modifyImmutably((rootState) => {
+                    this.#navigationStateStore.modifyImmutably((rootState) => {
                       const parentState = _.get(rootState, p.absoluteNavStatePath);
                       if (!parentState || !("stack" in parentState)) {
                         throw new Error("Unable to clean up state on onDismissed transition!");
@@ -393,7 +394,7 @@ class RouterClass implements Router<any> {
                 >
                   {Header ? <Header /> : null}
                   <View style={{ flex: 1 }}>
-                    <this.InnerNavigator
+                    <InnerNavigator
                       state={thisNavigationState as any}
                       path={thisRoutePath}
                       absoluteNavStatePath={p.absoluteNavStatePath.concat("stack", i, thisNavigationState.path)}
@@ -408,12 +409,12 @@ class RouterClass implements Router<any> {
     },
   );
 
-  private InnerTabNavigator = React.memo(
+  #InnerTabNavigator = React.memo(
     (p: { path: string[]; state: TabNavigationState<any, any, any>; absoluteNavStatePath: (string | number)[] }) => {
-      const Wrapper = (this.getComponentAtPath(p.path, "wrapper") || React.Fragment) as any;
-      const Header = this.getComponentAtPath(p.path, "header");
-      const TopTabBar = this.getComponentAtPath(p.path, "topTabBar");
-      const BottomTabBar = this.getComponentAtPath(p.path, "bottomTabBar");
+      const Wrapper = (this.#getComponentAtPath(p.path, "wrapper") || React.Fragment) as any;
+      const Header = this.#getComponentAtPath(p.path, "header");
+      const TopTabBar = this.#getComponentAtPath(p.path, "topTabBar");
+      const BottomTabBar = this.#getComponentAtPath(p.path, "bottomTabBar");
 
       //Gotta do some weird shenanigans to make the transition smooth and not show a tab too soon (before it has had time to render at least once)
       //Hopefully will be fixed by React Native Screens when this issue gets resolved: https://github.com/software-mansion/react-native-screens/issues/1251
@@ -421,7 +422,9 @@ class RouterClass implements Router<any> {
       const prevRawFocusedTabIndex = usePreviousValue(focusedTabIndex);
       const [indexHasMounted, setIndexHasMounted] = useState<Record<number, true>>({});
       const isMountedRef = useIsMountedRef();
-      const thisDef = this.getDefAtPath(p.path)!;
+      const thisDef = this.#getDefAtPath(p.path)!;
+
+      const InnerNavigator = this.#InnerNavigator;
 
       return (
         <Wrapper>
@@ -451,7 +454,7 @@ class RouterClass implements Router<any> {
                 }
 
                 const thisRoutePath = p.path.concat(thisNavigationState.path);
-                const thisRouteDef = this.getDefAtPath(thisRoutePath);
+                const thisRouteDef = this.#getDefAtPath(thisRoutePath);
 
                 const allScreenProps = {
                   ...(thisDef.childScreenProps || {}),
@@ -486,7 +489,7 @@ class RouterClass implements Router<any> {
                     ]}
                     {...screenProps}
                   >
-                    <this.InnerNavigator
+                    <InnerNavigator
                       state={thisNavigationState as any}
                       path={thisRoutePath}
                       absoluteNavStatePath={p.absoluteNavStatePath.concat("tabs", i, thisNavigationState.path)}
@@ -509,7 +512,7 @@ class RouterClass implements Router<any> {
         {
           set: () => false,
           get: (__, propKey) => {
-            if (propKey === this.PATHS_ACCESSOR) {
+            if (propKey === this.#PATHS_ACCESSOR) {
               return parentPaths;
             } else {
               parentPaths.push(propKey as string);
@@ -522,8 +525,8 @@ class RouterClass implements Router<any> {
     return createProxyObj();
   })();
 
-  private generateUrlFromPathArr(pathArr: string[], inputParams: Record<string, any>) {
-    const paramTypes = this.getAccumulatedParamTypesAtPath(pathArr);
+  #generateUrlFromPathArr(pathArr: string[], inputParams: Record<string, any>) {
+    const paramTypes = this.#getAccumulatedParamTypesAtPath(pathArr);
 
     const pr = validateAndCleanInputParams(inputParams, paramTypes);
 
@@ -547,13 +550,13 @@ class RouterClass implements Router<any> {
 
     const errors: string[] = [];
 
-    forEachRouteDefUsingPathArray(this.rootDef, path, (def, route) => {
+    forEachRouteDefUsingPathArray(this.#rootDef, path, (def, route) => {
       if (!def) {
         errors.push(`Unable to find route ${route} for the url path ${path.join("/")}`);
       }
     });
 
-    const pr = validateAndCleanOutputParams(params, this.getAccumulatedParamTypesAtPath(path));
+    const pr = validateAndCleanOutputParams(params, this.#getAccumulatedParamTypesAtPath(path));
 
     if (!pr.isValid) {
       errors.push(...pr.errors);
@@ -566,15 +569,15 @@ class RouterClass implements Router<any> {
     path: PathObjResultLeaf<any, any, any, any, any, any, any, any>,
     inputParams: Record<string, any>,
   ): UrlString => {
-    const pathArr = this.getPathArrFromPathObjResult(path);
-    return this.generateUrlFromPathArr(pathArr, inputParams);
+    const pathArr = this.#getPathArrFromPathObjResult(path);
+    return this.#generateUrlFromPathArr(pathArr, inputParams);
   };
 
-  private assertPathConstraintIsSatisfied = (
+  #assertPathConstraintIsSatisfied = (
     pathConstraint: PathObjResult<any, any, any, any, any, any, any, any>,
     path: string[],
   ) => {
-    const constraintPathStr = this.getPathArrFromPathObjResult(pathConstraint).join("/");
+    const constraintPathStr = this.#getPathArrFromPathObjResult(pathConstraint).join("/");
     const pathStr = path.join("/");
     if (pathStr !== constraintPathStr) {
       throw new Error(
@@ -583,43 +586,41 @@ class RouterClass implements Router<any> {
     }
   };
 
-  private useAssertPathConstraintIsSatisfied = (
-    pathConstraint: PathObjResult<any, any, any, any, any, any, any, any>,
-  ) => {
-    const absNavStatePath = this.useAbsoluteNavStatePath();
+  #useAssertPathConstraintIsSatisfied = (pathConstraint: PathObjResult<any, any, any, any, any, any, any, any>) => {
+    const absNavStatePath = this.#useAbsoluteNavStatePath();
     const path = absoluteNavStatePathToRegularPath(absNavStatePath);
-    return this.assertPathConstraintIsSatisfied(pathConstraint, path);
+    return this.#assertPathConstraintIsSatisfied(pathConstraint, path);
   };
 
   public useParams = (
     pathConstraint: PathObjResult<any, any, any, any, any, any, any, any>,
     selector?: (a: Record<string, any>) => any,
   ) => {
-    this.useAssertPathConstraintIsSatisfied(pathConstraint);
-    const constraintPath = this.getPathArrFromPathObjResult(pathConstraint);
-    const componentAbsPath = this.useAbsoluteNavStatePath();
+    this.#useAssertPathConstraintIsSatisfied(pathConstraint);
+    const constraintPath = this.#getPathArrFromPathObjResult(pathConstraint);
+    const componentAbsPath = this.#useAbsoluteNavStatePath();
     const componentPath = absoluteNavStatePathToRegularPath(componentAbsPath);
 
     if (_.isEqual(componentPath, constraintPath)) {
       throw new Error(`Cannot find params at path ${constraintPath}!`);
     }
 
-    return this.navigationStateStore.useStore(() => {
-      const params = this.getAccumulatedParamsAtAbsoluteNavStatePath(componentAbsPath);
+    return this.#navigationStateStore.useStore(() => {
+      const params = this.#getAccumulatedParamsAtAbsoluteNavStatePath(componentAbsPath);
 
       return selector ? selector(params) : params;
     });
   };
 
-  private getAccumulatedParamsAtAbsoluteNavStatePath(navStatePath: AbsNavStatePath) {
-    const rootState = this.navigationStateStore.get();
+  #getAccumulatedParamsAtAbsoluteNavStatePath(navStatePath: AbsNavStatePath) {
+    const rootState = this.#navigationStateStore.get();
     const regularPath = absoluteNavStatePathToRegularPath(navStatePath);
     const accumulatedParams: Record<string, any> = {};
     navStatePath.forEach((__, i) => {
       if ((i + 1) % 3 === 0) {
         const val: InnerNavigationState = _.get(rootState, navStatePath.slice(0, i + 1));
         if ("params" in val) {
-          const theseParamTypes = this.getDefAtPath(regularPath).params;
+          const theseParamTypes = this.#getDefAtPath(regularPath).params;
           if (!theseParamTypes) {
             throw new Error("No param types found for route! " + regularPath);
           }
@@ -638,41 +639,41 @@ class RouterClass implements Router<any> {
   }
 
   public getFocusedParams(pathConstraint: PathObjResult<any, any, any, any, any, any, any, any>) {
-    const absPath = this.getFocusedAbsoluteNavStatePath();
+    const absPath = this.#getFocusedAbsoluteNavStatePath();
     const focusedPath = absoluteNavStatePathToRegularPath(absPath);
 
-    this.assertPathConstraintIsSatisfied(pathConstraint, focusedPath);
-    return this.getAccumulatedParamsAtAbsoluteNavStatePath(absPath);
+    this.#assertPathConstraintIsSatisfied(pathConstraint, focusedPath);
+    return this.#getAccumulatedParamsAtAbsoluteNavStatePath(absPath);
   }
 
   public useIsFocused = () => {
-    const thisAbsPath = this.useAbsoluteNavStatePath();
-    return this.navigationStateStore.useStore(() => {
-      return _.isEqual(thisAbsPath, this.getFocusedAbsoluteNavStatePath());
+    const thisAbsPath = this.#useAbsoluteNavStatePath();
+    return this.#navigationStateStore.useStore(() => {
+      return _.isEqual(thisAbsPath, this.#getFocusedAbsoluteNavStatePath());
     });
   };
 
   public useFocusEffect = (fn: (isFocused: boolean) => any) => {
-    const thisAbsPath = this.useAbsoluteNavStatePath();
+    const thisAbsPath = this.#useAbsoluteNavStatePath();
 
-    const onFocus = useEvent(() => fn(_.isEqual(thisAbsPath, this.getFocusedAbsoluteNavStatePath())));
+    const onFocus = useEvent(() => fn(_.isEqual(thisAbsPath, this.#getFocusedAbsoluteNavStatePath())));
 
     useEffect(() => {
-      return this.navigationStateStore.subscribe(onFocus);
+      return this.#navigationStateStore.subscribe(onFocus);
     }, []);
   };
 
   public getFocusedUrl() {
-    const absPath = this.getFocusedAbsoluteNavStatePath();
+    const absPath = this.#getFocusedAbsoluteNavStatePath();
     const path = absoluteNavStatePathToRegularPath(absPath);
-    const params = this.getAccumulatedParamsAtAbsoluteNavStatePath(absPath);
+    const params = this.#getAccumulatedParamsAtAbsoluteNavStatePath(absPath);
 
-    return this.generateUrlFromPathArr(path, params);
+    return this.#generateUrlFromPathArr(path, params);
   }
 
   public subscribeToFocusedUrl = (fn: (url: string) => void) => {
     let currFocusedUrl: string;
-    return this.navigationStateStore.subscribe(() => {
+    return this.#navigationStateStore.subscribe(() => {
       const newFocusedUrl = this.getFocusedUrl();
       if (newFocusedUrl !== currFocusedUrl) {
         currFocusedUrl = newFocusedUrl;
@@ -682,7 +683,7 @@ class RouterClass implements Router<any> {
   };
 
   public useFocusedUrl = (selector?: (url: string) => any) => {
-    return this.navigationStateStore.useStore(() => {
+    return this.#navigationStateStore.useStore(() => {
       const focusedUrl = this.getFocusedUrl();
       return selector ? selector(focusedUrl) : focusedUrl;
     });
@@ -690,8 +691,8 @@ class RouterClass implements Router<any> {
 
   public goBack = () => {
     Keyboard.dismiss();
-    return this.navigationStateStore.modifyImmutably((rootState) => {
-      const focusedAbsPath = this.getFocusedAbsoluteNavStatePath();
+    return this.#navigationStateStore.modifyImmutably((rootState) => {
+      const focusedAbsPath = this.#getFocusedAbsoluteNavStatePath();
 
       const pathToGoBackIndex = _.findLastIndex(focusedAbsPath, (a) => typeof a === "number" && a !== 0);
 
@@ -711,19 +712,19 @@ class RouterClass implements Router<any> {
     });
   };
 
-  private navigateToPath = (path: string[], params: Record<string, any>, opts?: NavigateOptions) => {
+  #navigateToPath = (path: string[], params: Record<string, any>, opts?: NavigateOptions) => {
     const { resetTouchedStackNavigators = true } = opts || {};
 
-    if (this.getDefAtPath(path).type !== "leaf") {
+    if (this.#getDefAtPath(path).type !== "leaf") {
       throw new Error(
         `Unable to navigate to non leaf path ${path.join("/")}! Make sure you completely specify the path.`,
       );
     }
 
-    this.navigationStateStore.modifyImmutably((rootState) => {
+    this.#navigationStateStore.modifyImmutably((rootState) => {
       let currState = rootState as RootNavigationState<any> | InnerNavigationState;
       for (let i = 0; i < path.length - 1; i++) {
-        const thisDef = this.getDefAtPath(path.slice(0, i + 1));
+        const thisDef = this.#getDefAtPath(path.slice(0, i + 1));
         const thisPath = path[i]!;
         const theseParams = thisDef.params ? _.pick(params, Object.keys(thisDef.params)) : undefined;
 
@@ -731,7 +732,7 @@ class RouterClass implements Router<any> {
           if (resetTouchedStackNavigators) {
             currState.stack = currState.stack.slice(0, 1);
             if (currState.stack[0]!.path !== thisPath) {
-              currState.stack.push(this.generateInitialInnerState(thisDef, thisPath, params));
+              currState.stack.push(this.#generateInitialInnerState(thisDef, thisPath, params));
             }
           } else {
             const existingPerfectMatchIndex = currState.stack.findIndex(
@@ -741,12 +742,12 @@ class RouterClass implements Router<any> {
             if (existingPerfectMatchIndex !== -1) {
               currState.stack = currState.stack.slice(0, existingPerfectMatchIndex + 1);
             } else {
-              currState.stack.push(this.generateInitialInnerState(thisDef, thisPath, params));
+              currState.stack.push(this.#generateInitialInnerState(thisDef, thisPath, params));
             }
           }
         } else if ("tabs" in currState) {
           if (!currState.tabs.find((a) => a.path === thisPath)) {
-            currState.tabs.push(this.generateInitialInnerState(thisDef, thisPath, params));
+            currState.tabs.push(this.#generateInitialInnerState(thisDef, thisPath, params));
           }
 
           currState.focusedTabIndex = currState.tabs.findIndex((a) => a.path === thisPath);
@@ -770,9 +771,9 @@ class RouterClass implements Router<any> {
     params: Record<string, any>,
     opts?: NavigateOptions,
   ) => {
-    const path = this.getPathArrFromPathObjResult(pathObj);
+    const path = this.#getPathArrFromPathObjResult(pathObj);
 
-    return this.navigateToPath(path, params, opts);
+    return this.#navigateToPath(path, params, opts);
   };
 
   public navigateToUrl = (url: string) => {
@@ -783,7 +784,7 @@ class RouterClass implements Router<any> {
 
     const { path, params } = parseUrl(url);
 
-    return this.navigateToPath(path, params);
+    return this.#navigateToPath(path, params);
   };
 
   public reset = () => {
