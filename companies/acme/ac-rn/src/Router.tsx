@@ -47,5 +47,3 @@ export const {
   useFocusedUrl,
   validateUrl,
 } = createRouter(routeDef);
-
-navigate(PATHS.qwer, { qwer: "asdf" });

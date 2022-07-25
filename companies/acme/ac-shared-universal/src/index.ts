@@ -21,7 +21,7 @@ export const RN_APP_ROOT_ROUTE_DEFINITION = createNonUIRouteDefinition({
     bloop: {
       type: "tab",
       params: {
-        bloop: ParamTypes.number().optional(),
+        bloop: ParamTypes.number().default(1234),
       },
       routes: {
         baz: {
