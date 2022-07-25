@@ -119,13 +119,6 @@ export function validateAndCleanInputParams(
   return validateAndCleanParams(inputParams, paramTypes, "input");
 }
 
-export function validateAndCleanOutputParams(
-  inputParams: Record<string, any>,
-  paramTypes: Record<string, ParamTypesClass<any, any, any>>,
-): { isValid: false; errors: string[] } | { isValid: true; params: Record<string, any> } {
-  return validateAndCleanParams(inputParams, paramTypes, "output");
-}
-
 type InferType<T> = T extends ParamTypesClass<infer U, any, any> ? U : never;
 type InferIsRequired<T> = T extends ParamTypesClass<any, infer U, any> ? U : never;
 type InferHasDefaultValue<T> = T extends ParamTypesClass<any, any, infer U> ? U : never;

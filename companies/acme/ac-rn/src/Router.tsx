@@ -1,4 +1,5 @@
 import { RN_APP_ROOT_ROUTE_DEFINITION } from "ac-shared-universal";
+import { useEffect } from "react";
 import { Button, Text, View } from "react-native";
 
 import { createRouter, extendNonUIRouteDefinition, ParamTypes, ParamTypesClass } from "rn-typed-router";
@@ -23,9 +24,7 @@ const routeDef = extendNonUIRouteDefinition(RN_APP_ROOT_ROUTE_DEFINITION, {
                     <Button
                       title="Go Back"
                       onPress={() => {
-                        console.log(getFocusedUrl());
                         goBack();
-                        console.log(getFocusedUrl());
                       }}
                     />
                   </View>

@@ -1,4 +1,4 @@
-import { validateAndCleanInputParams, ParamTypesClass, validateAndCleanOutputParams } from "./params.js";
+import { validateAndCleanInputParams, ParamTypesClass } from "./params.js";
 import { PathObjResult, PathObjResultLeaf, UrlString } from "../types/path.js";
 import { Router, RouterOptions } from "../types/router.js";
 import { RouteDef } from "../types/routes.js";
@@ -49,14 +49,16 @@ class RouterClass implements Router<any> {
 
   //Returns an object with all the ParamTypes found at the path and the path's parents
   #getAccumulatedParamTypesAtPath = _.memoize(
-    (pathArr: string[]): Record<string, any> => {
+    (pathArr: string[], throwOnNotFound: boolean): Record<string, any> => {
       const paramTypes: Record<string, ParamTypesClass<any, any, any>> = {};
       forEachRouteDefUsingPathArray(this.#rootDef, pathArr, (def, route) => {
         if (!def) {
-          throw new Error(`Unable to find route definitition ${route} for the path ${pathArr.join("/")}`);
+          if (throwOnNotFound) {
+            throw new Error(`Unable to find route definitition ${route} for the path ${pathArr.join("/")}`);
+          }
+        } else {
+          Object.assign(paramTypes, def.params || {});
         }
-
-        Object.assign(paramTypes, def.params || {});
       });
 
       return paramTypes;
@@ -543,7 +545,7 @@ class RouterClass implements Router<any> {
   })();
 
   #generateUrlFromPathArr(pathArr: string[], inputParams: Record<string, any>) {
-    const paramTypes = this.#getAccumulatedParamTypesAtPath(pathArr);
+    const paramTypes = this.#getAccumulatedParamTypesAtPath(pathArr, true);
 
     const pr = validateAndCleanInputParams(inputParams, paramTypes);
 
@@ -573,7 +575,7 @@ class RouterClass implements Router<any> {
       }
     });
 
-    const pr = validateAndCleanOutputParams(params, this.#getAccumulatedParamTypesAtPath(path));
+    const pr = validateAndCleanInputParams(params, this.#getAccumulatedParamTypesAtPath(path, false));
 
     if (!pr.isValid) {
       errors.push(...pr.errors);
@@ -700,6 +702,7 @@ class RouterClass implements Router<any> {
 
   public subscribeToFocusedUrl = (fn: (url: string) => void) => {
     let currFocusedUrl: string;
+    fn(this.getFocusedUrl());
     return this.#navigationStateStore.subscribe(() => {
       const newFocusedUrl = this.getFocusedUrl();
       if (newFocusedUrl !== currFocusedUrl) {
@@ -833,14 +836,16 @@ function forEachRouteDefUsingPathArray(
   let currDef: RouteDef | null = rootDef;
   const arr = [...pathArr];
   while (arr.length) {
-    const route = arr.shift();
+    const route = arr.shift()!;
     if (currDef && route && "routes" in currDef && currDef.routes?.[route as any]) {
       currDef = currDef.routes[route as any] as any;
     } else {
       currDef = null;
-      break;
     }
     processFn(currDef, route);
+    if (!currDef) {
+      break;
+    }
   }
 }
 
