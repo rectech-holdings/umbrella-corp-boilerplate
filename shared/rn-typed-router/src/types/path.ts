@@ -5,8 +5,8 @@ import { GetInputParamsFromPath } from "../implementations/params.js";
 
 export type UrlString = string & { __isUrlString: true };
 
-const $path = Symbol("$path");
-const $routeDef = Symbol("$routeDef");
+const $path = Symbol.for("$path");
+const $routeDef = Symbol.for("$routeDef");
 
 export type $pathType = typeof $path;
 export type $routeDefType = typeof $routeDef;

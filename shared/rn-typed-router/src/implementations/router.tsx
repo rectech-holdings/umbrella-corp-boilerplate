@@ -2,6 +2,7 @@ import { validateAndCleanInputParams, ParamTypesClass, validateAndCleanOutputPar
 import { PathObjResult, PathObjResultLeaf, UrlString } from "../types/path.js";
 import { Router, RouterOptions } from "../types/router.js";
 import { RouteDef } from "../types/routes.js";
+import urlParse from "url-parse";
 import useEvent from "use-event-callback";
 import _ from "lodash";
 import React, { createContext, ReactNode, useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -56,12 +57,13 @@ class RouterClass implements Router<any> {
 
         Object.assign(paramTypes, def.params || {});
       });
+
       return paramTypes;
     },
     (a) => a.join(""),
   );
 
-  #PATHS_ACCESSOR = Symbol("PATHS_ACCESSOR");
+  #PATHS_ACCESSOR = Symbol.for("PATHS_ACCESSOR");
   #getPathArrFromPathObjResult(path: PathObjResult<any, any, any, any, any, any, any, any>) {
     const pathArr: string[] = path[this.#PATHS_ACCESSOR];
     if (!pathArr) {
@@ -845,9 +847,9 @@ function absoluteNavStatePathToRegularPath(absNavStatePath: (string | number)[])
 
 function parseUrl(url: string) {
   const prefix = url.match(/^[^.]+?:\/\//) ? "http://example.com/" : "";
-  const { search, pathname } = new URL(prefix + url);
+  const { query, pathname } = urlParse(prefix + url);
 
-  return { path: pathname.split("/"), params: queryString.parse(search) };
+  return { path: pathname.split("/"), params: queryString.parse(query) };
 }
 
 function getStateAtAbsPath(state: RootNavigationState<any>, path: (string | number)[]) {

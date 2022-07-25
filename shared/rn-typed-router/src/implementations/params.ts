@@ -3,16 +3,16 @@ import { LeafRouteDefWithoutUI, RouteDefWithoutUI } from "../types/routes.js";
 import { Simplify } from "type-fest";
 import { $pathType, PathObjResultBase } from "../types/path.js";
 
-export const $params = Symbol("$params");
+export const $params = Symbol.for("$params");
 export type $paramsType = typeof $params;
 
 //We have to use private symbol accessors so that we expose a small typescript surface area to the outside world
 //but can still access the data we need within this file. A bit weird but likely the best approach for DX.
-const type = Symbol("type");
-const validators = Symbol("validators");
-const enumOptions = Symbol("enumOptions");
-const defaultValue = Symbol("defaultValue");
-const isRequired = Symbol("isRequired");
+const type = Symbol.for("type");
+const validators = Symbol.for("validators");
+const enumOptions = Symbol.for("enumOptions");
+const defaultValue = Symbol.for("defaultValue");
+const isRequired = Symbol.for("isRequired");
 
 export class ParamTypesClass<
   T extends PropertyKey,
@@ -72,13 +72,18 @@ function validateAndCleanParams(
   const finalParams = {};
   Object.keys(paramTypes).forEach((k) => {
     const typeVal = paramTypes[k]!;
+
     const tp = typeVal[type];
-    const vldrs = typeVal[validators];
+    const vldrs = typeVal[validators] || [];
     const eOpts = typeVal[enumOptions];
     const dft = typeVal[defaultValue];
     const isReq = typeVal[isRequired];
 
-    const val = validateType === "output" ? params[k] : params[k] ?? dft;
+    let val = validateType === "output" ? params[k] : params[k] ?? dft;
+
+    if (tp === "number") {
+      val = parseInt(val);
+    }
 
     const matchesType = tp === "enum" ? !!eOpts.find((a) => a === val) : typeof val === tp;
 
@@ -87,7 +92,7 @@ function validateAndCleanParams(
     }
 
     if (!matchesType && !errors.length) {
-      errors.push(`Value "${val}" for param ${k} is not of type "${eOpts ? eOpts.join(",") : tp}"`);
+      errors.push(`Value "${val}" for param ${k} is not of type "${eOpts?.length ? eOpts.join(",") : tp}"`);
     }
 
     if (val && vldrs.length) {
