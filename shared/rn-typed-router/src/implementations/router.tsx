@@ -2,6 +2,7 @@ import { validateAndCleanInputParams, ParamTypesClass, validateAndCleanOutputPar
 import { PathObjResult, PathObjResultLeaf, UrlString } from "../types/path.js";
 import { Router, RouterOptions } from "../types/router.js";
 import { RouteDef } from "../types/routes.js";
+import { dequal } from "dequal/lite";
 import urlParse from "url-parse";
 import useEvent from "use-event-callback";
 import _ from "lodash";
@@ -337,6 +338,8 @@ class RouterClass implements Router<any> {
       throw new Error("No component defined on leaf route definition!");
     }
 
+    console.log("RENDER LEAF", p.path);
+
     return (
       <Wrapper>
         {LeafHeader ? <LeafHeader /> : null}
@@ -345,7 +348,7 @@ class RouterClass implements Router<any> {
         </View>
       </Wrapper>
     );
-  });
+  }, dequal);
 
   #InnerStackNavigator = React.memo(
     (p: { path: string[]; state: StackNavigationState<any, any, any>; absoluteNavStatePath: (string | number)[] }) => {
@@ -411,6 +414,7 @@ class RouterClass implements Router<any> {
         </Wrapper>
       );
     },
+    dequal,
   );
 
   #InnerTabNavigator = React.memo(
@@ -507,6 +511,7 @@ class RouterClass implements Router<any> {
         </Wrapper>
       );
     },
+    dequal,
   );
 
   public PATHS = (() => {

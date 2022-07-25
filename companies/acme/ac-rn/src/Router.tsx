@@ -16,12 +16,6 @@ const routeDef = extendNonUIRouteDefinition(RN_APP_ROOT_ROUTE_DEFINITION, {
             burp: {
               type: "leaf",
               Component: () => {
-                useFocusEffect(() => {
-                  console.log("DID FOCUS BURP!");
-                  return () => {
-                    console.log("DID BLUR BURP!");
-                  };
-                });
                 return (
                   <View style={{ flex: 1 }}>
                     <Text>This is the Burp Page</Text>
@@ -53,13 +47,6 @@ const routeDef = extendNonUIRouteDefinition(RN_APP_ROOT_ROUTE_DEFINITION, {
         screenOrientation: "all",
       },
       Component: () => {
-        useFocusEffect(() => {
-          console.log("DID FOCUS WIHTOUT!");
-          return () => {
-            console.log("DID BLUR WITHOUT!");
-          };
-        });
-
         return (
           <View style={{ flex: 1, paddingTop: 50, backgroundColor: "pink" }}>
             <Text>This is the WithoutParams Page</Text>
