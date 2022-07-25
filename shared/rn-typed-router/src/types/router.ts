@@ -122,7 +122,7 @@ export interface Router<T extends RouteDef> {
    * An effect that runs whenever the focus state changes. Internally uses the proposed
    * `useEvent` hook so you don't need to worry about the effect function being stale.
    */
-  useFocusEffect: (effect: (isFocused: boolean) => void) => void;
+  useFocusEffect: (effect: () => void | (() => void)) => void;
 
   /**
    * Returns the current url of the app.

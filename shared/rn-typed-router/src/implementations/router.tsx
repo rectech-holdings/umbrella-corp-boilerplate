@@ -664,13 +664,23 @@ class RouterClass implements Router<any> {
     });
   };
 
-  public useFocusEffect = (fn: (isFocused: boolean) => any) => {
+  public useFocusEffect = (fn: () => any) => {
     const thisAbsPath = this.#useAbsoluteNavStatePath();
 
-    const onFocus = useEvent(() => fn(_.isEqual(thisAbsPath, this.#getFocusedAbsoluteNavStatePath())));
+    const cleanupFn = useRef<null | (() => any)>(null);
+
+    const doFocusEffect = useEvent(() => {
+      const yes = _.isEqual(thisAbsPath, this.#getFocusedAbsoluteNavStatePath().slice(0, thisAbsPath.length));
+      if (yes) {
+        cleanupFn.current = fn();
+      } else {
+        cleanupFn.current?.();
+      }
+    });
 
     useEffect(() => {
-      return this.#navigationStateStore.subscribe(onFocus);
+      doFocusEffect();
+      return this.#navigationStateStore.subscribe(doFocusEffect);
     }, []);
   };
 

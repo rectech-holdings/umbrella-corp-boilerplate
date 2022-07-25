@@ -93,7 +93,6 @@ export type LeafRouteDef = {
 } & CommonRouteDef;
 
 export type LeafRouteDefWithoutUI = Simplify<Pick<LeafRouteDef, "type"> & CommonRouteDefWithoutUI>;
-export type LeafRouteDefWithUIOnly = SetRequired<
-  Simplify<Pick<LeafRouteDef, "getComponent" | "type"> & CommonRouteDefWithUIOnly>,
-  "getComponent"
+export type LeafRouteDefWithUIOnly = Simplify<
+  Pick<LeafRouteDef, "getComponent" | "Component" | "type"> & CommonRouteDefWithUIOnly
 >;

@@ -15,8 +15,14 @@ const routeDef = extendNonUIRouteDefinition(RN_APP_ROOT_ROUTE_DEFINITION, {
           routes: {
             burp: {
               type: "leaf",
-              getComponent: () => () =>
-                (
+              Component: () => {
+                useFocusEffect(() => {
+                  console.log("DID FOCUS BURP!");
+                  return () => {
+                    console.log("DID BLUR BURP!");
+                  };
+                });
+                return (
                   <View style={{ flex: 1 }}>
                     <Text>This is the Burp Page</Text>
                     <Button
@@ -26,7 +32,8 @@ const routeDef = extendNonUIRouteDefinition(RN_APP_ROOT_ROUTE_DEFINITION, {
                       }}
                     />
                   </View>
-                ),
+                );
+              },
             },
           },
         },
@@ -34,19 +41,25 @@ const routeDef = extendNonUIRouteDefinition(RN_APP_ROOT_ROUTE_DEFINITION, {
     },
     qwer: {
       type: "leaf",
-      getComponent: () => () =>
-        (
-          <View style={{ flex: 1 }}>
-            <Text>This is the Qwer Page</Text>
-          </View>
-        ),
+      Component: () => (
+        <View style={{ flex: 1 }}>
+          <Text>This is the Qwer Page</Text>
+        </View>
+      ),
     },
     withoutParams: {
       type: "leaf",
       screenProps: {
         screenOrientation: "all",
       },
-      getComponent: () => () => {
+      Component: () => {
+        useFocusEffect(() => {
+          console.log("DID FOCUS WIHTOUT!");
+          return () => {
+            console.log("DID BLUR WITHOUT!");
+          };
+        });
+
         return (
           <View style={{ flex: 1, paddingTop: 50, backgroundColor: "pink" }}>
             <Text>This is the WithoutParams Page</Text>
