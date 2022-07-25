@@ -21,7 +21,6 @@
     "query-string": "7.1.1",
     "react": "18.2.0",
     "react-freeze": "1.0.0",
-    "react-native-screens": "3.15.0",
     "use-event-callback": "0.1.0",
     "use-sync-external-store": "1.2.0",
     "zustand": "4.0.0-rc.1"
@@ -30,7 +29,8 @@
     "type-fest": "2.16.0"
   },
   "peerDependencies": {
-    "react": "^18.0.0",
-    "react-native": "*"
+    "react": "*",
+    "react-native": "*",
+    "react-native-screens": "*"
   }
 }

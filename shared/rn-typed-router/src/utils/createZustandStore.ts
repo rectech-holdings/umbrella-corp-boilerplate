@@ -1,4 +1,5 @@
-import immer, { Patch } from "immer";
+import immer, { Patch, enablePatches } from "immer";
+enablePatches();
 import _ from "lodash";
 import zustand, { State, Subscribe, UseBoundStore, StoreApi } from "zustand";
 
