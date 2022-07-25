@@ -16,13 +16,16 @@ const routeDef = extendNonUIRouteDefinition(RN_APP_ROOT_ROUTE_DEFINITION, {
             burp: {
               type: "leaf",
               Component: () => {
+                const params = useParams(PATHS.bloop.baz.burp);
                 return (
-                  <View style={{ flex: 1 }}>
+                  <View style={{ flex: 1, paddingTop: 50 }}>
                     <Text>This is the Burp Page</Text>
                     <Button
                       title="Go Back"
                       onPress={() => {
+                        console.log(getFocusedUrl());
                         goBack();
+                        console.log(getFocusedUrl());
                       }}
                     />
                   </View>
@@ -52,7 +55,7 @@ const routeDef = extendNonUIRouteDefinition(RN_APP_ROOT_ROUTE_DEFINITION, {
             <Text>This is the WithoutParams Page</Text>
             <Button
               onPress={() => {
-                navigateToUrl(generateUrl(PATHS.bloop.baz.burp, { baz: "qwer", burp: "asdf", bloop: 234 }));
+                navigate(PATHS.bloop.baz.burp, { baz: "qwer", burp: "asdf", bloop: 234 });
               }}
               title="Navigate"
             />
