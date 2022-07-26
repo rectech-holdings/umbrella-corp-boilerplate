@@ -163,57 +163,35 @@ class RouterClass implements Router<any> {
     let Component: any;
     if (type === "leaf") {
       if ("Component" in childDef && childDef.Component) {
-        Component = assertIsFn(childDef.Component, "component was defined on a route but is not a react component");
-      } else if ("getComponent" in childDef && childDef.getComponent) {
-        Component = assertIsFn(
-          childDef.getComponent?.(),
-          "getComponent was defined on route but does not return a react component! " + path.join("/"),
+        Component = assertIsComponent(
+          childDef.Component,
+          "component was defined on a route but is not a react component!" + path.join("/"),
         );
       }
     } else if (type === "bottomTabBar") {
       if ("BottomTabBar" in childDef && childDef.BottomTabBar) {
-        Component = assertIsFn(
+        Component = assertIsComponent(
           childDef.BottomTabBar,
           "bottomTabBar was defined on route but is not a react component! " + path.join("/"),
-        );
-      } else if ("getBottomTabBar" in childDef && childDef.getBottomTabBar) {
-        Component = assertIsFn(
-          childDef.getBottomTabBar?.(),
-          "getBottomTabBar was defined on route but does not return a react component! " + path.join("/"),
         );
       }
     } else if (type === "topTabBar") {
       if ("TopTabBar" in childDef && childDef.TopTabBar) {
-        Component = assertIsFn(
+        Component = assertIsComponent(
           childDef.TopTabBar,
           "topTabBar was defined on route but is not a react component! " + path.join("/"),
         );
-      } else if ("getTopTabBar" in childDef && childDef.getTopTabBar) {
-        Component = assertIsFn(
-          childDef.getTopTabBar?.(),
-          "getTopTabBar was defined on route but does not return a react component",
-        );
       }
     } else if (type === "wrapper") {
-      if (childDef.getWrapper) {
-        Component = assertIsFn(
-          childDef.getWrapper?.(),
-          "getWrapper was defined on route but does not return a react component! " + path.join("/"),
-        );
-      } else if (childDef.Wrapper) {
-        Component = assertIsFn(
+      if (childDef.Wrapper) {
+        Component = assertIsComponent(
           childDef.Wrapper,
           "Wrapper was defined on a route but is not a react component! " + path.join("/"),
         );
       }
     } else {
-      if (childDef.getHeader) {
-        Component = assertIsFn(
-          childDef.getHeader?.(),
-          "getHeader was defined on route but does not return a react component! " + path.join("/"),
-        );
-      } else if (childDef.Header) {
-        Component = assertIsFn(
+      if (childDef.Header) {
+        Component = assertIsComponent(
           childDef.Header,
           "header was defined on a route but is not a react component! " + path.join("/"),
         );
@@ -849,9 +827,14 @@ function forEachRouteDefUsingPathArray(
   }
 }
 
-function assertIsFn<T>(val: T, errMsg: string) {
-  if (!val || typeof val !== "function") {
-    throw new Error(errMsg);
+function assertIsComponent<T>(val: T, errMsg: string) {
+  if (__DEV__) {
+    //Doesn't need to be too rigorous of checks. Just here to help people debug dumb mistakes.
+    const isFunction = typeof val === "function";
+    const isLikelyLazyComponent = val && typeof val === "object" && val["$$typeof"];
+    if (!val || (!isFunction && !isLikelyLazyComponent)) {
+      throw new Error(errMsg);
+    }
   }
 
   return val;

@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { LazyExoticComponent, ReactNode } from "react";
 import { ScreenProps } from "react-native-screens";
 import { Simplify, SetRequired } from "type-fest";
 import { ParamsTypeRecord } from "../implementations/params.js";
@@ -88,11 +88,8 @@ export type TabRouteDefWithUIOnly = Simplify<
 
 export type LeafRouteDef = {
   type: "leaf";
-  Component?: () => ReactNode;
-  getComponent?: () => () => ReactNode;
+  Component: (() => ReactNode) | LazyExoticComponent<() => JSX.Element>;
 } & CommonRouteDef;
 
 export type LeafRouteDefWithoutUI = Simplify<Pick<LeafRouteDef, "type"> & CommonRouteDefWithoutUI>;
-export type LeafRouteDefWithUIOnly = Simplify<
-  Pick<LeafRouteDef, "getComponent" | "Component" | "type"> & CommonRouteDefWithUIOnly
->;
+export type LeafRouteDefWithUIOnly = Simplify<Pick<LeafRouteDef, "Component" | "type"> & CommonRouteDefWithUIOnly>;

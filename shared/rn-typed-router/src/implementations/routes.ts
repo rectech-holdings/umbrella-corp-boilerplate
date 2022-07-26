@@ -5,8 +5,6 @@ import _ from "lodash";
 export function createRouteDefinition<T extends RouteDef>(def: T): T {
   //TODO: Verify that component properties point to the correct type of function, etc
 
-  //TODO: Verify that leaf definitions have a `Component` or `getComponent` specified
-
   return createNonUIRouteDefinition(def);
 }
 

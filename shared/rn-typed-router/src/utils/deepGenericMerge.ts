@@ -23,8 +23,7 @@ type GetObjSameKeys<T, U> = Omit<T | U, keyof GetObjDifferentKeys<T, U>>;
 type MergeTwoObjects<
   T,
   U,
-  // non shared keys are optional
-  T0 = Partial<GetObjDifferentKeys<T, U>> & { [K in keyof GetObjSameKeys<T, U>]: DeepGenericMerge<T[K], U[K]> }, // shared keys are recursively resolved by `DeepGenericMerge<...>`
+  T0 = GetObjDifferentKeys<T, U> & { [K in keyof GetObjSameKeys<T, U>]: DeepGenericMerge<T[K], U[K]> }, // shared keys are recursively resolved by `DeepGenericMerge<...>`
   T1 = { [K in keyof T0]: T0[K] },
 > = T1;
 
