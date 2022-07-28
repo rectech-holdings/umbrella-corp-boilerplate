@@ -152,8 +152,6 @@ class RouterClass implements Router<any> {
     }
   }
 
-  #bareImportLazyComponentCache = new Map();
-
   #getComponentAtPath(
     path: string[],
     type: "leaf" | "topTabBar" | "bottomTabBar" | "header",
@@ -200,18 +198,7 @@ class RouterClass implements Router<any> {
       }
     }
 
-    if (Component instanceof Promise) {
-      const componentKey = path.concat(type).join("");
-      if (this.#bareImportLazyComponentCache.get(componentKey)) {
-        this.#bareImportLazyComponentCache.set(
-          componentKey,
-          React.lazy(() => Component),
-        );
-      }
-      return this.#bareImportLazyComponentCache.get(componentKey);
-    } else {
-      return Component;
-    }
+    return Component;
   }
 
   #getFocusedAbsoluteNavStatePath() {

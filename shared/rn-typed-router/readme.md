@@ -68,6 +68,7 @@ export function App() {
 
 ```tsx
 //router.tsx
+import React from "react";
 import { Button, Text, View } from "react-native";
 
 import { createRouter, createRouteDefinition, ParamTypes } from "rn-typed-router";
@@ -76,18 +77,18 @@ const routeDef = createRouteDefinition({
   routes: {
     LOGIN: {
       type: "leaf",
-      Component: import("./Login"),
+      Component: React.lazy(() => import("./Login")),
     },
     MAIN: {
       type: "tab",
-      BottomTabBar: import("./MainTabBar"),
+      BottomTabBar: React.lazy(() => import("./MainTabBar")),
       routes: {
         TAB_1: {
           type: "stack",
           routes: {
             TAB_1_STACK_HOME: {
               type: "leaf",
-              Component: import("./Tab1StackHome"),
+              Component: React.lazy(() => import("./Tab1StackHome")),
             },
             TAB_1_STACK_SCREEN: {
               //A stack inside of a stack
@@ -104,7 +105,7 @@ const routeDef = createRouteDefinition({
         },
         TAB_2: {
           type: "leaf",
-          Component: import("./Tab2"),
+          Component: React.lazy(() => import("./Tab2")),
         },
       },
     },

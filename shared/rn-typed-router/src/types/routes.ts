@@ -91,15 +91,13 @@ type MultiTypeComponent =
   | (() => ReactNode)
   | React.FC<{}>
   | React.Component<{}>
-  | LazyExoticComponent<() => JSX.Element>
-  | Promise<{ default: () => JSX.Element }>; //Convenience for just importing the file without wrapping it in React.lazy
+  | LazyExoticComponent<() => JSX.Element>;
 
 type MultiTypeComponentWithChildren =
   | ((a: { children: ReactNode }) => ReactNode)
   | React.FC<{ children: ReactNode }>
   | React.Component<{ children: ReactNode }>
-  | LazyExoticComponent<(a: { children: ReactNode }) => JSX.Element>
-  | Promise<{ default: (a: { children: ReactNode }) => JSX.Element }>;
+  | LazyExoticComponent<(a: { children: ReactNode }) => JSX.Element>;
 
 export type LeafRouteDefWithoutUI = Simplify<Pick<LeafRouteDef, "type"> & CommonRouteDefWithoutUI>;
 export type LeafRouteDefWithUIOnly = Simplify<Pick<LeafRouteDef, "Component" | "type"> & CommonRouteDefWithUIOnly>;
