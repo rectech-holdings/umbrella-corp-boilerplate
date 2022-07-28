@@ -3,7 +3,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  previewFeatures = ["extendedIndexes"]
 }
 
 datasource db {
@@ -22,14 +21,14 @@ model BankAccount {
 }
 
 model Loan {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  title     String   @db.VarChar(255)
-  content   String?
-  authorId  Int
-  author    User     @relation(fields: [authorId], references: [id])
-  comments  Comment[]
+  id         Int                 @id @default(autoincrement())
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+  title      String              @db.VarChar(255)
+  content    String?
+  authorId   Int
+  author     User                @relation(fields: [authorId], references: [id])
+  comments   Comment[]
   categories CategoriesOnLoans[]
 
   @@index([content], type: BTree)
@@ -55,8 +54,8 @@ model CategoriesOnLoans {
 
 //One to many, child-parent relationship
 model Comment {
-  id     Int    @id
-  Loan   Loan   @relation(fields: [loanId], references: [id]) // A comment can have one loan
+  id     Int  @id
+  Loan   Loan @relation(fields: [loanId], references: [id]) // A comment can have one loan
   loanId Int
 }
 
@@ -68,8 +67,8 @@ model Profile {
 }
 
 model User {
-  id           Int      @id @default(autoincrement())
-  email        String   @unique
+  id           Int           @id @default(autoincrement())
+  email        String        @unique
   name         String?
   loans        Loan[]
   profile      Profile?

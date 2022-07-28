@@ -31,9 +31,7 @@ type CommonRouteDefWithUIOnly = {
   childScreenProps?: ScreenProps;
   screenProps?: ScreenProps;
   Wrapper?: (a: { children: ReactNode }) => ReactNode;
-  getWrapper?: () => (a: { children: ReactNode }) => ReactNode;
   Header?: () => ReactNode;
-  getHeader?: () => () => ReactNode;
 };
 
 type CommonRouteDefWithoutUI = {
@@ -66,9 +64,7 @@ export type TabRouteDef = {
   type: "tab" | "switch";
   initialRoute?: string;
   TopTabBar?: () => ReactNode;
-  getTopTabBar?: () => () => ReactNode;
   BottomTabBar?: () => ReactNode;
-  getBottomTabBar?: () => () => ReactNode;
   routes: { [routePath in string]: RouteDef };
 } & CommonRouteDef;
 
@@ -81,7 +77,7 @@ export type TabRouteDefWithoutUI = Simplify<
 
 export type TabRouteDefWithUIOnly = Simplify<
   CommonRouteDefWithUIOnly &
-    Pick<TabRouteDef, "type" | "initialRoute" | "BottomTabBar" | "TopTabBar" | "getBottomTabBar" | "getTopTabBar"> & {
+    Pick<TabRouteDef, "type" | "initialRoute" | "BottomTabBar" | "TopTabBar"> & {
       routes: { [routePath in string]: RouteDefWithUIOnly };
     }
 >;
