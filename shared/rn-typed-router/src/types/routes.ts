@@ -30,8 +30,8 @@ export type RouteDefFromMerge<T extends RouteDefWithoutUI> = T extends StackRout
 type CommonRouteDefWithUIOnly = {
   childScreenProps?: ScreenProps;
   screenProps?: ScreenProps;
-  Wrapper?: (a: { children: ReactNode }) => ReactNode;
-  Header?: () => ReactNode;
+  Wrapper?: MultiTypeComponentWithChildren;
+  Header?: MultiTypeComponent;
 };
 
 type CommonRouteDefWithoutUI = {
@@ -63,8 +63,8 @@ export type StackRouteDefWithUIOnly = Simplify<
 export type TabRouteDef = {
   type: "tab" | "switch";
   initialRoute?: string;
-  TopTabBar?: () => ReactNode;
-  BottomTabBar?: () => ReactNode;
+  TopTabBar?: MultiTypeComponent;
+  BottomTabBar?: MultiTypeComponent;
   routes: { [routePath in string]: RouteDef };
 } & CommonRouteDef;
 
@@ -84,8 +84,22 @@ export type TabRouteDefWithUIOnly = Simplify<
 
 export type LeafRouteDef = {
   type: "leaf";
-  Component: (() => ReactNode) | LazyExoticComponent<() => JSX.Element>;
+  Component: MultiTypeComponent;
 } & CommonRouteDef;
+
+type MultiTypeComponent =
+  | (() => ReactNode)
+  | React.FC<{}>
+  | React.Component<{}>
+  | LazyExoticComponent<() => JSX.Element>
+  | Promise<{ default: () => JSX.Element }>; //Convenience for just importing the file without wrapping it in React.lazy
+
+type MultiTypeComponentWithChildren =
+  | ((a: { children: ReactNode }) => ReactNode)
+  | React.FC<{ children: ReactNode }>
+  | React.Component<{ children: ReactNode }>
+  | LazyExoticComponent<(a: { children: ReactNode }) => JSX.Element>
+  | Promise<{ default: (a: { children: ReactNode }) => JSX.Element }>;
 
 export type LeafRouteDefWithoutUI = Simplify<Pick<LeafRouteDef, "type"> & CommonRouteDefWithoutUI>;
 export type LeafRouteDefWithUIOnly = Simplify<Pick<LeafRouteDef, "Component" | "type"> & CommonRouteDefWithUIOnly>;

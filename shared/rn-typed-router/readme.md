@@ -2,7 +2,7 @@
 
 This is a nested router solution meant as a replacement for react-navigation, with a focus on performance and type correctness.
 
-First define your routes in a nested manner (typically in a `router.tsx` file or the like) to create your `Navigator` and navigation functions. Next, render your `Navigator` at the root of your app. Finally, use the navigation constants and functions exported from your route definition (e.g. the exports defined in `router.tsx`) to interact with the router.
+First define your routes in a nested manner (typically in a `router.tsx` file or the like) to create your `Navigator` and navigation functions. Next, render your `Navigator` at the root of your app. Finally, use the navigation constants and functions exported from your route definition (e.g. the exports defined in `router.tsx`) to interact with the router, navigate, get params, etcetera.
 
 ## Basic Example:
 
@@ -21,8 +21,7 @@ const routeDef = createRouteDefinition({
             <Button
               title="Login"
               onPress={() => {
-                //`navigate` and `PATHS` are defined at bottom of file...
-                navigate(PATHS.MAIN, {});
+                navigate(PATHS.MAIN, { someParam: 123 });
               }}
             />
           </View>
@@ -31,19 +30,23 @@ const routeDef = createRouteDefinition({
     },
     MAIN: {
       type: "leaf",
-      Component: () => (
-        <View style={{ flex: 1 }}>
-          <Text>Main</Text>
-        </View>
-      ),
+      params: {
+        someParam: ParamTypes.number(),
+      },
+      Component: () => {
+        const { someParam } = useParams(PATHS.MAIN);
+        return (
+          <View style={{ flex: 1 }}>
+            <Text>Main</Text>
+          </View>
+        );
+      },
     },
   },
 });
 
-export const { Navigator, PATHS, goBack, navigate, useParams } = createRouter(routeDef);
+const { Navigator, PATHS, goBack, navigate, useParams } = createRouter(routeDef);
 
-//App.tsx
-import { Navigator } from "./router.tsx";
 export function App() {
   return <Navigator />;
 }

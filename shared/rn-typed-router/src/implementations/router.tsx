@@ -152,6 +152,8 @@ class RouterClass implements Router<any> {
     }
   }
 
+  #bareImportLazyComponentCache = new Map();
+
   #getComponentAtPath(
     path: string[],
     type: "leaf" | "topTabBar" | "bottomTabBar" | "header",
@@ -198,7 +200,18 @@ class RouterClass implements Router<any> {
       }
     }
 
-    return Component;
+    if (Component instanceof Promise) {
+      const componentKey = path.concat(type).join("");
+      if (this.#bareImportLazyComponentCache.get(componentKey)) {
+        this.#bareImportLazyComponentCache.set(
+          componentKey,
+          React.lazy(() => Component),
+        );
+      }
+      return this.#bareImportLazyComponentCache.get(componentKey);
+    } else {
+      return Component;
+    }
   }
 
   #getFocusedAbsoluteNavStatePath() {
@@ -832,7 +845,8 @@ function assertIsComponent<T>(val: T, errMsg: string) {
     //Doesn't need to be too rigorous of checks. Just here to help people debug dumb mistakes.
     const isFunction = typeof val === "function";
     const isLikelyLazyComponent = val && typeof val === "object" && val["$$typeof"];
-    if (!val || (!isFunction && !isLikelyLazyComponent)) {
+    const isLikelyLazyBareImport = val && val instanceof Promise;
+    if (!val || (!isFunction && !isLikelyLazyComponent && !isLikelyLazyBareImport)) {
       throw new Error(errMsg);
     }
   }
