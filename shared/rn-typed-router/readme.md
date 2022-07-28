@@ -4,120 +4,184 @@ This is a nested router solution meant as a replacement for react-navigation, wi
 
 First define your routes in a nested manner (typically in a `router.tsx` file or the like) to create your `Navigator` and navigation functions. Next, render your `Navigator` at the root of your app. Finally, use the navigation constants and functions exported from your route definition (e.g. the exports defined in `router.tsx`) to interact with the router.
 
-If you wish to share route definitions between your frontend and backend, you will need to make use of an advanced pattern where you create your definition in two steps, first by calling `createNonUIRouteDefinition` and then by calling `extendNonUIRouteDefinition`.
-
-Full basic demonstration included below:
+## Basic Example:
 
 ```tsx
-//router.tsx
-import React, { ReactNode, Suspense } from "react";
 import { Button, Text, View } from "react-native";
-
 import { createRouter, createRouteDefinition, ParamTypes } from "rn-typed-router";
 const routeDef = createRouteDefinition({
-  type: "switch",
-  initialRoute: "withoutParams",
-  Wrapper: (a: { children: ReactNode }) => <Suspense fallback={null}>{a.children}</Suspense>,
+  type: "tab",
   routes: {
-    withoutParams: {
+    LOGIN: {
       type: "leaf",
-      screenProps: {
-        screenOrientation: "all",
-      },
       Component: () => {
         return (
-          <View style={{ flex: 1, paddingTop: 50, backgroundColor: "pink" }}>
-            <Text>This is the WithoutParams Page</Text>
+          <View style={{ flex: 1 }}>
+            <Text>Login Page</Text>
             <Button
+              title="Login"
               onPress={() => {
-                navigate(PATHS.bloop.baz.fizz, { baz: "qwer", fizz: "asdf", bloop: 234 });
+                //`navigate` and `PATHS` are defined at bottom of file...
+                navigate(PATHS.MAIN, {});
               }}
-              title="Navigate"
             />
           </View>
         );
       },
     },
-    bloop: {
+    MAIN: {
+      type: "leaf",
+      Component: () => (
+        <View style={{ flex: 1 }}>
+          <Text>Main</Text>
+        </View>
+      ),
+    },
+  },
+});
+
+export const { Navigator, PATHS, goBack, navigate, useParams } = createRouter(routeDef);
+
+//App.tsx
+import { Navigator } from "./router.tsx";
+export function App() {
+  return <Navigator />;
+}
+```
+
+## More Complex Example
+
+```tsx
+//router.tsx
+import { Button, Text, View } from "react-native";
+
+import { createRouter, createRouteDefinition, ParamTypes } from "rn-typed-router";
+const routeDef = createRouteDefinition({
+  type: "switch",
+  routes: {
+    LOGIN: {
+      type: "leaf",
+      Component: import("./Login"),
+    },
+    MAIN: {
       type: "tab",
-      params: {
-        bloopParam: ParamTypes.number().default(1234),
-      },
+      BottomTabBar: import("./MainTabBar"),
       routes: {
-        baz: {
+        TAB_1: {
           type: "stack",
-          params: {
-            bazParam: ParamTypes.enum({ asdf: true, qwer: true }),
-          },
           routes: {
-            fizz: {
+            TAB_1_STACK_HOME: {
               type: "leaf",
-              Component: React.lazy(() => import("./fizzPage.js")),
+              Component: import("./Tab1StackHome"),
+            },
+            TAB_1_STACK_SCREEN: {
+              //A stack inside of a stack
+              type: "stack",
               params: {
-                fizzParam: ParamTypes.string(),
+                //This parameter can be used by any subroute
+                someParam: ParamTypes.number(),
+              },
+              routes: {
+                TAB_1_STACK,
               },
             },
           },
         },
-      },
-    },
-    qwer: {
-      type: "leaf",
-      params: {
-        qwerParam: ParamTypes.string().default("bloah"),
-      },
-      Component: () => {
-        const { qwerParam } = useParams(PATHS.qwer);
-        return (
-          <View style={{ flex: 1 }}>
-            <Text>This is the Qwer Page and the qwer parameter: {qwerParam}</Text>
-          </View>
-        );
+        TAB_2: {
+          type: "leaf",
+          Component: import("./Tab2"),
+        },
       },
     },
   },
 });
 
-export const {
-  Navigator,
-  PATHS,
-  generateUrl,
-  goBack,
-  navigate,
-  navigateToUrl,
-  reset,
-  useFocusEffect,
-  useIsFocused,
-  useParams,
-  getFocusedParams,
-  getFocusedUrl,
-  subscribeToFocusedUrl,
-  useFocusedUrl,
-  validateUrl,
-} = createRouter(routeDef);
+//NOTE EXPORTS BELOW! These are how params will be consumed and navigation will occur.
+export const { Navigator, PATHS, goBack, navigate, useParams } = createRouter(routeDef);
 
 //App.tsx
 import { Navigator } from "./router.tsx";
-
-export default function App() {
+export function App() {
   return <Navigator />;
 }
 
-//fizzPage.tsx
-import { PATHS, navigate, useParams } from "./router.tsx";
-import { Button } from "react-native";
+//Login.tsx
+import { PATHS, navigate } from "./router.tsx";
 
-export default function FizzPage() {
-  const { bloopParam, bazParam, fizzParam } = useParams(PATHS.bloop.baz.fizz);
-
+export default function Login() {
   return (
-    <Button
-      title="Press Me"
-      onPress={() => {
-        console.log(bloopParam, bazParam, fizzParam);
-        navigate(PATHS.bloop.baz.fizz, { baz: "qwer", fizz: "qwer", bloop: 599 });
-      }}
-    />
+    <View style={{ flex: 1 }}>
+      <Text>This is the Login Page</Text>
+      <Button
+        onPress={() => {
+          navigate(PATHS.MAIN.TAB_1.TAB_1_STACK_HOME, {});
+        }}
+        title="Click to Login"
+      />
+    </View>
+  );
+}
+
+//MainTabBar.tsx
+import { PATHS, navigate } from "./router.tsx";
+export default function MainTabBar() {
+  return (
+    <View style={{ height: 50, flex: 1 }}>
+      <Button
+        title="Tab 1"
+        onPress={() => {
+          navigate(PATHS.MAIN.TAB_1.TAB_1_STACK_HOME, {});
+        }}
+      />
+      <Button
+        title="Tab 2"
+        onPress={() => {
+          navigate(PATHS.MAIN.TAB_2, {});
+        }}
+      />
+    </View>
+  );
+}
+
+//Tab1StackHome.tsx
+import { PATHS, navigate } from "./router.tsx";
+export default function Tab1StackHome() {
+  return (
+    <View style={{ flex: 1 }}>
+      <Text>Tab 1</Text>
+      <Button
+        onPress={() => {
+          navigate(PATHS.MAIN.TAB_1.TAB_1_STACK_SCREEN, { someParam: 123 });
+        }}
+        title="Push Stack Screen"
+      />
+    </View>
+  );
+}
+
+//Tab1StackScreen.tsx
+import { goBack, useParams } from "./router.tsx";
+export default function Tab1StackScreen() {
+  const { someParam } = useParams(PATHS.MAIN.TAB_1.TAB_1_STACK_SCREEN);
+  return (
+    <View style={{ flex: 1 }}>
+      <Text>Tab 1 Stack Screen ({someParam})</Text>
+      <Button
+        onPress={() => {
+          goBack();
+        }}
+        title="Go Back"
+      />
+    </View>
+  );
+}
+
+//Tab2.tsx
+export default function Tab2() {
+  return (
+    <View style={{ flex: 1 }}>
+      <Text>Tab 2</Text>
+    </View>
   );
 }
 ```
