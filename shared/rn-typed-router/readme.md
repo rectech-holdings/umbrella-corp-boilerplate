@@ -91,14 +91,10 @@ const routeDef = createRouteDefinition({
               Component: React.lazy(() => import("./Tab1StackHome")),
             },
             TAB_1_STACK_SCREEN: {
-              //A stack inside of a stack
-              type: "stack",
+              type: "leaf",
               params: {
                 //This parameter can be used by any subroute
                 someParam: ParamTypes.number(),
-              },
-              routes: {
-                TAB_1_STACK,
               },
             },
           },
@@ -139,7 +135,8 @@ export default function Login() {
 }
 
 //MainTabBar.tsx
-import { PATHS, navigate } from "./router.tsx";
+import { View, Button, Text } from "react-native";
+import { PATHS, navigate } from "../Router.js";
 export default function MainTabBar() {
   return (
     <View style={{ height: 50, flex: 1 }}>
@@ -160,7 +157,8 @@ export default function MainTabBar() {
 }
 
 //Tab1StackHome.tsx
-import { PATHS, navigate } from "./router.tsx";
+import { View, Button, Text } from "react-native";
+import { PATHS, navigate } from "../Router.js";
 export default function Tab1StackHome() {
   return (
     <View style={{ flex: 1 }}>

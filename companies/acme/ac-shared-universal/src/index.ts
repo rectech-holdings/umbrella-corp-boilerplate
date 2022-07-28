@@ -7,36 +7,30 @@ import {
 } from "rn-typed-router-core";
 
 export const RN_APP_ROOT_ROUTE_DEFINITION = createNonUIRouteDefinition({
-  type: "stack",
+  type: "switch",
   routes: {
-    withoutParams: {
+    LOGIN: {
       type: "leaf",
     },
-    qwer: {
-      type: "leaf",
-      params: {
-        qwer: ParamTypes.string().default("bloah"),
-      },
-    },
-    bloop: {
+    MAIN: {
       type: "tab",
-      params: {
-        bloop: ParamTypes.number().default(1234),
-      },
       routes: {
-        baz: {
+        TAB_1: {
           type: "stack",
-          params: {
-            baz: ParamTypes.enum({ asdf: true, qwer: true }),
-          },
           routes: {
-            burp: {
+            TAB_1_STACK_HOME: {
+              type: "leaf",
+            },
+            TAB_1_STACK_SCREEN: {
               type: "leaf",
               params: {
-                burp: ParamTypes.string(),
+                someParam: ParamTypes.number(),
               },
             },
           },
+        },
+        TAB_2: {
+          type: "leaf",
         },
       },
     },

@@ -1,51 +1,44 @@
 import { RN_APP_ROOT_ROUTE_DEFINITION } from "ac-shared-universal";
-import React from "react";
-import { Button, Text, View } from "react-native";
+import React, { ReactNode, Suspense } from "react";
+
+import Login from "./pages/Login.js";
+import MainTabBar from "./pages/MainTabBar.js";
+import Tab1StackHome from "./pages/Tab1StackHome.js";
+import Tab1StackScreen from "./pages/Tab1StackScreen.js";
+import Tab2 from "./pages/Tab2.js";
 
 import { createRouter, extendNonUIRouteDefinition } from "rn-typed-router";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { Text, View } from "react-native";
+
 const routeDef = extendNonUIRouteDefinition(RN_APP_ROOT_ROUTE_DEFINITION, {
-  type: "stack",
-  initialRoute: "withoutParams",
+  type: "switch",
   routes: {
-    bloop: {
+    LOGIN: {
+      type: "leaf",
+      Component: Login,
+    },
+    MAIN: {
       type: "tab",
+      BottomTabBar: MainTabBar,
       routes: {
-        baz: {
+        TAB_1: {
           type: "stack",
           routes: {
-            burp: {
+            TAB_1_STACK_HOME: {
               type: "leaf",
-              Component: React.lazy(() => import("./lazyPage.js")),
+              Component: Tab1StackHome,
+            },
+            TAB_1_STACK_SCREEN: {
+              type: "leaf",
+              Component: Tab1StackScreen,
             },
           },
         },
-      },
-    },
-    qwer: {
-      type: "leaf",
-      Component: () => (
-        <View style={{ flex: 1 }}>
-          <Text>This is the Qwer Page</Text>
-        </View>
-      ),
-    },
-    withoutParams: {
-      type: "leaf",
-      screenProps: {
-        screenOrientation: "all",
-      },
-      Component: () => {
-        return (
-          <View style={{ flex: 1, paddingTop: 50, backgroundColor: "pink" }}>
-            <Text>This is the WithoutParams Page</Text>
-            <Button
-              onPress={() => {
-                navigate(PATHS.bloop.baz.burp, { baz: "qwer", burp: "asdf", bloop: 234 });
-              }}
-              title="Navigate"
-            />
-          </View>
-        );
+        TAB_2: {
+          type: "leaf",
+          Component: Tab2,
+        },
       },
     },
   },
@@ -67,4 +60,4 @@ export const {
   subscribeToFocusedUrl,
   useFocusedUrl,
   validateUrl,
-} = createRouter(routeDef);
+} = createRouter<typeof routeDef>(routeDef);
