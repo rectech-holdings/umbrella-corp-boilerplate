@@ -10,9 +10,13 @@ First define your routes in a nested manner (typically in a `router.tsx` file or
 import { Button, Text, View } from "react-native";
 import { createRouter, createRouteDefinition, ParamTypes } from "rn-typed-router";
 const routeDef = createRouteDefinition({
+  //Declare the type of root navigator. Options are "tab", "switch", or "stack"
   type: "tab",
+  //Declare the routes that live under the root navigator
   routes: {
+    //The LOGIN route. Is also the initial route since it comes first in the object
     LOGIN: {
+      //Type "leaf" for the LOGIN route which means it does have any nested navigators. Note that most complex apps have nested navigators.
       type: "leaf",
       Component: () => {
         return (
@@ -21,6 +25,7 @@ const routeDef = createRouteDefinition({
             <Button
               title="Login"
               onPress={() => {
+                //On click, navigate to the MAIN route with { someParam: 123 }
                 navigate(PATHS.MAIN, { someParam: 123 });
               }}
             />
@@ -28,12 +33,17 @@ const routeDef = createRouteDefinition({
         );
       },
     },
+    //The MAIN route
     MAIN: {
+      //The MAIN route is also a leaf route
       type: "leaf",
       params: {
+        //Anytime the MAIN route is navigated to there MUST be a someParam parameter defined that is a number
         someParam: ParamTypes.number(),
       },
       Component: () => {
+        //Call the useParams method to get the param, and ensure you specify which router path you expect
+        //this component to be rendered under. In this case the MAIN route
         const { someParam } = useParams(PATHS.MAIN);
         return (
           <View style={{ flex: 1 }}>
@@ -45,9 +55,11 @@ const routeDef = createRouteDefinition({
   },
 });
 
+//Export all the key functions and constants you will use throughout your app. These will be FULLY TYPED using the shape of your route definition
 const { Navigator, PATHS, goBack, navigate, useParams } = createRouter(routeDef);
 
 export function App() {
+  //Render the navigator at the root of your app
   return <Navigator />;
 }
 ```
