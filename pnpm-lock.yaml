@@ -216,6 +216,7 @@ importers:
       metro-react-native-babel-preset: 0.70.3
       npm-run-all: 4.1.5
       react: 18.2.0
+      react-freeze: 1.0.0
       react-native: 0.69.1
       react-native-gradle-plugin: 0.71.0
       react-native-safe-area-context: 4.3.1
@@ -231,6 +232,7 @@ importers:
       ac-shared-frontend: link:../ac-shared-frontend
       ac-shared-universal: link:../ac-shared-universal
       react: 18.2.0
+      react-freeze: 1.0.0_react@18.2.0
       react-native: 0.69.1_xkwn5kfn4p5g5vhhoajshjctr4
       react-native-gradle-plugin: 0.71.0
       react-native-safe-area-context: 4.3.1_5yclvwjg3umxvz5cnf7tdca7ue
