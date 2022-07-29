@@ -359,7 +359,9 @@ class RouterClass implements Router<any> {
                   key={i}
                   screenOrientation={screenOrientation}
                   style={[{ ...StyleSheet.absoluteFillObject, backgroundColor: "white" }, style]}
-                  stackAnimation={stackAnimation ?? Platform.OS === "android" ? "fade" : "slide_from_left"}
+                  stackAnimation={
+                    stackAnimation ? stackAnimation : Platform.OS === "android" ? "fade" : "slide_from_left"
+                  }
                   onDismissed={(e) => {
                     Keyboard.dismiss();
                     this.#navigationStateStore.modifyImmutably((rootState) => {
