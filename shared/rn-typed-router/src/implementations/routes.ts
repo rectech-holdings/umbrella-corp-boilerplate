@@ -1,6 +1,7 @@
-import { RouteDef, RouteDefFromMerge, RouteDefWithoutUI, RouteDefWithUIOnly } from "../types/routes.js";
-import { DeepGenericMerge } from "../utils/deepGenericMerge.js";
+import { RouteDef, RouteDefFromMerge, RouteDefWithoutUI } from "../types/routes.js";
 import _ from "lodash";
+import { DeepPartial } from "../utils/typescript-utils.js";
+import { DeepGenericMerge } from "../utils/deepGenericMerge.js";
 
 export function createRouteDefinition<T extends RouteDef>(def: T): T {
   //TODO: Verify that component properties point to the correct type of function, etc
@@ -30,9 +31,9 @@ export function createNonUIRouteDefinition<T extends RouteDefWithoutUI>(def: T):
 /**
  * Need this method on the clients in order to declare the missing half of a NonUI Route Definition
  */
-export function extendNonUIRouteDefinition<T1 extends RouteDefWithoutUI, T2 extends RouteDefFromMerge<T1>>(
+export function createExtendingRouteDefinition<T1 extends RouteDefWithoutUI, T2 extends RouteDefFromMerge<T1>>(
   def1: T1,
   def2: T2,
-): DeepGenericMerge<T1, T2> {
-  return _.merge(def1, def2) as any;
+): T2 {
+  return def2;
 }

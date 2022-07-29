@@ -11,21 +11,15 @@ export type RouteDefWithUIOnly = StackRouteDefWithUIOnly | TabRouteDefWithUIOnly
 
 export type RouteDefFromMerge<T extends RouteDefWithoutUI> = T extends StackRouteDefWithoutUI
   ? Simplify<
-      StackRouteDefWithUIOnly & {
-        routes: {
-          [Route in keyof T["routes"]]: RouteDefFromMerge<T["routes"][Route]>;
-        };
-      }
+      Omit<T, "routes"> &
+        StackRouteDefWithUIOnly & { routes: { [K in keyof T["routes"]]: RouteDefFromMerge<T["routes"][K]> } }
     >
   : T extends TabRouteDefWithoutUI
   ? Simplify<
-      TabRouteDefWithUIOnly & {
-        routes: {
-          [Route in keyof T["routes"]]: RouteDefFromMerge<T["routes"][Route]>;
-        };
-      }
+      Omit<T, "routes"> &
+        TabRouteDefWithUIOnly & { routes: { [K in keyof T["routes"]]: RouteDefFromMerge<T["routes"][K]> } }
     >
-  : LeafRouteDefWithUIOnly;
+  : Simplify<T & LeafRouteDefWithUIOnly>;
 
 type CommonRouteDefWithUIOnly = {
   childScreenProps?: ScreenProps;
@@ -53,12 +47,7 @@ export type StackRouteDefWithoutUI = Simplify<
     }
 >;
 
-export type StackRouteDefWithUIOnly = Simplify<
-  CommonRouteDefWithUIOnly &
-    Pick<StackRouteDef, "type" | "initialRoute"> & {
-      routes: { [routePath in string]: RouteDefWithUIOnly };
-    }
->;
+export type StackRouteDefWithUIOnly = Simplify<CommonRouteDefWithUIOnly & Pick<StackRouteDef, "type" | "initialRoute">>;
 
 export type TabRouteDef = {
   type: "tab" | "switch";
@@ -76,16 +65,15 @@ export type TabRouteDefWithoutUI = Simplify<
 >;
 
 export type TabRouteDefWithUIOnly = Simplify<
-  CommonRouteDefWithUIOnly &
-    Pick<TabRouteDef, "type" | "initialRoute" | "BottomTabBar" | "TopTabBar"> & {
-      routes: { [routePath in string]: RouteDefWithUIOnly };
-    }
+  CommonRouteDefWithUIOnly & Pick<TabRouteDef, "type" | "initialRoute" | "BottomTabBar" | "TopTabBar">
 >;
 
-export type LeafRouteDef = {
-  type: "leaf";
-  Component: MultiTypeComponent;
-} & CommonRouteDef;
+export type LeafRouteDef = Simplify<
+  {
+    type: "leaf";
+    Component: MultiTypeComponent;
+  } & Omit<CommonRouteDef, "childScreenProps">
+>;
 
 export type MultiTypeComponent<Props = {}> = ((a: Props) => ReactNode) | React.FC<Props> | React.Component<Props>;
 

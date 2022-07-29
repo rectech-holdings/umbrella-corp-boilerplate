@@ -1,7 +1,7 @@
 import { validateAndCleanInputParams, ParamTypesClass } from "./params.js";
 import { PathObjResult, PathObjResultLeaf, UrlString } from "../types/path.js";
 import { Router, RouterOptions } from "../types/router.js";
-import { MultiTypeComponent, RouteDef } from "../types/routes.js";
+import { MultiTypeComponent, RouteDef, StackRouteDef, TabRouteDef } from "../types/routes.js";
 import { dequal } from "dequal/lite";
 import urlParse from "url-parse";
 import useEvent from "use-event-callback";
@@ -344,7 +344,7 @@ class RouterClass implements Router<any> {
     (p: { path: string[]; state: StackNavigationState<any, any, any>; absoluteNavStatePath: (string | number)[] }) => {
       const Wrapper = this.#getComponentAtPath(p.path, "wrapper") || React.Fragment;
 
-      const parentDef = this.#getDefAtPath(p.path)!;
+      const parentDef = this.#getDefAtPath(p.path)! as StackRouteDef;
 
       const InnerNavigator = this.#InnerNavigator;
 
@@ -426,7 +426,7 @@ class RouterClass implements Router<any> {
       const prevRawFocusedTabIndex = usePreviousValue(focusedTabIndex);
       const [indexHasMounted, setIndexHasMounted] = useState<Record<number, true>>({});
       const isMountedRef = useIsMountedRef();
-      const thisDef = this.#getDefAtPath(p.path)!;
+      const parentDef = this.#getDefAtPath(p.path)! as TabRouteDef;
 
       const InnerNavigator = this.#InnerNavigator;
 
@@ -461,7 +461,7 @@ class RouterClass implements Router<any> {
                 const thisRouteDef = this.#getDefAtPath(thisRoutePath);
 
                 const allScreenProps = {
-                  ...(thisDef.childScreenProps || {}),
+                  ...(parentDef.childScreenProps || {}),
                   ...(thisRouteDef.screenProps || {}),
                 };
                 const {

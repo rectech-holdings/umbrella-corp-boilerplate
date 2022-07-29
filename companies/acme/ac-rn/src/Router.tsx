@@ -1,8 +1,8 @@
 import { RN_APP_ROOT_ROUTE_DEFINITION } from "ac-shared-universal";
 
-import { createRouter, extendNonUIRouteDefinition, lazy } from "rn-typed-router";
+import { createRouter, lazy, createExtendingRouteDefinition, ParamTypes } from "rn-typed-router";
 
-const routeDef = extendNonUIRouteDefinition(RN_APP_ROOT_ROUTE_DEFINITION, {
+const routeDef = createExtendingRouteDefinition(RN_APP_ROOT_ROUTE_DEFINITION, {
   type: "switch",
   routes: {
     LOGIN: {
@@ -23,6 +23,9 @@ const routeDef = extendNonUIRouteDefinition(RN_APP_ROOT_ROUTE_DEFINITION, {
             TAB_1_STACK_SCREEN: {
               type: "leaf",
               Component: lazy(() => import("./pages/Tab1StackScreen.js")),
+              params: {
+                someParam: ParamTypes.number(),
+              },
             },
           },
         },
@@ -33,7 +36,7 @@ const routeDef = extendNonUIRouteDefinition(RN_APP_ROOT_ROUTE_DEFINITION, {
       },
     },
   },
-});
+} as const);
 
 export const {
   Navigator,
@@ -51,4 +54,4 @@ export const {
   subscribeToFocusedUrl,
   useFocusedUrl,
   validateUrl,
-} = createRouter<typeof routeDef>(routeDef);
+} = createRouter(routeDef);

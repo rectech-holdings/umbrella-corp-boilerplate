@@ -33,3 +33,5 @@ export type ExtractObjectPath<T extends object, K extends readonly PropertyKey[]
   : never;
 
 export type DistributiveOmit<T, K extends keyof T> = T extends unknown ? Omit<T, K> : never;
+
+export type DeepPartial<T> = T extends object ? Partial<{ [P in keyof T]: DeepPartial<T[P]> }> : T;
