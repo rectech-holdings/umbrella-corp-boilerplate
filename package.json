@@ -11,7 +11,7 @@
     "install:ac": "pnpm -F . -F ac-spa... install",
     "install:acadmin": "pnpm -F . -F ac-admin-spa... install",
     "lint": "eslint",
-    "clean": "rm -rf node_modules && pnpm -r exec rm -rf node_modules dist",
+    "clean": "rm -rf node_modules && pnpm -r exec rm -rf node_modules dist Pods && pnpm turbo run clean",
     "prepare": "husky install && node ./scripts/post-install.mjs",
     "encrypt": "node ./shared/config-helper/index.mjs encrypt",
     "decrypt": "config-helper decrypt"

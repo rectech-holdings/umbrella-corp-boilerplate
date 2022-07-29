@@ -1,6 +1,7 @@
 import { createApiSDK } from "ac-api";
 import React, { Suspense } from "react";
 import { Button, SafeAreaView, Text, View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { Navigator } from "./Router.js";
@@ -16,9 +17,11 @@ export default function App() {
         </View>
       }
     >
-      <SafeAreaProvider>
-        <Navigator />
-      </SafeAreaProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaProvider>
+          <Navigator />
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
     </Suspense>
   );
 }
