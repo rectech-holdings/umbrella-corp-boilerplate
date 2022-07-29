@@ -25,12 +25,25 @@ export function createZustandStore<StoreState extends object>(initState: StoreSt
     subscribe: ((a: any) => useStore.subscribe(a)) as any,
     modifyImmutably: (modifyFn) => {
       const patches: Patch[] = [];
-      const nextStateRaw = immer(useStore.getState(), modifyFn as any, (ptc) => {
-        patches.push(...ptc);
-      });
+      const nextStateRaw = immer(
+        useStore.getState(),
+        (d) => {
+          //Ensure that the store is never replaced accidentally when the user returns a value. Only mutations will change the store.
+          const ret = modifyFn(d);
+          if (ret instanceof Promise) {
+            return ret.then(() => {});
+          } else {
+            return;
+          }
+        },
+        (ptc) => {
+          patches.push(...ptc);
+        },
+      );
 
       const nextState: Promise<StoreState> | StoreState = nextStateRaw as any;
 
+      //Prevent re-renders by only setting the state if the value actually changed.
       if (nextState instanceof Promise) {
         return nextState.then((newVal) => {
           if (patches.length) {
