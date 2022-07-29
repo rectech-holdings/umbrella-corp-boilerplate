@@ -362,6 +362,13 @@ class RouterClass implements Router<any> {
                   stackAnimation={
                     stackAnimation ? stackAnimation : Platform.OS === "android" ? "fade" : "slide_from_left"
                   }
+                  stackPresentation={
+                    stackPresentation
+                      ? stackPresentation
+                      : Platform.OS === "android"
+                      ? "containedTransparentModal"
+                      : "push"
+                  }
                   onDismissed={(e) => {
                     Keyboard.dismiss();
                     this.#navigationStateStore.modifyImmutably((rootState) => {
@@ -377,9 +384,6 @@ class RouterClass implements Router<any> {
                     });
                     onDismissed?.(e);
                   }}
-                  stackPresentation={
-                    stackPresentation ?? Platform.OS === "android" ? "containedTransparentModal" : "push"
-                  }
                   {...screenProps}
                 >
                   {Header ? <Header /> : null}
