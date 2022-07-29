@@ -22,9 +22,6 @@ export function createNonUIRouteDefinition<T extends RouteDefWithoutUI>(def: T):
   //TODO: Verify that tab and stack routes have at least one route (e.g. isn't an empty object)
 
   //TODO: Verify that the initialRouteName exists as a valid route
-
-  //TODO: Verify that the root definition is a tab or stack
-
   return def;
 }
 
