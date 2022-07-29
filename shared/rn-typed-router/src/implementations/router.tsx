@@ -1,12 +1,21 @@
 import { validateAndCleanInputParams, ParamTypesClass } from "./params.js";
 import { PathObjResult, PathObjResultLeaf, UrlString } from "../types/path.js";
 import { Router, RouterOptions } from "../types/router.js";
-import { RouteDef } from "../types/routes.js";
+import { MultiTypeComponent, RouteDef } from "../types/routes.js";
 import { dequal } from "dequal/lite";
 import urlParse from "url-parse";
 import useEvent from "use-event-callback";
 import _ from "lodash";
-import React, { createContext, ReactNode, useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, {
+  createContext,
+  ReactNode,
+  Suspense,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { BackHandler, Keyboard, Platform, StyleSheet, View } from "react-native";
 import {
   AbsNavStatePath,
@@ -805,6 +814,36 @@ class RouterClass implements Router<any> {
   public reset = () => {
     //TODO...
   };
+}
+
+export function lazy<T extends MultiTypeComponent>(a: () => Promise<{ default: T }>): T {
+  let Component: any;
+  let prom: any;
+
+  function Inner() {
+    if (!Component && !prom) {
+      prom = a().then((b) => {
+        Component = b.default;
+        const compName = Component.name || Component.displayName;
+        //@ts-ignore
+        fn.displayName = compName ? "Lazy" + compName : "LazyComponent";
+      });
+
+      throw prom;
+    }
+
+    return <Component />;
+  }
+
+  const fn = function () {
+    return (
+      <Suspense fallback={null}>
+        <Inner />
+      </Suspense>
+    );
+  } as any as T;
+
+  return fn;
 }
 
 /**

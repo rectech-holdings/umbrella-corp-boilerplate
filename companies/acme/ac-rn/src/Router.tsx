@@ -1,43 +1,34 @@
 import { RN_APP_ROOT_ROUTE_DEFINITION } from "ac-shared-universal";
-import React, { ReactNode, Suspense } from "react";
 
-import Login from "./pages/Login.js";
-import MainTabBar from "./pages/MainTabBar.js";
-import Tab1StackHome from "./pages/Tab1StackHome.js";
-import Tab1StackScreen from "./pages/Tab1StackScreen.js";
-import Tab2 from "./pages/Tab2.js";
-
-import { createRouter, extendNonUIRouteDefinition } from "rn-typed-router";
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import { Text, View } from "react-native";
+import { createRouter, extendNonUIRouteDefinition, lazy } from "rn-typed-router";
 
 const routeDef = extendNonUIRouteDefinition(RN_APP_ROOT_ROUTE_DEFINITION, {
   type: "switch",
   routes: {
     LOGIN: {
       type: "leaf",
-      Component: Login,
+      Component: lazy(() => import("./pages/Login.js")),
     },
     MAIN: {
       type: "tab",
-      BottomTabBar: MainTabBar,
+      BottomTabBar: lazy(() => import("./pages/MainTabBar.js")),
       routes: {
         TAB_1: {
           type: "stack",
           routes: {
             TAB_1_STACK_HOME: {
               type: "leaf",
-              Component: Tab1StackHome,
+              Component: lazy(() => import("./pages/Tab1StackHome.js")),
             },
             TAB_1_STACK_SCREEN: {
               type: "leaf",
-              Component: Tab1StackScreen,
+              Component: lazy(() => import("./pages/Tab1StackScreen.js")),
             },
           },
         },
         TAB_2: {
           type: "leaf",
-          Component: Tab2,
+          Component: lazy(() => import("./pages/Tab2.js")),
         },
       },
     },

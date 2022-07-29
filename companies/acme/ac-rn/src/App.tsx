@@ -1,5 +1,5 @@
 import { createApiSDK } from "ac-api";
-import { Suspense } from "react";
+import React, { Suspense } from "react";
 import { Button, SafeAreaView, Text, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 

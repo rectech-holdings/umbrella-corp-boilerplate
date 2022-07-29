@@ -87,17 +87,12 @@ export type LeafRouteDef = {
   Component: MultiTypeComponent;
 } & CommonRouteDef;
 
-type MultiTypeComponent =
-  | (() => ReactNode)
-  | React.FC<{}>
-  | React.Component<{}>
-  | LazyExoticComponent<() => JSX.Element>;
+export type MultiTypeComponent<Props = {}> = ((a: Props) => ReactNode) | React.FC<Props> | React.Component<Props>;
 
 type MultiTypeComponentWithChildren =
   | ((a: { children: ReactNode }) => ReactNode)
   | React.FC<{ children: ReactNode }>
-  | React.Component<{ children: ReactNode }>
-  | LazyExoticComponent<(a: { children: ReactNode }) => JSX.Element>;
+  | React.Component<{ children: ReactNode }>;
 
 export type LeafRouteDefWithoutUI = Simplify<Pick<LeafRouteDef, "type"> & CommonRouteDefWithoutUI>;
 export type LeafRouteDefWithUIOnly = Simplify<Pick<LeafRouteDef, "Component" | "type"> & CommonRouteDefWithUIOnly>;
