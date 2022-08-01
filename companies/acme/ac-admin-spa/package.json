@@ -10,7 +10,6 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "ac-admin-api": "workspace:*",
     "ac-api": "workspace:*",
     "ac-shared-frontend": "workspace:*",
     "ac-shared-universal": "workspace:*",

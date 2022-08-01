@@ -52,38 +52,12 @@ importers:
       typescript: 4.7.4
       yesno: 0.4.0
 
-  companies/acme/ac-admin-api:
-    specifiers:
-      '@fastify/cors': 8.0.0
-      '@types/node': 18.0.3
-      ac-api: workspace:*
-      ac-shared-backend: workspace:*
-      ac-shared-universal: workspace:*
-      create-typed-sdk: workspace:*
-      fastify: 4.2.0
-      tsc-watch: 5.0.3
-      typescript: 4.7.4
-      wait-on: 6.0.1
-    dependencies:
-      '@fastify/cors': 8.0.0
-      create-typed-sdk: link:../../../shared/create-typed-sdk
-      fastify: 4.2.0
-    devDependencies:
-      '@types/node': 18.0.3
-      ac-api: link:../ac-api
-      ac-shared-backend: link:../ac-shared-backend
-      ac-shared-universal: link:../ac-shared-universal
-      tsc-watch: 5.0.3_typescript@4.7.4
-      typescript: 4.7.4
-      wait-on: 6.0.1
-
   companies/acme/ac-admin-spa:
     specifiers:
       '@types/node': 18.0.3
       '@types/react': 18.0.15
       '@types/react-dom': 18.0.6
       '@vitejs/plugin-react': 2.0.0-beta.0
-      ac-admin-api: workspace:*
       ac-api: workspace:*
       ac-db: workspace:*
       ac-shared-frontend: workspace:*
@@ -94,7 +68,6 @@ importers:
       typescript: 4.7.4
       vite: 3.0.0-beta.6
     dependencies:
-      ac-admin-api: link:../ac-admin-api
       ac-api: link:../ac-api
       ac-db: link:../ac-db
       ac-shared-frontend: link:../ac-shared-frontend
