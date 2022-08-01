@@ -336,12 +336,6 @@ importers:
       eslint-config-next: 12.2.0_4x5o4skxv6sl53vpwefgt23khm
       typescript: 4.7.4
 
-  companies/umbrella-corp/uc-universal:
-    specifiers:
-      typescript: 4.7.4
-    devDependencies:
-      typescript: 4.7.4
-
   shared/config-helper:
     specifiers:
       '@types/node': 18.0.3
@@ -400,6 +394,9 @@ importers:
       '@pulumi/pulumi': 3.35.3
     devDependencies:
       typescript: 4.7.4
+
+  shared/i18n:
+    specifiers: {}
 
   shared/integration-tester:
     specifiers:
