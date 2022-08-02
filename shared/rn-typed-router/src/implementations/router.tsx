@@ -16,7 +16,6 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { BackHandler, Keyboard, Platform, StyleSheet, View } from "react-native";
 import {
   AbsNavStatePath,
   InnerNavigationState,
@@ -29,9 +28,9 @@ import queryString from "query-string";
 import { createZustandStore, ZustandStore } from "../utils/createZustandStore.js";
 import { useIsMountedRef } from "../utils/useIsMountedRef.js";
 import { usePreviousValue } from "../utils/usePreviousValue.js";
-import { Screen, ScreenContainer, ScreenStack, enableFreeze } from "react-native-screens";
+import { BackHandler, Keyboard, Platform, Screen, ScreenContainer, ScreenStack, StyleSheet, View } from "./primitives";
 
-enableFreeze();
+const defaultWrapperStyle = Platform.OS === "web" ? {} : { flex: 1 };
 
 export function createRouter<T extends RouteDef>(rootDefinition: T, opts?: RouterOptions): Router<T> {
   const thisRouter: Router<any> = new RouterClass(rootDefinition, opts);
@@ -282,7 +281,14 @@ class RouterClass implements Router<any> {
     path: string[];
     absoluteNavStatePath: (string | number)[];
   }) => {
-    if (!this.#useAbsoluteNavStatePathHasEverBeenFocused(p.absoluteNavStatePath)) {
+    const hasEverBeenFocused = this.#useAbsoluteNavStatePathHasEverBeenFocused(p.absoluteNavStatePath);
+    const isFocused = this.useIsFocused(p.absoluteNavStatePath);
+
+    if (!hasEverBeenFocused) {
+      return null;
+    }
+
+    if (Platform.OS === "web" && !isFocused) {
       return null;
     }
 
@@ -319,7 +325,7 @@ class RouterClass implements Router<any> {
     const Leaf = this.#getComponentAtPath(p.path, "leaf");
     const LeafHeader = Leaf?.Header ?? this.#getComponentAtPath(p.path, "header");
 
-    if (__DEV__) {
+    if (process.env["NODE_ENV"] === "development") {
       if (LeafHeader && typeof LeafHeader !== "function") {
         throw new Error(`Header at ${p.path.join("/")} does not return a valid react component!`);
       }
@@ -333,7 +339,7 @@ class RouterClass implements Router<any> {
     return (
       <Wrapper>
         {LeafHeader ? <LeafHeader /> : null}
-        <View style={{ flex: 1 }}>
+        <View style={defaultWrapperStyle}>
           <Leaf />
         </View>
       </Wrapper>
@@ -350,7 +356,7 @@ class RouterClass implements Router<any> {
 
       return (
         <Wrapper>
-          <ScreenStack style={{ flex: 1 }}>
+          <ScreenStack style={defaultWrapperStyle}>
             {p.state.stack.map((thisNavigationState, i) => {
               const Header = this.#getComponentAtPath(p.path, "header");
               const thisRoutePath = p.path.concat(thisNavigationState.path);
@@ -396,7 +402,7 @@ class RouterClass implements Router<any> {
                   {...screenProps}
                 >
                   {Header ? <Header /> : null}
-                  <View style={{ flex: 1 }}>
+                  <View style={defaultWrapperStyle}>
                     <InnerNavigator
                       state={thisNavigationState as any}
                       path={thisRoutePath}
@@ -432,10 +438,10 @@ class RouterClass implements Router<any> {
 
       return (
         <Wrapper>
-          <View style={{ flex: 1 }}>
+          <View style={defaultWrapperStyle}>
             {Header ? <Header /> : null}
             {TopTabBar ? <TopTabBar /> : null}
-            <ScreenContainer style={{ flex: 1 }}>
+            <ScreenContainer style={defaultWrapperStyle}>
               {p.state.tabs.map((thisNavigationState, i) => {
                 //Here come the weird shenanigans...
                 let activityState: 0 | 1 | 2;
@@ -658,10 +664,10 @@ class RouterClass implements Router<any> {
     return this.#getAccumulatedParamsAtAbsoluteNavStatePath(absPath);
   };
 
-  public useIsFocused = () => {
+  public useIsFocused = (absPath?: AbsNavStatePath) => {
     const thisAbsPath = this.#useAbsoluteNavStatePath();
     return this.#navigationStateStore.useStore(() => {
-      return pathSatisfiesPathConstraint(thisAbsPath, this.#getFocusedAbsoluteNavStatePath());
+      return pathSatisfiesPathConstraint(absPath ?? thisAbsPath, this.#getFocusedAbsoluteNavStatePath());
     });
   };
 
@@ -873,7 +879,7 @@ function forEachRouteDefUsingPathArray(
 }
 
 function assertIsComponent<T>(val: T, errMsg: string) {
-  if (__DEV__) {
+  if (process.env["NODE_ENV"] === "development") {
     //Doesn't need to be too rigorous of checks. Just here to help people debug dumb mistakes.
     const isFunction = typeof val === "function";
     const isLikelyLazyComponent = val && typeof val === "object" && val["$$typeof"];

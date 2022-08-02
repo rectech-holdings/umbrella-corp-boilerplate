@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "ac-shared-frontend": "workspace:*",
+    "rn-typed-router": "workspace:*",
     "react": "18.2.0",
     "react-dom": "18.2.0"
   },

@@ -21,7 +21,7 @@
     "path-to-regexp": "6.2.1",
     "query-string": "7.1.1",
     "react": "18.2.0",
-    "react-freeze": "1.0.0",
+    "react-native-web": "0.18.7",
     "url-parse": "1.5.10",
     "use-event-callback": "0.1.0",
     "use-sync-external-store": "1.2.0",
@@ -33,6 +33,18 @@
   "peerDependencies": {
     "react": "*",
     "react-native": "*",
-    "react-native-screens": "*"
+    "react-native-screens": "*",
+    "react-dom": "*"
+  },
+  "peerDependenciesMeta": {
+    "react-native": {
+      "optional": true
+    },
+    "react-native-screen": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
   }
 }

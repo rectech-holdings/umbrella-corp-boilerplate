@@ -6,8 +6,6 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { Navigator } from "./Router.js";
 
-const sdk = createApiSDK();
-
 export default function App() {
   return (
     <Suspense

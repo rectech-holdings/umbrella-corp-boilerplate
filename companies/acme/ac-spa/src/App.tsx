@@ -2,42 +2,44 @@ import { useState } from "react";
 import logo from "./logo.svg";
 import "./App.css";
 import { publicConfig } from "./config/public/index.js";
+import { createRouter } from "rn-typed-router";
+
+const { Navigator, navigate, PATHS } = createRouter({
+  type: "switch",
+  routes: {
+    login: {
+      type: "leaf",
+      Component: () => (
+        <div
+          onClick={() => {
+            navigate(PATHS.main, {});
+          }}
+        >
+          Login screen foos
+        </div>
+      ),
+    },
+    main: {
+      type: "leaf",
+      Component: () => (
+        <div
+          onClick={() => {
+            navigate(PATHS.login, {});
+          }}
+        >
+          Main screen foos
+        </div>
+      ),
+    },
+  },
+});
 
 publicConfig.then((a) => {}).catch((e) => {});
 
 function App() {
   const [count, setCount] = useState(0);
 
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>Hello Vite + React!</p>
-        <p>
-          <button role="button" type="button" onClick={() => setCount((ct) => ct + 1)}>
-            count is: {count}
-          </button>
-        </p>
-        <p>
-          Edit <code>App.tsx</code> and save to test HMR updates.
-        </p>
-        <p>
-          <a className="App-link" href="https://reactjs.org" target="_blank" rel="noopener noreferrer">
-            Learn React
-          </a>
-          {" | "}
-          <a
-            className="App-link"
-            href="https://vitejs.dev/guide/features.html"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Vite Docs
-          </a>
-        </p>
-      </header>
-    </div>
-  );
+  return <Navigator />;
 }
 
 export default App;
