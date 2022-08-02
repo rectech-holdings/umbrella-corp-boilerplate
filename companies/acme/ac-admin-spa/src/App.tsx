@@ -1,24 +1,17 @@
+import { createApiReactSDK } from "ac-api";
 import { useState } from "react";
 import "./App.css";
-import { createAdminApiSDK } from "ac-admin-api";
-import { QueryClient, QueryClientProvider } from "react-query";
 
-const queryClient = new QueryClient();
-
-const { AdminApiSDK } = createAdminApiSDK(queryClient);
+const { ApiSDK } = createApiReactSDK();
 
 function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <AppInner />
-    </QueryClientProvider>
-  );
+  return <AppInner />;
 }
 
 function AppInner() {
-  const [loanId, setLoanId] = useState("asdasdfasdf");
+  const [loanId, setLoanId] = useState(123);
 
-  const resp = AdminApiSDK.useEndpoint().getLoan({ loanId: loanId });
+  const resp = ApiSDK.useEndpoint().loans.getLoan(loanId);
 
   if (resp.status === "error") {
     return <div>Error fetching data</div>;
@@ -28,10 +21,10 @@ function AppInner() {
 
   return (
     <div>
-      <div>Fetched loan: {resp.data.coolLoan.loanId}</div>
+      <div>Fetched loan: {resp.data?.id}</div>
       <button
         onClick={() => {
-          setLoanId(Math.random().toString());
+          setLoanId(Math.random());
         }}
       >
         Press to randomly change loan id

@@ -1,216 +1,123 @@
-import {
-  DeepAsyncFnRecord,
-  TypedGetSDKQueryKey,
-  TypedSDK as TypedSDK,
-  TypedUseInfiniteQuery as TypedUseInfiniteSDK,
-  TypedUseQuery as TypedUseSDK,
-  TypedUseSDKMutation,
-  DoFetch,
-  getQueryKey,
-  getFetchFn,
-  getTypedSDKInstance,
-} from "./internal.js";
-import {
-  QueryClient,
-  UseInfiniteQueryOptions,
-  UseMutationOptions,
-  UseQueryOptions,
-  useInfiniteQuery,
-  useMutation,
-  useQuery,
-} from "react-query";
+import axios from "axios";
 
-export * from "./core/index.js";
+type BaseOpts = {
+  namespace?: string;
+  onFetch?: (a: { fetchProm: Promise<any> } & DoFetchArg) => any;
+};
 
-//Re-export the query client type when the user is creating the sdk for consumption
-export { QueryClient } from "react-query";
+export type TypedSDKOptions = ({ url: string } & BaseOpts) | ({ doFetch: DoFetch } & BaseOpts);
 
-export function createTypedReactSDK<Endpoints extends DeepAsyncFnRecord<Endpoints>>(
-  opts:
-    | { url: string; queryClient: QueryClient }
-    | {
-        queryClient: QueryClient;
-        doFetch: DoFetch;
+export function createTypedSDK<T extends DeepAsyncFnRecord<any>>(opts: TypedSDKOptions): TypedSDK<T> {
+  const doFetch: DoFetch =
+    "doFetch" in opts
+      ? opts.doFetch
+      : (p) => axios.post(`${opts.url}/${p.path.join("/")}`, p.mainArg).then((resp) => resp.data);
+
+  const getNextQuery = (path: string[]): any => {
+    return new Proxy(
+      () => {}, //use function as base, so that it can be called...
+      {
+        apply: (__, ___, args) => {
+          const fetchArg = { mainArg: args[0], extraArgs: args.slice(1), path };
+
+          const prom = doFetch(fetchArg);
+
+          opts.onFetch?.({ fetchProm: prom, ...fetchArg });
+
+          return prom;
+        },
+        get(__, prop) {
+          return getNextQuery(path.concat(prop.toString()));
+        },
       },
-): ReactSDK<Endpoints> {
-  return new ReactSDK(opts);
+    );
+  };
+
+  return getNextQuery([]);
 }
 
-export class ReactSDK<Endpoints extends DeepAsyncFnRecord<Endpoints>> {
-  private queryClient?: QueryClient;
-  private doFetch: DoFetch;
-
-  constructor(
-    opts:
-      | { url: string; queryClient: QueryClient }
-      | {
-          queryClient: QueryClient;
-          doFetch: DoFetch;
-        },
-  ) {
-    this.queryClient = opts.queryClient;
-    if ("doFetch" in opts) {
-      this.doFetch = getFetchFn({ userSuppliedDoFetch: opts.doFetch });
+export function collectEndpoints<T extends DeepAsyncFnRecord<T>>(api: T) {
+  function collectLeafFunctions(value: any, path = [] as string[]) {
+    const fns = [];
+    if (isPlainObject(value) || Array.isArray(value)) {
+      Object.keys(value).forEach((key) => {
+        fns.push(...collectLeafFunctions(value[key], path.concat(key)));
+      });
     } else {
-      this.doFetch = getFetchFn({ defaultUrl: opts.url });
+      if (typeof value === "function") {
+        fns.push({
+          path,
+          fn: value,
+        });
+      }
+    }
+    return fns;
+  }
+  return collectLeafFunctions(api);
+}
+
+export function attachApiToAppWithDefault<T extends DeepAsyncFnRecord<T>>(
+  api: T,
+  app: {
+    post: (
+      path: string,
+      handler: (req: { body: any }, resp: { send: (v: any) => any } | { json: (v: any) => any }) => void,
+    ) => any;
+  },
+) {
+  collectEndpoints(api).forEach(({ fn, path }) => {
+    if (!app.post) {
+      throw new Error("No post method found on app! Ensure you are using a nodejs library like express or fastify");
     }
 
-    this.fetch = getTypedSDKInstance({
-      queryClient: opts.queryClient,
-      doFetch: this.doFetch,
+    app.post("/" + path.join("/"), async (req, resp) => {
+      if (!req.body) {
+        throw new Error(
+          "Unable to find post body! Ensure your server parses the request body and attaches it to the request",
+        );
+      }
+
+      const val = await fn(...req.body.args);
+      if ("send" in resp) {
+        resp.send(val);
+      } else if ("json" in resp) {
+        resp.json(val);
+      } else {
+        throw new Error(
+          "Unable to find method to send response! Ensure you are using a nodejs library like express or fastify",
+        );
+      }
     });
+  });
+}
+
+type DoFetchArg = { path: string[]; mainArg: any; extraArgs?: any[] };
+export type DoFetch = (p: DoFetchArg) => Promise<any>;
+
+export type AsyncFn = (...args: any[]) => Promise<any>;
+
+export type DeepAsyncFnRecord<T extends {}> = {
+  [key in keyof T]: T[key] extends AsyncFn ? T[key] : DeepAsyncFnRecord<T[key]>;
+};
+
+export type TypedSDK<T extends DeepAsyncFnRecord<T>> = {
+  [key in keyof T]: T[key] extends AsyncFn
+    ? (argument: Parameters<T[key]>[0]) => ReturnType<T[key]>
+    : T[key] extends DeepAsyncFnRecord<T[key]>
+    ? TypedSDK<T[key]>
+    : never;
+};
+
+function isPlainObject(value: unknown) {
+  if (!value || typeof value !== "object") {
+    return false;
   }
-
-  fetch: TypedSDK<Endpoints>;
-
-  getQueryKey: TypedGetSDKQueryKey<Endpoints> = (() => {
-    const getNextGetSDKQueryKey = (path: string[]): any => {
-      return new Proxy(() => {}, {
-        apply(__, ___, args) {
-          return getQueryKey(path, args[0]);
-        },
-        get(__, prop) {
-          return getNextGetSDKQueryKey(path.concat(prop.toString()));
-        },
-      });
-    };
-
-    return getNextGetSDKQueryKey([]);
-  })();
-
-  private useEndpointProxy = (() => {
-    const getNextUseEndpoint = (p: { path: string[] }): any => {
-      return new Proxy(() => {}, {
-        apply: (__, ___, args) => {
-          if (!this.queryClient) {
-            console.error("No query client provided. Unable to call useSDK");
-            return Promise.resolve();
-          }
-
-          const argument = args[0] as any;
-
-          const extraQueryOpts = (args[1] || {}) as UseQueryOptions;
-
-          const queryOpts: UseQueryOptions = {
-            queryKey: getQueryKey(p.path, argument),
-            queryFn: ({ signal, queryKey, meta, pageParam }) => {
-              return this.doFetch({
-                argument,
-                path: p.path,
-                signal,
-                queryKey: queryKey as any,
-                meta,
-                pageParam,
-              });
-            },
-            ...extraQueryOpts,
-          };
-
-          // eslint-disable-next-line react-hooks/rules-of-hooks
-          return useQuery(queryOpts);
-        },
-        get(__, prop) {
-          return getNextUseEndpoint({
-            path: p.path.concat(prop.toString()),
-          });
-        },
-      });
-    };
-
-    return getNextUseEndpoint({ path: [] });
-  })();
-
-  useEndpoint(): TypedUseSDK<Endpoints> {
-    return this.useEndpointProxy;
+  const proto = Object.getPrototypeOf(value);
+  if (proto === null && value !== Object.prototype) {
+    return true;
   }
-
-  private useInfiniteEndpointProxy = (() => {
-    const getNextUseInfiniteEndpoint = (p: { path: string[] }): any => {
-      return new Proxy(() => {}, {
-        apply: (__, ___, args) => {
-          if (!this.queryClient) {
-            console.error("No query client provided. Unable to call useInfiniteSDK");
-            return Promise.resolve();
-          }
-
-          const argument = args[0] as any;
-
-          const extraQueryOpts = (args[1] || {}) as UseInfiniteQueryOptions;
-
-          const queryOpts: UseInfiniteQueryOptions = {
-            queryKey: getQueryKey(p.path, argument),
-            queryFn: ({ signal, queryKey, meta, pageParam }) => {
-              this.doFetch({
-                argument,
-                path: p.path,
-                signal,
-                queryKey: queryKey as any,
-                meta,
-                pageParam,
-              });
-            },
-            ...extraQueryOpts,
-          };
-
-          // eslint-disable-next-line react-hooks/rules-of-hooks
-          return useInfiniteQuery(queryOpts);
-        },
-        get(__, prop) {
-          return getNextUseInfiniteEndpoint({
-            path: p.path.concat(prop.toString()),
-          });
-        },
-      });
-    };
-
-    return getNextUseInfiniteEndpoint({ path: [] });
-  })();
-
-  useInfiniteEndpoint(): TypedUseInfiniteSDK<Endpoints> {
-    return this.useInfiniteEndpointProxy;
+  if (proto && Object.getPrototypeOf(proto) === null) {
+    return true;
   }
-
-  private useMutationEndpointProxy = (() => {
-    const getNextUseMutation = (p: { path: string[] }): any => {
-      return new Proxy(() => {}, {
-        apply: (__, ___, args) => {
-          if (!this.queryClient) {
-            console.error("No query client provided. Unable to use mutation");
-            return Promise.resolve();
-          }
-
-          const argument = args[0] as any;
-
-          const extraQueryOpts = (args[1] || {}) as UseMutationOptions;
-          const mutationKey = getQueryKey(p.path, argument);
-
-          const queryOpts: UseMutationOptions = {
-            mutationKey,
-            mutationFn: () => {
-              return this.doFetch({
-                argument,
-                path: p.path,
-                queryKey: mutationKey as any,
-              });
-            },
-            ...extraQueryOpts,
-          };
-
-          // eslint-disable-next-line react-hooks/rules-of-hooks
-          return useMutation(queryOpts);
-        },
-        get(__, prop) {
-          return getNextUseMutation({
-            path: p.path.concat(prop.toString()),
-          });
-        },
-      });
-    };
-
-    return getNextUseMutation({ path: [] });
-  })();
-
-  useMutationEndpoint(): TypedUseSDKMutation<Endpoints> {
-    return this.useMutationEndpointProxy;
-  }
+  return false;
 }

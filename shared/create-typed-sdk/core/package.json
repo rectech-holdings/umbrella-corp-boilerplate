@@ -1,7 +1,0 @@
-{
-  "name": "create-typed-sdk-core",
-  "private": true,
-  "type": "module",
-  "main": "index.cjs",
-  "types": "index.d.ts"
-}

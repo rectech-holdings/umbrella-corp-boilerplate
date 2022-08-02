@@ -98,12 +98,8 @@ Note: When creating the SDK, you must define the rules and transport that will a
 import axios from 'axios';
 import type { MyApiType } from './api' //IMPORTANT NOTE: Only import the api TYPE, not the api itself so as not to expose server details to your client
 import { createTypedSDK } from "create-typed-sdk";
-import { QueryClient } from "react-query";
-
-const queryClient = new QueryClient();
 
 const MyServerSDK = createTypedSDK<ApiType>({
-  queryClient, //Add an optional react-query dependency for easy data fetching in React land
   doFetch({ path, argument }) {
   const method = path[1]
   const data = method === 'GET' ? {params: argument} : {body: argument}

@@ -2,7 +2,10 @@ import { useState } from "react";
 import logo from "./logo.svg";
 import "./App.css";
 import { publicConfig } from "./config/public/index.js";
+import { createApiReactSDK } from "ac-api";
 import { createRouter } from "rn-typed-router";
+
+const SDK = createApiReactSDK();
 
 const { Navigator, navigate, PATHS } = createRouter({
   type: "switch",

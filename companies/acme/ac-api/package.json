@@ -23,6 +23,7 @@
     "ac-shared-universal": "workspace:*",
     "config-helper": "workspace:*",
     "create-typed-sdk": "workspace:*",
+    "create-typed-react-sdk": "workspace:*",
     "fastify": "4.2.0"
   }
 }

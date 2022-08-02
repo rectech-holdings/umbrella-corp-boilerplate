@@ -2,71 +2,27 @@
   "name": "create-typed-sdk",
   "private": true,
   "type": "module",
-  "version": "0.0.6",
+  "version": "0.0.0",
   "description": "A library for automatically creating SDKs for your Node.js Typescript backends. No build step, no risk of injecting your server code into your frontend, just sweet, sweet DX goodness.",
-  "types": "./dist/esm/index.d.ts",
-  "main": "./dist/cjs/index.js",
-  "module": "./dist/esm/index.js",
-  "exports": {
-    ".": {
-      "import": {
-        "types": "./dist/esm/index.d.ts",
-        "default": "./dist/esm/index.js"
-      },
-      "default": {
-        "types": "./dist/cjs/index.d.ts",
-        "default": "./dist/9opl-=i,.ˆ6πcjs/index.js"
-      }
-    },
-    "./core": {
-      "import": {
-        "types": "./dist/esm/core/index.d.ts",
-        "default": "./dist/esm/core/index.js"
-      },
-      "default": {
-        "types": "./dist/cjs/core/index.d.ts",
-        "default": "./dist/cjs/core/index.js"
-      }
-    }
-  },
+  "types": "./src/index.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
   "files": [
     "src",
     "dist",
     "core"
   ],
   "scripts": {
-    "dev": "pnpm build && run-p -l 'build:* --watch'",
-    "example-dev": "cd example-app && yarn dev",
+    "dev": "tsc -w --preserveWatchOutput",
     "do-publish": "npm login && npx np",
-    "test": "echo no-tests",
-    "build": "run-p build:*",
-    "build:cjs": "node build.mjs --format cjs --outdir dist/cjs --platform node",
-    "build:esm": "node build.mjs --format esm --outdir dist/esm --platform browser",
-    "build:ts": "tsc --outDir dist/cjs && tsc --outDir dist/esm",
+    "build": "tsc",
     "build-dev": "pnpm build"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "5.30.5",
-    "@typescript-eslint/parser": "5.30.5",
-    "esbuild": "0.14.48",
-    "eslint": "8.19.0",
-    "eslint-plugin-react-hooks": "4.6.0",
     "np": "7.6.2",
-    "npm-run-all": "4.1.5",
-    "react-query": "3.39.1",
-    "typescript": "4.7.4",
-    "yargs-parser": "21.0.1"
+    "typescript": "4.7.4"
   },
   "dependencies": {
-    "axios": "0.27.2",
-    "fast-safe-stringify": "2.1.1"
-  },
-  "peerDependenciesMeta": {
-    "react-query": {
-      "optional": true
-    },
-    "react": {
-      "optional": true
-    }
+    "axios": "0.27.2"
   }
 }
