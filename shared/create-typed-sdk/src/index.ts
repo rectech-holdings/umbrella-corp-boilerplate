@@ -11,14 +11,17 @@ export function createTypedSDK<T extends DeepAsyncFnRecord<any>>(opts: TypedSDKO
   const doFetch: DoFetch =
     "doFetch" in opts
       ? opts.doFetch
-      : (p) => axios.post(`${opts.url}/${p.path.join("/")}`, p.mainArg).then((resp) => resp.data);
+      : (p) => {
+          const url = `${opts.url}/${p.path.join("/")}`;
+          return axios.post(url, p.arg).then((resp) => resp.data);
+        };
 
   const getNextQuery = (path: string[]): any => {
     return new Proxy(
       () => {}, //use function as base, so that it can be called...
       {
-        apply: (__, ___, args) => {
-          const fetchArg = { mainArg: args[0], extraArgs: args.slice(1), path };
+        apply: (__, key, args) => {
+          const fetchArg = { arg: args[0], path };
 
           const prom = doFetch(fetchArg);
 
@@ -27,6 +30,11 @@ export function createTypedSDK<T extends DeepAsyncFnRecord<any>>(opts: TypedSDKO
           return prom;
         },
         get(__, prop) {
+          //Secret method used by create-typed-react-sdk
+          if (prop === "__doFetch") {
+            return doFetch;
+          }
+
           return getNextQuery(path.concat(prop.toString()));
         },
       },
@@ -77,7 +85,7 @@ export function attachApiToAppWithDefault<T extends DeepAsyncFnRecord<T>>(
         );
       }
 
-      const val = await fn(...req.body.args);
+      const val = await fn(req.body);
       if ("send" in resp) {
         resp.send(val);
       } else if ("json" in resp) {
@@ -91,7 +99,7 @@ export function attachApiToAppWithDefault<T extends DeepAsyncFnRecord<T>>(
   });
 }
 
-type DoFetchArg = { path: string[]; mainArg: any; extraArgs?: any[] };
+type DoFetchArg = { path: string[]; arg: any };
 export type DoFetch = (p: DoFetchArg) => Promise<any>;
 
 export type AsyncFn = (...args: any[]) => Promise<any>;
@@ -102,7 +110,9 @@ export type DeepAsyncFnRecord<T extends {}> = {
 
 export type TypedSDK<T extends DeepAsyncFnRecord<T>> = {
   [key in keyof T]: T[key] extends AsyncFn
-    ? (argument: Parameters<T[key]>[0]) => ReturnType<T[key]>
+    ? Parameters<T[key]>[0] extends undefined
+      ? () => ReturnType<T[key]>
+      : (argument: Parameters<T[key]>[0]) => ReturnType<T[key]>
     : T[key] extends DeepAsyncFnRecord<T[key]>
     ? TypedSDK<T[key]>
     : never;

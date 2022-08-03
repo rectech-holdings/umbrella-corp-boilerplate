@@ -4,7 +4,8 @@
   "type": "module",
   "version": "1.0.0",
   "scripts": {
-    "dev": "echo 'Just a placeholder package...'"
+    "dev": "echo 'Just a placeholder package...'",
+    "build-dev": "echo 'no build step...'"
   },
   "dependencies": {
     "lodash": "4.17.21"

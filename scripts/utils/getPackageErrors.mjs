@@ -20,7 +20,11 @@ export async function getPackageErrors() {
     const pkgJson = readJSON(pkgJsonFile);
     const pkgName = pkgJson.name;
     if (isWorkspacePackage(pkgName)) {
-      //TODO: Check for required scripts like "dev", "build:ts", etc
+      if ((pkgJson?.scripts?.dev || pkgJson?.scripts?.build) && !pkgJson?.scripts?.["build-dev"]) {
+        errors.push({
+          msg: `Required "build-dev" script not found ${pkgJsonFile}! Whenever a "dev" or "build" script is declared in a package, there must be a "build-dev" script as well.`,
+        });
+      }
 
       const deps = {
         dependencies: pkgJson.dependencies || {},

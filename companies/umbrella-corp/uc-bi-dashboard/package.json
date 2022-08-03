@@ -5,6 +5,7 @@
   "version": "0.1.0",
   "scripts": {
     "dev": "next dev",
+    "build-dev": "tsc -w --preserveWatchOutput",
     "build": "pnpm build:ts && pnpm build:next",
     "build:next": "next build",
     "build:ts": "tsc",

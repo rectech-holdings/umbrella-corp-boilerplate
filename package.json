@@ -5,9 +5,10 @@
   "packageManager": "pnpm@7.5.0",
   "scripts": {
     "build": "turbo run build",
-    "dev:acspa": "pnpm turbo run dev --filter ac-spa...",
-    "dev:acadminspa": "pnpm turbo run dev --filter ac-admin-spa...",
-    "dev:acrn": "pnpm turbo run dev --filter ac-rn...",
+    "build-dev": "turbo run build-dev",
+    "dev:acspa": "pnpm turbo run dev --filter ac-spa... --concurrency=9999",
+    "dev:acadminspa": "pnpm turbo run dev --filter ac-admin-spa... --concurrency=9999",
+    "dev:acrn": "pnpm turbo run dev --filter ac-rn... --concurrency=9999",
     "install:ac": "pnpm -F . -F ac-spa... install",
     "install:acadmin": "pnpm -F . -F ac-admin-spa... install",
     "lint": "eslint",

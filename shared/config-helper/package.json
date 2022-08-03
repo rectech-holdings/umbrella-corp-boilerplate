@@ -4,7 +4,8 @@
   "type": "module",
   "version": "1.0.0",
   "scripts": {
-    "asdf build:ts": "echo 'No ts to build...'"
+    "build": "echo 'No ts to build...'",
+    "build-dev": "echo 'No ts to build...'"
   },
   "bin": {
     "config-helper": "./index.mjs"

@@ -1,4 +1,4 @@
-import useSWR, { SWRConfiguration, SWRResponse, MutatorOptions } from "swr";
+import { SWRConfiguration, SWRResponse, MutatorOptions } from "swr";
 import { SWRInfiniteConfiguration, SWRInfiniteResponse } from "swr/infinite";
 import { AsyncFn, DeepAsyncFnRecord } from "create-typed-sdk";
 
@@ -12,9 +12,11 @@ export type TypedSDKWithMutateOptions<T extends DeepAsyncFnRecord<T>> = {
 
 export type TypedGetSDKQueryKey<T extends DeepAsyncFnRecord<T>> = {
   [key in keyof T]: T[key] extends AsyncFn
-    ? (arg?: Parameters<T[key]>[0]) => { path: string[]; mainArg: any }
+    ? Parameters<T[key]>[0] extends undefined
+      ? () => { path: string[]; arg: any }
+      : (arg: Parameters<T[key]>[0]) => { path: string[]; arg: any }
     : T[key] extends DeepAsyncFnRecord<T[key]>
-    ? (() => string) & TypedGetSDKQueryKey<T[key]>
+    ? TypedGetSDKQueryKey<T[key]>
     : never;
 };
 
@@ -40,12 +42,12 @@ export type TypedUseInfiniteQuery<T extends DeepAsyncFnRecord<T>> = {
     : never;
 };
 
-export function getQueryKey(a: { path: string[]; mainArg: unknown; namespace?: string }): {
+export function getQueryKey(a: { path: string[]; arg: unknown; namespace?: string }): {
   path: string[];
-  mainArg: unknown;
+  arg: unknown;
   namespace?: string;
 } {
-  const val: any = { path: a.path, mainArg: a.mainArg };
+  const val: any = { path: a.path, arg: a.arg };
 
   if (a.namespace) {
     val.namespace = a.namespace;

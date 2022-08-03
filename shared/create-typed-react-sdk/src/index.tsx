@@ -36,7 +36,7 @@ export class ReactSDK<Endpoints extends DeepAsyncFnRecord<Endpoints>> {
     const getNextGetSDKQueryKey = (path: string[]): any => {
       return new Proxy(() => {}, {
         apply(__, ___, args) {
-          return getQueryKey({ path, mainArg: args[0], namespace: this.namespace });
+          return getQueryKey({ path, arg: args[0], namespace: this.namespace });
         },
         get(__, prop) {
           return getNextGetSDKQueryKey(path.concat(prop.toString()));
@@ -51,10 +51,11 @@ export class ReactSDK<Endpoints extends DeepAsyncFnRecord<Endpoints>> {
     const getNextUseEndpoint = (p: { path: string[] }): any => {
       return new Proxy(() => {}, {
         apply: (__, ___, args) => {
+          const doFetch: DoFetch = (this.SDK as any).__doFetch;
           // eslint-disable-next-line react-hooks/rules-of-hooks
           return useSWR(
-            getQueryKey({ path: p.path, mainArg: args[0], namespace: this.namespace }),
-            () => getValAtObjPath(this.SDK, p.path)(args[0]),
+            getQueryKey({ path: p.path, arg: args[0], namespace: this.namespace }),
+            () => doFetch({ path: p.path, arg: args[0] }),
             args[1],
           );
         },
@@ -79,10 +80,11 @@ export class ReactSDK<Endpoints extends DeepAsyncFnRecord<Endpoints>> {
         apply: (__, ___, args) => {
           const getMainArg = args[0] as any;
 
+          const doFetch: DoFetch = (this.SDK as any).__doFetch;
           // eslint-disable-next-line react-hooks/rules-of-hooks
           return useInfiniteSWR(
-            (a, prevData) => getQueryKey({ path: p.path, mainArg: getMainArg(a, prevData), namespace: this.namespace }),
-            ({ mainArg }) => getValAtObjPath(this.SDK, p.path)(mainArg),
+            (a, prevData) => getQueryKey({ path: p.path, arg: getMainArg(a, prevData), namespace: this.namespace }),
+            ({ arg }) => doFetch({ path: p.path, arg }),
             args[1],
           );
         },
@@ -100,15 +102,4 @@ export class ReactSDK<Endpoints extends DeepAsyncFnRecord<Endpoints>> {
   useInfiniteEndpoint(): TypedUseInfiniteQuery<Endpoints> {
     return this.useInfiniteEndpointProxy;
   }
-}
-
-function getValAtObjPath(obj: any, path: string[]): any {
-  let curr = obj;
-  let arr = path.slice();
-  while (arr.length) {
-    const next = arr.unshift();
-    curr = curr[next];
-  }
-
-  return curr;
 }

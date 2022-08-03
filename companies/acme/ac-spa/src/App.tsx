@@ -5,22 +5,31 @@ import { publicConfig } from "./config/public/index.js";
 import { createApiReactSDK } from "ac-api";
 import { createRouter } from "rn-typed-router";
 
-const SDK = createApiReactSDK();
+const { ApiSDK } = createApiReactSDK();
 
 const { Navigator, navigate, PATHS } = createRouter({
   type: "switch",
   routes: {
     login: {
       type: "leaf",
-      Component: () => (
-        <div
-          onClick={() => {
-            navigate(PATHS.main, {});
-          }}
-        >
-          Login screen foos
-        </div>
-      ),
+      Component: () => {
+        const { data } = ApiSDK.useEndpoint().loans.getAllLoans({});
+        return (
+          <div>
+            <div>Login screen</div>
+            <button
+              onClick={() => {
+                navigate(PATHS.main, {});
+              }}
+            >
+              Go to main
+            </button>
+            {data?.map((a) => (
+              <div key={a.id}>{a.id}</div>
+            ))}
+          </div>
+        );
+      },
     },
     main: {
       type: "leaf",

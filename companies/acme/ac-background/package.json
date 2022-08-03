@@ -5,7 +5,7 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "echo 'No background processes yet...'",
-    "build:ts": "echo 'No ts to build...'"
+    "build-dev": "echo 'No ts to build...'"
   },
   "dependencies": {
     "lodash": "4.17.21",
