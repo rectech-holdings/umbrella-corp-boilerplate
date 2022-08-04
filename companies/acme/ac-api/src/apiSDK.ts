@@ -4,17 +4,14 @@ import { publicConfig } from "./config/public/index.js";
 import type * as api from "./endpoints/index.js";
 
 export function createApiReactSDK() {
-  return {
-    ApiSDK: createTypedReactSDK<typeof api>({
-      url: publicConfig.url,
-    }),
-  };
+  return createTypedReactSDK<typeof api, "acme">({
+    namespace: "acme",
+    url: publicConfig.url,
+  });
 }
 
 export function createApiSDK() {
-  return {
-    ApiSDK: createTypedSDK<typeof api>({
-      url: publicConfig.url,
-    }),
-  };
+  return createTypedSDK<typeof api>({
+    url: publicConfig.url,
+  });
 }

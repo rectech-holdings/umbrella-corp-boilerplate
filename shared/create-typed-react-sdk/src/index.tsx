@@ -1,48 +1,115 @@
-import useSWR, { mutate, SWRConfiguration, useSWRConfig } from "swr";
+import useSWR, { mutate, SWRConfiguration, SWRConfig, useSWRConfig } from "swr";
 import useInfiniteSWR from "swr/infinite";
 import { createTypedSDK, DeepAsyncFnRecord, DoFetch, TypedSDK, TypedSDKOptions } from "create-typed-sdk";
 import {
   QueryKey,
   TypedGetSDKQueryKey,
   TypedSDKWithReactOptions,
-  TypedUseInfiniteQuery,
-  TypedUseQuery,
+  TypedUseInfiniteEndpoint,
+  TypedUseEndpoint,
 } from "./utils.js";
+import React, { ReactNode, useContext } from "react";
 
-export function createTypedReactSDK<Endpoints extends DeepAsyncFnRecord<Endpoints>>(
-  opts: TypedSDKOptions,
-): ReactSDK<Endpoints> {
-  return new ReactSDK(opts);
+export type TypedReactSDKOptions<Namespace extends string> = TypedSDKOptions & {
+  namespace: Namespace;
+};
+
+export function createTypedReactSDK<Endpoints extends DeepAsyncFnRecord<Endpoints>, Namespace extends string = "">(
+  opts: TypedReactSDKOptions<Namespace>,
+): ReactSDK<Endpoints, Namespace> {
+  return new ReactSDKInner(opts) as any as ReactSDK<Endpoints, Namespace>;
 }
 
-export type CreateReactSDKOptions = TypedSDKOptions & { swr?: SWRConfiguration; persistor?: {} };
+export type CreateReactSDKOptions<Namespace extends string> = TypedReactSDKOptions<Namespace> & {
+  swr?: SWRConfiguration;
+  persistor?: {};
+};
 
-export class ReactSDK<Endpoints extends DeepAsyncFnRecord<Endpoints>> {
-  #namespace?: string;
-  constructor(opts: CreateReactSDKOptions) {
-    const { onFetch, ...restOpts } = opts;
+type ReactSDKBase<Endpoints extends DeepAsyncFnRecord<Endpoints>> = {
+  SDK: TypedSDK<Endpoints>;
+  SDKProvider: React.FC<{ children: ReactNode }>;
+  useEndpoint: TypedUseEndpoint<Endpoints>;
+  useInfiniteEndpoint: TypedUseInfiniteEndpoint<Endpoints>;
+};
 
-    this.#namespace = restOpts.namespace;
+export type ReactSDK<Endpoints extends DeepAsyncFnRecord<Endpoints>, Namespace extends string = ""> = {
+  [K in keyof ReactSDKBase<Endpoints> as K extends "useEndpoint"
+    ? `use${Capitalize<Namespace>}Endpoint`
+    : K extends "useInfiniteEndpoint"
+    ? `use${Capitalize<Namespace>}InfiniteEndpoint`
+    : K extends "SDK"
+    ? `${Capitalize<Namespace>}SDK`
+    : K extends "SDKProvider"
+    ? `${Capitalize<Namespace>}SDKProvider`
+    : never]: ReactSDKBase<Endpoints>[K];
+};
 
-    this.SDK = createTypedSDK({
+class ReactSDKInner<Endpoints extends DeepAsyncFnRecord<Endpoints>, Namespace extends string = ""> {
+  constructor(opts: CreateReactSDKOptions<Namespace>) {
+    const { onFetch, swr, persistor, ...restOpts } = opts;
+    this.#swrOptions = swr;
+
+    this.#SDK = createTypedSDK({
       onFetch: async (a) => {
         await Promise.all([onFetch?.(a), mutate(this.#getQueryKeyFromArgs(a), a.fetchProm)]);
       },
       ...restOpts,
     });
+
+    //@ts-ignore
+    this[`${capitalize(opts.namespace)}SDK`] = this.#SDK;
+
+    //@ts-ignore
+    this[`${capitalize(opts.namespace)}SDKProvider`] = this.#TypedReactSDKProvider;
+
+    //@ts-ignore
+    this[`use${capitalize(opts.namespace)}Endpoint`] = this.#useEndpoint;
+
+    //@ts-ignore
+    this[`use${capitalize(opts.namespace)}InfiniteEndpoint`] = this.#useInfiniteEndpoint;
   }
 
-  SDK: TypedSDKWithReactOptions<Endpoints>;
+  #swrOptions?: SWRConfiguration;
+  #SDKContextGuard = React.createContext<any>(null);
+  #SDKContextGuardValue = Symbol("SDK-Instance");
 
-  useEndpoint(): TypedUseQuery<Endpoints> {
+  #useSDKCache = () => {
+    const val = useContext(this.#SDKContextGuard);
+    if (val !== this.#SDKContextGuardValue) {
+      throw new Error("TypedReactSDKProvider is not provided at the root of your App! Wrap your app with it");
+    }
+    const { cache } = useSWRConfig();
+
+    return cache;
+  };
+
+  #TypedReactSDKProvider = (a: { children: ReactNode }) => {
+    const Provider = this.#SDKContextGuard.Provider;
+    return (
+      <Provider value={this.#SDKContextGuardValue}>
+        <SWRConfig
+          value={{
+            ...(this.#swrOptions || {}),
+            provider: () => new Map(),
+          }}
+        >
+          {a.children}
+        </SWRConfig>
+      </Provider>
+    );
+  };
+
+  #SDK: TypedSDKWithReactOptions<Endpoints>;
+
+  #useEndpoint(): TypedUseEndpoint<Endpoints> {
     return this.#useEndpointProxy;
   }
 
-  useInfiniteEndpoint(): TypedUseInfiniteQuery<Endpoints> {
+  #useInfiniteEndpoint(): TypedUseInfiniteEndpoint<Endpoints> {
     return this.#useInfiniteEndpointProxy;
   }
 
-  getQueryKey: TypedGetSDKQueryKey<Endpoints> = (() => {
+  #getQueryKey: TypedGetSDKQueryKey<Endpoints> = (() => {
     const getNextGetSDKQueryKey = (path: string[]): any => {
       return new Proxy(() => {}, {
         apply: (__, ___, args) => {
@@ -64,10 +131,6 @@ export class ReactSDK<Endpoints extends DeepAsyncFnRecord<Endpoints>> {
       val.arg = a.arg;
     }
 
-    if (this.#namespace) {
-      val.namespace = this.#namespace;
-    }
-
     return val;
   }
 
@@ -75,7 +138,7 @@ export class ReactSDK<Endpoints extends DeepAsyncFnRecord<Endpoints>> {
     const getNextUseEndpoint = (p: { path: string[] }): any => {
       return new Proxy(() => {}, {
         apply: (__, ___, args) => {
-          const doFetch: DoFetch = (this.SDK as any).__doFetch;
+          const doFetch: DoFetch = (this.#SDK as any).__doFetch;
 
           const opts = args[1] || {};
 
@@ -103,7 +166,7 @@ export class ReactSDK<Endpoints extends DeepAsyncFnRecord<Endpoints>> {
         apply: (__, ___, args) => {
           const getMainArg = args[0] as any;
 
-          const doFetch: DoFetch = (this.SDK as any).__doFetch;
+          const doFetch: DoFetch = (this.#SDK as any).__doFetch;
           const opts = args[1] || {};
 
           // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -127,4 +190,11 @@ export class ReactSDK<Endpoints extends DeepAsyncFnRecord<Endpoints>> {
 
     return getNextUseInfiniteEndpoint({ path: [] });
   })();
+}
+
+function capitalize(str: string) {
+  if (!str) {
+    return str;
+  }
+  return str[0]!.toUpperCase() + str.slice(1);
 }

@@ -1,7 +1,6 @@
 import axios from "axios";
 
 type BaseOpts = {
-  namespace?: string;
   onFetch?: (a: { fetchProm: Promise<any> } & DoFetchArg) => any;
 };
 
