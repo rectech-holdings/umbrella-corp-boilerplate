@@ -18,7 +18,10 @@ const { Navigator, navigate, PATHS } = createRouter({
           <div>
             <div>Login screen</div>
             <button
-              onClick={() => {
+              onClick={async () => {
+                const asdf = { revalidate: [ApiSDK.getQueryKey.loans.getAllLoans({})] };
+                await ApiSDK.SDK.loans.createLoan({ loanTitle: "asdf", ownerEmail: "asdf" });
+
                 navigate(PATHS.main, {});
               }}
             >

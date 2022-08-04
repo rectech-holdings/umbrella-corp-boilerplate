@@ -1,10 +1,10 @@
-import useSWR, { mutate } from "swr";
+import useSWR, { mutate, SWRConfiguration, useSWRConfig } from "swr";
 import useInfiniteSWR from "swr/infinite";
-import { createTypedSDK, DeepAsyncFnRecord, DoFetch, TypedSDKOptions } from "create-typed-sdk";
+import { createTypedSDK, DeepAsyncFnRecord, DoFetch, TypedSDK, TypedSDKOptions } from "create-typed-sdk";
 import {
-  getQueryKey,
+  QueryKey,
   TypedGetSDKQueryKey,
-  TypedSDKWithMutateOptions,
+  TypedSDKWithReactOptions,
   TypedUseInfiniteQuery,
   TypedUseQuery,
 } from "./utils.js";
@@ -15,30 +15,40 @@ export function createTypedReactSDK<Endpoints extends DeepAsyncFnRecord<Endpoint
   return new ReactSDK(opts);
 }
 
+export type CreateReactSDKOptions = TypedSDKOptions & { swr?: SWRConfiguration; persistor?: {} };
+
 export class ReactSDK<Endpoints extends DeepAsyncFnRecord<Endpoints>> {
-  private namespace?: string;
-  constructor(opts: TypedSDKOptions) {
+  #namespace?: string;
+  constructor(opts: CreateReactSDKOptions) {
     const { onFetch, ...restOpts } = opts;
 
-    this.namespace = restOpts.namespace;
+    this.#namespace = restOpts.namespace;
 
     this.SDK = createTypedSDK({
       onFetch: async (a) => {
-        await Promise.all([onFetch?.(a), mutate(getQueryKey({ ...a, namespace: this.namespace }), a.fetchProm, a[1])]);
+        await Promise.all([onFetch?.(a), mutate(this.#getQueryKeyFromArgs(a), a.fetchProm)]);
       },
       ...restOpts,
     });
   }
 
-  public SDK: TypedSDKWithMutateOptions<Endpoints>;
+  SDK: TypedSDKWithReactOptions<Endpoints>;
+
+  useEndpoint(): TypedUseQuery<Endpoints> {
+    return this.#useEndpointProxy;
+  }
+
+  useInfiniteEndpoint(): TypedUseInfiniteQuery<Endpoints> {
+    return this.#useInfiniteEndpointProxy;
+  }
 
   getQueryKey: TypedGetSDKQueryKey<Endpoints> = (() => {
     const getNextGetSDKQueryKey = (path: string[]): any => {
       return new Proxy(() => {}, {
-        apply(__, ___, args) {
-          return getQueryKey({ path, arg: args[0], namespace: this.namespace });
+        apply: (__, ___, args) => {
+          return this.#getQueryKeyFromArgs({ path, arg: args[0] });
         },
-        get(__, prop) {
+        get: (__, prop) => {
           return getNextGetSDKQueryKey(path.concat(prop.toString()));
         },
       });
@@ -47,16 +57,33 @@ export class ReactSDK<Endpoints extends DeepAsyncFnRecord<Endpoints>> {
     return getNextGetSDKQueryKey([]);
   })();
 
-  private useEndpointProxy = (() => {
+  #getQueryKeyFromArgs(a: { path: string[]; arg?: unknown }): QueryKey {
+    const val: QueryKey = { path: a.path };
+
+    if (typeof a.arg !== "undefined") {
+      val.arg = a.arg;
+    }
+
+    if (this.#namespace) {
+      val.namespace = this.#namespace;
+    }
+
+    return val;
+  }
+
+  #useEndpointProxy = (() => {
     const getNextUseEndpoint = (p: { path: string[] }): any => {
       return new Proxy(() => {}, {
         apply: (__, ___, args) => {
           const doFetch: DoFetch = (this.SDK as any).__doFetch;
+
+          const opts = args[1] || {};
+
           // eslint-disable-next-line react-hooks/rules-of-hooks
           return useSWR(
-            getQueryKey({ path: p.path, arg: args[0], namespace: this.namespace }),
+            opts.enabled === false ? null : this.#getQueryKeyFromArgs({ path: p.path, arg: args[0] }),
             () => doFetch({ path: p.path, arg: args[0] }),
-            args[1],
+            opts,
           );
         },
         get(__, prop) {
@@ -70,22 +97,24 @@ export class ReactSDK<Endpoints extends DeepAsyncFnRecord<Endpoints>> {
     return getNextUseEndpoint({ path: [] });
   })();
 
-  useEndpoint(): TypedUseQuery<Endpoints> {
-    return this.useEndpointProxy;
-  }
-
-  private useInfiniteEndpointProxy = (() => {
+  #useInfiniteEndpointProxy = (() => {
     const getNextUseInfiniteEndpoint = (p: { path: string[] }): any => {
       return new Proxy(() => {}, {
         apply: (__, ___, args) => {
           const getMainArg = args[0] as any;
 
           const doFetch: DoFetch = (this.SDK as any).__doFetch;
+          const opts = args[1] || {};
+
           // eslint-disable-next-line react-hooks/rules-of-hooks
           return useInfiniteSWR(
-            (a, prevData) => getQueryKey({ path: p.path, arg: getMainArg(a, prevData), namespace: this.namespace }),
+            //@ts-ignore
+            opts.enabled === false
+              ? null
+              : (a, prevData) => this.#getQueryKeyFromArgs({ path: p.path, arg: getMainArg(a, prevData) }),
+            //@ts-ignore
             ({ arg }) => doFetch({ path: p.path, arg }),
-            args[1],
+            opts,
           );
         },
         get(__, prop) {
@@ -98,8 +127,4 @@ export class ReactSDK<Endpoints extends DeepAsyncFnRecord<Endpoints>> {
 
     return getNextUseInfiniteEndpoint({ path: [] });
   })();
-
-  useInfiniteEndpoint(): TypedUseInfiniteQuery<Endpoints> {
-    return this.useInfiniteEndpointProxy;
-  }
 }
