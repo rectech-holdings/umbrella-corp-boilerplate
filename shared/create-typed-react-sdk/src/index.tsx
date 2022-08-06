@@ -1,119 +1,195 @@
-import useSWR, { mutate, SWRConfiguration, SWRConfig, useSWRConfig } from "swr";
-import useInfiniteSWR from "swr/infinite";
+import { Simplify } from "type-fest";
+import {
+  QueryObserverOptions,
+  QueryClient,
+  QueryClientProvider,
+  QueryCache,
+  Query,
+  useInfiniteQuery,
+  useQuery,
+} from "@tanstack/react-query";
 import { createTypedSDK, DeepAsyncFnRecord, DoFetch, TypedSDK, TypedSDKOptions } from "create-typed-sdk";
+import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
+import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
+import { persistQueryClient } from "@tanstack/react-query-persist-client";
+
 import {
   QueryKey,
   TypedGetSDKQueryKey,
-  TypedSDKWithReactOptions,
-  TypedUseInfiniteEndpoint,
-  TypedUseEndpoint,
+  TypedReactSDK,
+  TypedReactSDKInvokeOpts,
+  TypedUsePaginatedSDK,
+  TypedUseSDK,
 } from "./utils.js";
-import React, { ReactNode, useContext } from "react";
+import React, { ReactNode, useContext, useState } from "react";
 
-export type TypedReactSDKOptions<Namespace extends string> = TypedSDKOptions & {
-  namespace: Namespace;
-};
+export type TypedReactSDKOptions = TypedSDKOptions;
 
-export function createTypedReactSDK<Endpoints extends DeepAsyncFnRecord<Endpoints>, Namespace extends string = "">(
-  opts: TypedReactSDKOptions<Namespace>,
-): ReactSDK<Endpoints, Namespace> {
-  return new ReactSDKInner(opts) as any as ReactSDK<Endpoints, Namespace>;
+export function createTypedReactSDK<SDK extends DeepAsyncFnRecord<SDK>>(opts: ReactSDKOptions): ReactSDK<SDK> {
+  return new ReactSDKInner(opts) as any as ReactSDK<SDK>;
 }
 
-export type CreateReactSDKOptions<Namespace extends string> = TypedReactSDKOptions<Namespace> & {
-  swr?: SWRConfiguration;
-  persistor?: {};
+type Persister =
+  | ({ type: "sync"; shouldPersist: (q: QueryKey) => boolean } & Parameters<typeof createSyncStoragePersister>[0])
+  | ({ type: "async"; shouldPersist: (q: QueryKey) => boolean } & Parameters<typeof createAsyncStoragePersister>[0]);
+
+type RQOptions = Omit<
+  QueryObserverOptions,
+  "enabled" | "select" | "placeholderData" | "_optimisticResults" | "onSuccess" | "onError" | "onSettled"
+>;
+
+export type ReactSDKOptions = TypedSDKOptions & {
+  options?: RQOptions;
+  persister?: Persister;
 };
 
-type ReactSDKBase<Endpoints extends DeepAsyncFnRecord<Endpoints>> = {
-  SDK: TypedSDK<Endpoints>;
+export type ReactSDK<SDK extends DeepAsyncFnRecord<SDK>> = {
+  SDK: TypedSDK<SDK>;
   SDKProvider: React.FC<{ children: ReactNode }>;
-  useEndpoint: TypedUseEndpoint<Endpoints>;
-  useInfiniteEndpoint: TypedUseInfiniteEndpoint<Endpoints>;
+  getQueryKey: TypedGetSDKQueryKey<SDK>;
+  useSDK: () => TypedUseSDK<SDK>;
+  /**
+   * Lets you easily paginate on endpoints that have pagination parameters
+   *
+   * @example
+   * //Backend...
+   * function queryArticles(p: { someRandomParam: boolean; articlePage: number }) {
+   *   //Do some query using `someRandomParam` and `articlePage`...
+
+   *   const moreDataExists = true; // You have to determine this
+
+   *   type ArticlesResponse = {
+   *     articles: string[];
+   *     nextArticlePage?: number;
+   *   };
+
+   *   const resp: ArticlesResponse = {
+   *     articles: ["lorum", "ipsum"],
+   *     nextArticlePage: moreDataExists ? p.articlePage + 1 : undefined,
+   *   };
+
+   *   return resp;
+   * }
+
+   * // //Frontend...
+   * function App() {
+   *   const { data, fetchNextPage } = usePaginatedSDK().articles.queryArticles(
+   *     (previousPageResult) => ({
+   *       someRandomParam: true,
+   *       articlePage: previousPageResult.nextArticlePage || 0,
+   *     }),
+   *   );
+
+   *   // Note that `data.pages` is an array of responses from each page.
+   *
+   */
+
+  usePaginatedSDK: () => TypedUsePaginatedSDK<SDK>;
 };
 
-export type ReactSDK<Endpoints extends DeepAsyncFnRecord<Endpoints>, Namespace extends string = ""> = {
-  [K in keyof ReactSDKBase<Endpoints> as K extends "useEndpoint"
-    ? `use${Capitalize<Namespace>}Endpoint`
-    : K extends "useInfiniteEndpoint"
-    ? `use${Capitalize<Namespace>}InfiniteEndpoint`
-    : K extends "SDK"
-    ? `${Capitalize<Namespace>}SDK`
-    : K extends "SDKProvider"
-    ? `${Capitalize<Namespace>}SDKProvider`
-    : never]: ReactSDKBase<Endpoints>[K];
-};
+class ReactSDKInner<SDK extends DeepAsyncFnRecord<SDK>> {
+  #persister?: Persister;
+  #queryClient: QueryClient;
 
-class ReactSDKInner<Endpoints extends DeepAsyncFnRecord<Endpoints>, Namespace extends string = ""> {
-  constructor(opts: CreateReactSDKOptions<Namespace>) {
-    const { onFetch, swr, persistor, ...restOpts } = opts;
-    this.#swrOptions = swr;
+  #BaseSDK: TypedSDK<SDK>;
 
-    this.#SDK = createTypedSDK({
-      onFetch: async (a) => {
-        await Promise.all([onFetch?.(a), mutate(this.#getQueryKeyFromArgs(a), a.fetchProm)]);
+  constructor(opts: ReactSDKOptions) {
+    const { options, persister, ...restOpts } = opts;
+    this.#persister = persister;
+    this.#queryClient = new QueryClient({
+      defaultOptions: {
+        queries: {
+          cacheTime: Infinity,
+          staleTime: 1000 * 60 * 5, //5 minutes before stale
+          ...opts.options,
+        },
       },
-      ...restOpts,
     });
 
-    //@ts-ignore
-    this[`${capitalize(opts.namespace)}SDK`] = this.#SDK;
-
-    //@ts-ignore
-    this[`${capitalize(opts.namespace)}SDKProvider`] = this.#TypedReactSDKProvider;
-
-    //@ts-ignore
-    this[`use${capitalize(opts.namespace)}Endpoint`] = this.#useEndpoint;
-
-    //@ts-ignore
-    this[`use${capitalize(opts.namespace)}InfiniteEndpoint`] = this.#useInfiniteEndpoint;
+    this.#BaseSDK = createTypedSDK(restOpts);
   }
 
-  #swrOptions?: SWRConfiguration;
-  #SDKContextGuard = React.createContext<any>(null);
-  #SDKContextGuardValue = Symbol("SDK-Instance");
+  public SDK: TypedReactSDK<SDK> = (() => {
+    const getNext = (path: string[]): any => {
+      return new Proxy(() => {}, {
+        apply: (__, ___, args) => {
+          return this.#invokeBaseSDK({ path, arg: args[0], type: "SDK" });
+        },
+        get: (__, prop) => {
+          return getNext(path.concat(prop.toString()));
+        },
+      });
+    };
 
-  #useSDKCache = () => {
-    const val = useContext(this.#SDKContextGuard);
-    if (val !== this.#SDKContextGuardValue) {
-      throw new Error("TypedReactSDKProvider is not provided at the root of your App! Wrap your app with it");
+    return getNext([]);
+  })();
+
+  #invokeBaseSDK(p: {
+    path: string[];
+    arg: any;
+    type: "useSDK" | "usePaginatedSDK" | "SDK";
+    extraOpts?: TypedReactSDKInvokeOpts;
+  }) {
+    let curr = this.#BaseSDK as any;
+    for (let i = 0; i < p.path.length; i++) {
+      const thisPath = p.path[i]!;
+      curr = curr[thisPath];
     }
-    const { cache } = useSWRConfig();
 
-    return cache;
+    let prom = curr(p.arg);
+
+    if (p.type === "SDK") {
+      if (!this.#persister || this.#persister.shouldPersist([...p.path, p.arg])) {
+        prom.then((newVal: unknown) => {
+          this.#queryClient.setQueryData([...p.path, p.arg], newVal);
+        });
+      }
+
+      if (p.extraOpts?.revalidate) {
+        prom = prom.then(async (val: any) => {
+          await this.#queryClient.invalidateQueries(p.extraOpts?.revalidate);
+
+          return val;
+        });
+      }
+    }
+
+    return prom;
+  }
+
+  #SDKQueryClientContext = React.createContext<undefined | QueryClient>(undefined);
+
+  #useAssertProvider = () => {
+    if (!useContext(this.#SDKQueryClientContext)) {
+      throw new Error(`Unable to find provider! Ensure you have added SDKProvider to the root of your React app`);
+    }
   };
 
-  #TypedReactSDKProvider = (a: { children: ReactNode }) => {
-    const Provider = this.#SDKContextGuard.Provider;
+  public SDKProvider = (a: { children: ReactNode }) => {
     return (
-      <Provider value={this.#SDKContextGuardValue}>
-        <SWRConfig
-          value={{
-            ...(this.#swrOptions || {}),
-            provider: () => new Map(),
-          }}
-        >
-          {a.children}
-        </SWRConfig>
-      </Provider>
+      <QueryClientProvider
+        contextSharing={false}
+        client={this.#queryClient}
+        context={this.#SDKQueryClientContext as any}
+      >
+        {a.children}
+      </QueryClientProvider>
     );
   };
 
-  #SDK: TypedSDKWithReactOptions<Endpoints>;
+  public useSDK = () => {
+    return this.#useSDKProxy;
+  };
 
-  #useEndpoint(): TypedUseEndpoint<Endpoints> {
-    return this.#useEndpointProxy;
-  }
+  public usePaginatedSDK = () => {
+    return this.#usePaginatedSDKProxy;
+  };
 
-  #useInfiniteEndpoint(): TypedUseInfiniteEndpoint<Endpoints> {
-    return this.#useInfiniteEndpointProxy;
-  }
-
-  #getQueryKey: TypedGetSDKQueryKey<Endpoints> = (() => {
+  #getQueryKey: TypedGetSDKQueryKey<SDK> = (() => {
     const getNextGetSDKQueryKey = (path: string[]): any => {
       return new Proxy(() => {}, {
         apply: (__, ___, args) => {
-          return this.#getQueryKeyFromArgs({ path, arg: args[0] });
+          return typeof args[0] === "undefined" ? path : [...path, args[0]];
         },
         get: (__, prop) => {
           return getNextGetSDKQueryKey(path.concat(prop.toString()));
@@ -124,71 +200,66 @@ class ReactSDKInner<Endpoints extends DeepAsyncFnRecord<Endpoints>, Namespace ex
     return getNextGetSDKQueryKey([]);
   })();
 
-  #getQueryKeyFromArgs(a: { path: string[]; arg?: unknown }): QueryKey {
-    const val: QueryKey = { path: a.path };
-
-    if (typeof a.arg !== "undefined") {
-      val.arg = a.arg;
-    }
-
-    return val;
-  }
-
-  #useEndpointProxy = (() => {
-    const getNextUseEndpoint = (p: { path: string[] }): any => {
+  #useSDKProxy = (() => {
+    const getNextUseSDK = (p: { path: string[] }): any => {
       return new Proxy(() => {}, {
         apply: (__, ___, args) => {
-          const doFetch: DoFetch = (this.#SDK as any).__doFetch;
+          this.#useAssertProvider();
 
           const opts = args[1] || {};
 
           // eslint-disable-next-line react-hooks/rules-of-hooks
-          return useSWR(
-            opts.enabled === false ? null : this.#getQueryKeyFromArgs({ path: p.path, arg: args[0] }),
-            () => doFetch({ path: p.path, arg: args[0] }),
-            opts,
+          return useQuery(
+            [...p.path, args[0]],
+            () => this.#invokeBaseSDK({ path: p.path, arg: args[0], type: "useSDK" }),
+            { ...opts, context: this.#SDKQueryClientContext },
           );
         },
         get(__, prop) {
-          return getNextUseEndpoint({
+          return getNextUseSDK({
             path: p.path.concat(prop.toString()),
           });
         },
       });
     };
 
-    return getNextUseEndpoint({ path: [] });
+    return getNextUseSDK({ path: [] });
   })();
 
-  #useInfiniteEndpointProxy = (() => {
-    const getNextUseInfiniteEndpoint = (p: { path: string[] }): any => {
+  #usePaginatedSDKProxy = (() => {
+    const getNextUsePaginatedSDK = (p: { path: string[] }): any => {
       return new Proxy(() => {}, {
         apply: (__, ___, args) => {
-          const getMainArg = args[0] as any;
+          this.#useAssertProvider();
 
-          const doFetch: DoFetch = (this.#SDK as any).__doFetch;
+          const getArg = args[0] as any;
           const opts = args[1] || {};
 
           // eslint-disable-next-line react-hooks/rules-of-hooks
-          return useInfiniteSWR(
-            //@ts-ignore
-            opts.enabled === false
-              ? null
-              : (a, prevData) => this.#getQueryKeyFromArgs({ path: p.path, arg: getMainArg(a, prevData) }),
-            //@ts-ignore
-            ({ arg }) => doFetch({ path: p.path, arg }),
-            opts,
+          const [initialArg] = useState(() => getArg(undefined, []));
+
+          // eslint-disable-next-line react-hooks/rules-of-hooks
+          return useInfiniteQuery(
+            [...p.path, initialArg],
+            //A bit weird to use the pageParam this way but :shrug:. No other good way to do it.
+            ({ pageParam }) =>
+              this.#invokeBaseSDK({ path: p.path, arg: pageParam || initialArg, type: "usePaginatedSDK" }),
+            {
+              ...opts,
+              getNextPageParam: (prevPage, allPages) => getArg(prevPage, allPages),
+              context: this.#SDKQueryClientContext,
+            },
           );
         },
         get(__, prop) {
-          return getNextUseInfiniteEndpoint({
+          return getNextUsePaginatedSDK({
             path: p.path.concat(prop.toString()),
           });
         },
       });
     };
 
-    return getNextUseInfiniteEndpoint({ path: [] });
+    return getNextUsePaginatedSDK({ path: [] });
   })();
 }
 

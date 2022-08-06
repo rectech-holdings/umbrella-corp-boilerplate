@@ -11,8 +11,12 @@
     "dev": "tsc -w --preserveWatchOutput"
   },
   "dependencies": {
+    "@tanstack/query-async-storage-persister": "4.0.10",
+    "@tanstack/query-sync-storage-persister": "4.0.10",
+    "@tanstack/react-query": "4.0.10",
+    "@tanstack/react-query-persist-client": "4.0.10",
     "create-typed-sdk": "workspace:*",
-    "swr": "1.3.0"
+    "type-fest": "2.16.0"
   },
   "devDependencies": {
     "typescript": "4.7.4"

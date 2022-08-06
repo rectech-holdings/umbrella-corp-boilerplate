@@ -129,7 +129,7 @@ import { MyServerSDK }  from './sdk'
 
 function App(){
   // Note: It is recommended that your SDK be an uppercase variable like `MyServerSDK` (e.g a namespace) so that the hook usage below will be linted per the rules of hooks
-  const resp = MyServerSDK.useEndpoint().accounts.GET.getById({id: "some-user})
+  const resp = MyServerSDK.useSDK().accounts.GET.getById({id: "some-user})
 
   return <div>Hello, my name is {resp.data.name}</div>
 }

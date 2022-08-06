@@ -11,7 +11,7 @@ function App() {
 function AppInner() {
   const [loanId, setLoanId] = useState(123);
 
-  const resp = ApiSDK.useEndpoint().loans.getLoan(loanId);
+  const resp = ApiSDK.useSDK().loans.getLoan(loanId);
 
   if (resp.status === "error") {
     return <div>Error fetching data</div>;

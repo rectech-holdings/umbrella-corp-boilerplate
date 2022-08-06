@@ -1,19 +1,40 @@
 import axios from "axios";
 
 type BaseOpts = {
-  onFetch?: (a: { fetchProm: Promise<any> } & DoFetchArg) => any;
+  onSuccess?: (a: { newVal: unknown } & DoFetchArg) => void;
+  onError?: (a: { error: unknown } & DoFetchArg) => void;
+  onSettled?: (a: DoFetchArg) => void;
 };
 
 export type TypedSDKOptions = ({ url: string } & BaseOpts) | ({ doFetch: DoFetch } & BaseOpts);
 
-export function createTypedSDK<T extends DeepAsyncFnRecord<any>>(opts: TypedSDKOptions): TypedSDK<T> {
-  const doFetch: DoFetch =
+export function createTypedSDK<SDK extends DeepAsyncFnRecord<any>>(opts: TypedSDKOptions): TypedSDK<SDK> {
+  const baseDoFetch: DoFetch =
     "doFetch" in opts
       ? opts.doFetch
       : (p) => {
           const url = `${opts.url}/${p.path.join("/")}`;
           return axios.post(url, p.arg).then((resp) => resp.data);
         };
+
+  const doFetch: DoFetch = (args) => {
+    const prom = baseDoFetch(args);
+
+    prom
+      .then(
+        (v) => {
+          opts.onSuccess?.({ newVal: v, ...args });
+        },
+        (err) => {
+          opts.onError?.({ error: err, ...args });
+        },
+      )
+      .finally(() => {
+        opts.onSettled?.(args);
+      });
+
+    return prom;
+  };
 
   const getNextQuery = (path: string[]): any => {
     return new Proxy(
@@ -22,18 +43,9 @@ export function createTypedSDK<T extends DeepAsyncFnRecord<any>>(opts: TypedSDKO
         apply: (__, key, args) => {
           const fetchArg = { arg: args[0], path };
 
-          const prom = doFetch(fetchArg);
-
-          opts.onFetch?.({ fetchProm: prom, ...fetchArg });
-
-          return prom;
+          return doFetch(fetchArg, ...args.slice(1));
         },
         get(__, prop) {
-          //Secret method used by create-typed-react-sdk
-          if (prop === "__doFetch") {
-            return doFetch;
-          }
-
           return getNextQuery(path.concat(prop.toString()));
         },
       },
@@ -98,8 +110,13 @@ export function attachApiToAppWithDefault<T extends DeepAsyncFnRecord<T>>(
   });
 }
 
-type DoFetchArg = { path: string[]; arg: any };
-export type DoFetch = (p: DoFetchArg) => Promise<any>;
+type DoFetchArg = {
+  path: string[];
+  arg: any;
+  //Context can typically only be added to by using interceptors. Unless you use the secret __doFetch method on the SDK, in which case you can set context at calltime
+  context?: Record<string, any>;
+};
+export type DoFetch = (p: DoFetchArg, ...otherArgs: any[]) => Promise<any>;
 
 export type AsyncFn = (...args: any[]) => Promise<any>;
 
@@ -107,13 +124,13 @@ export type DeepAsyncFnRecord<T extends {}> = {
   [key in keyof T]: T[key] extends AsyncFn ? T[key] : DeepAsyncFnRecord<T[key]>;
 };
 
-export type TypedSDK<T extends DeepAsyncFnRecord<T>> = {
-  [key in keyof T]: T[key] extends AsyncFn
-    ? Parameters<T[key]>[0] extends undefined
-      ? () => ReturnType<T[key]>
-      : (argument: Parameters<T[key]>[0]) => ReturnType<T[key]>
-    : T[key] extends DeepAsyncFnRecord<T[key]>
-    ? TypedSDK<T[key]>
+export type TypedSDK<SDK extends DeepAsyncFnRecord<SDK>> = {
+  [key in keyof SDK]: SDK[key] extends AsyncFn
+    ? Parameters<SDK[key]>[0] extends undefined
+      ? () => ReturnType<SDK[key]>
+      : (argument: Parameters<SDK[key]>[0]) => ReturnType<SDK[key]>
+    : SDK[key] extends DeepAsyncFnRecord<SDK[key]>
+    ? TypedSDK<SDK[key]>
     : never;
 };
 

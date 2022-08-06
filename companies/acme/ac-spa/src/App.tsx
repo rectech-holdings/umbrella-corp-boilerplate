@@ -5,7 +5,13 @@ import { publicConfig } from "./config/public/index.js";
 import { createApiReactSDK } from "ac-api";
 import { createRouter } from "rn-typed-router";
 
-const { ApiSDK } = createApiReactSDK();
+const {
+  SDK: AcmeSDK,
+  useSDK: useAcmeSDK,
+  usePaginatedSDK: useAcmePaginatedSDK,
+  SDKProvider: AcmeSDKProvider,
+  getQueryKey: getAcmeQueryKey,
+} = createApiReactSDK();
 
 const { Navigator, navigate, PATHS } = createRouter({
   type: "switch",
@@ -13,14 +19,13 @@ const { Navigator, navigate, PATHS } = createRouter({
     login: {
       type: "leaf",
       Component: () => {
-        const { data } = ApiSDK.useEndpoint().loans.getAllLoans({});
+        const { data } = useAcmeSDK().loans.getAllLoans({});
         return (
           <div>
             <div>Login screen</div>
             <button
               onClick={async () => {
-                const asdf = { revalidate: [ApiSDK.getQueryKey.loans.getAllLoans({})] };
-                await ApiSDK.SDK.loans.createLoan({ loanTitle: "asdf", ownerEmail: "asdf" });
+                await AcmeSDK.loans.createLoan({ loanTitle: "asdf", ownerEmail: "asdf" });
 
                 navigate(PATHS.main, {});
               }}
@@ -54,7 +59,11 @@ publicConfig.then((a) => {}).catch((e) => {});
 function App() {
   const [count, setCount] = useState(0);
 
-  return <Navigator />;
+  return (
+    <AcmeSDKProvider>
+      <Navigator />
+    </AcmeSDKProvider>
+  );
 }
 
 export default App;
