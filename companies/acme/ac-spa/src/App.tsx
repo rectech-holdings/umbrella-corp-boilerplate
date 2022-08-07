@@ -11,7 +11,9 @@ const {
   usePaginatedSDK: useAcmePaginatedSDK,
   SDKProvider: AcmeSDKProvider,
   getQueryKey: getAcmeQueryKey,
-} = createApiReactSDK();
+} = createApiReactSDK({});
+
+console.log([getAcmeQueryKey.loans(), getAcmeQueryKey.loans.getAllLoans({}), getAcmeQueryKey.loans.getAllLoans()]);
 
 const { Navigator, navigate, PATHS } = createRouter({
   type: "switch",
@@ -25,7 +27,10 @@ const { Navigator, navigate, PATHS } = createRouter({
             <div>Login screen</div>
             <button
               onClick={async () => {
-                await AcmeSDK.loans.createLoan({ loanTitle: "asdf", ownerEmail: "asdf" });
+                await AcmeSDK.loans.createLoan({
+                  loanTitle: "asdf",
+                  ownerEmail: Math.random().toString().slice(2) + "asdf@asdf.com",
+                });
 
                 navigate(PATHS.main, {});
               }}

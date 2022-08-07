@@ -7,11 +7,18 @@ import {
   Query,
   useInfiniteQuery,
   useQuery,
+  DehydrateOptions,
+  HydrateOptions,
 } from "@tanstack/react-query";
 import { createTypedSDK, DeepAsyncFnRecord, DoFetch, TypedSDK, TypedSDKOptions } from "create-typed-sdk";
 import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
 import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
-import { persistQueryClient } from "@tanstack/react-query-persist-client";
+import {
+  Persister,
+  persistQueryClient,
+  PersistQueryClientOptions,
+  PersistQueryClientProvider,
+} from "@tanstack/react-query-persist-client";
 
 import {
   QueryKey,
@@ -29,19 +36,36 @@ export function createTypedReactSDK<SDK extends DeepAsyncFnRecord<SDK>>(opts: Re
   return new ReactSDKInner(opts) as any as ReactSDK<SDK>;
 }
 
-type Persister =
-  | ({ type: "sync"; shouldPersist: (q: QueryKey) => boolean } & Parameters<typeof createSyncStoragePersister>[0])
-  | ({ type: "async"; shouldPersist: (q: QueryKey) => boolean } & Parameters<typeof createAsyncStoragePersister>[0]);
+type BasePersister = {
+  shouldPersist: (q: QueryKey) => boolean;
+} & Pick<PersistQueryClientOptions, "buster" | "maxAge">;
 
-type RQOptions = Omit<
+export type PersisterOpts =
+  | (({ type: "sync" } & Parameters<typeof createSyncStoragePersister>[0]) & BasePersister)
+  | (({ type: "async" } & Parameters<typeof createAsyncStoragePersister>[0]) & BasePersister);
+
+type RQOptions = Pick<
   QueryObserverOptions,
-  "enabled" | "select" | "placeholderData" | "_optimisticResults" | "onSuccess" | "onError" | "onSettled"
+  | "cacheTime"
+  | "isDataEqual"
+  | "keepPreviousData"
+  | "queryKeyHashFn"
+  | "refetchInterval"
+  | "refetchIntervalInBackground"
+  | "refetchOnMount"
+  | "refetchOnReconnect"
+  | "refetchOnWindowFocus"
+  | "networkMode"
+  | "useErrorBoundary"
+  | "structuralSharing"
+  | "staleTime"
+  | "retry"
+  | "retryDelay"
+  | "retryOnMount"
+  | "suspense"
 >;
 
-export type ReactSDKOptions = TypedSDKOptions & {
-  options?: RQOptions;
-  persister?: Persister;
-};
+export type ReactSDKOptions = Simplify<TypedSDKOptions & { persister?: PersisterOpts } & RQOptions>;
 
 export type ReactSDK<SDK extends DeepAsyncFnRecord<SDK>> = {
   SDK: TypedSDK<SDK>;
@@ -88,25 +112,49 @@ export type ReactSDK<SDK extends DeepAsyncFnRecord<SDK>> = {
 };
 
 class ReactSDKInner<SDK extends DeepAsyncFnRecord<SDK>> {
+  #persisterOpts?: PersisterOpts;
   #persister?: Persister;
   #queryClient: QueryClient;
 
   #BaseSDK: TypedSDK<SDK>;
 
   constructor(opts: ReactSDKOptions) {
-    const { options, persister, ...restOpts } = opts;
-    this.#persister = persister;
+    const { onError, onSettled, onSuccess } = opts;
     this.#queryClient = new QueryClient({
       defaultOptions: {
         queries: {
           cacheTime: Infinity,
           staleTime: 1000 * 60 * 5, //5 minutes before stale
-          ...opts.options,
         },
       },
     });
 
-    this.#BaseSDK = createTypedSDK(restOpts);
+    this.#BaseSDK = createTypedSDK(opts);
+
+    if (opts.persister) {
+      this.#persisterOpts = opts.persister;
+
+      const { buster, maxAge, shouldPersist } = opts.persister;
+      this.#persister =
+        opts.persister.type === "sync"
+          ? createSyncStoragePersister(opts.persister)
+          : createAsyncStoragePersister(opts.persister);
+
+      persistQueryClient({
+        persister: this.#persister,
+        queryClient: this.#queryClient,
+        buster,
+        dehydrateOptions: {
+          dehydrateMutations: false,
+          dehydrateQueries: true,
+          shouldDehydrateQuery: (a) => {
+            return shouldPersist(a.queryKey as any);
+          },
+        },
+
+        maxAge,
+      });
+    }
   }
 
   public SDK: TypedReactSDK<SDK> = (() => {
@@ -139,7 +187,7 @@ class ReactSDKInner<SDK extends DeepAsyncFnRecord<SDK>> {
     let prom = curr(p.arg);
 
     if (p.type === "SDK") {
-      if (!this.#persister || this.#persister.shouldPersist([...p.path, p.arg])) {
+      if (this.#persisterOpts?.shouldPersist([...p.path, p.arg])) {
         prom.then((newVal: unknown) => {
           this.#queryClient.setQueryData([...p.path, p.arg], newVal);
         });
@@ -166,14 +214,17 @@ class ReactSDKInner<SDK extends DeepAsyncFnRecord<SDK>> {
   };
 
   public SDKProvider = (a: { children: ReactNode }) => {
+    const Provider = this.#persister ? PersistQueryClientProvider : QueryClientProvider;
+
     return (
-      <QueryClientProvider
+      <Provider
+        persistOptions={this.#persister ? { persister: this.#persister, ...this.#persisterOpts } : (undefined as any)}
         contextSharing={false}
         client={this.#queryClient}
         context={this.#SDKQueryClientContext as any}
       >
         {a.children}
-      </QueryClientProvider>
+      </Provider>
     );
   };
 
@@ -185,7 +236,7 @@ class ReactSDKInner<SDK extends DeepAsyncFnRecord<SDK>> {
     return this.#usePaginatedSDKProxy;
   };
 
-  #getQueryKey: TypedGetSDKQueryKey<SDK> = (() => {
+  public getQueryKey: TypedGetSDKQueryKey<SDK> = (() => {
     const getNextGetSDKQueryKey = (path: string[]): any => {
       return new Proxy(() => {}, {
         apply: (__, ___, args) => {

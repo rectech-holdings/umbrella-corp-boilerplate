@@ -8,6 +8,10 @@ const app = Fastify();
 
 await app.register(cors, { origin: "*" });
 
+app.setErrorHandler((err) => {
+  console.error(err);
+});
+
 attachApiToAppWithDefault(api, app);
 
 const { port } = publicConfig;

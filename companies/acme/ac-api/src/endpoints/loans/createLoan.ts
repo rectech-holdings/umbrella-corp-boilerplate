@@ -5,6 +5,5 @@ export async function createLoan(p: { loanTitle: string; ownerEmail: string }) {
     data: { title: p.loanTitle, author: { create: { email: p.ownerEmail } } },
   });
 
-  console.log("here");
   return res;
 }

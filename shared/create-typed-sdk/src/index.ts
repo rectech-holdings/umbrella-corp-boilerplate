@@ -1,3 +1,4 @@
+import { Simplify } from "type-fest";
 import axios from "axios";
 
 type BaseOpts = {
@@ -96,15 +97,20 @@ export function attachApiToAppWithDefault<T extends DeepAsyncFnRecord<T>>(
         );
       }
 
+      if (!("send" in resp) && !("json" in resp)) {
+        throw new Error(
+          "Unable to find method to send response! Ensure you are using a nodejs library like express or fastify",
+        );
+      }
+
       const val = await fn(req.body);
       if ("send" in resp) {
         resp.send(val);
       } else if ("json" in resp) {
         resp.json(val);
       } else {
-        throw new Error(
-          "Unable to find method to send response! Ensure you are using a nodejs library like express or fastify",
-        );
+        ((a: never) => {})(resp);
+        throw new Error("Unreachable");
       }
     });
   });
