@@ -29,6 +29,7 @@ import { createZustandStore, ZustandStore } from "../utils/createZustandStore.js
 import { useIsMountedRef } from "../utils/useIsMountedRef.js";
 import { usePreviousValue } from "../utils/usePreviousValue.js";
 import { BackHandler, Keyboard, Platform, Screen, ScreenContainer, ScreenStack, StyleSheet, View } from "./primitives";
+import { Freeze } from "../utils/react-freeze.js";
 
 const defaultWrapperStyle = Platform.OS === "web" ? {} : { flex: 1 };
 
@@ -252,23 +253,31 @@ class RouterClass implements Router<any> {
     });
   };
 
+  #useRootBackHandler = () => {
+    //Note: We setup the back handler subscription lazily in render b/c it's important to start the subscription to the back handler as soon as possible so
+    //that components can subscribe to the BackHandler themselves and override the default behavior if desired
+
+    const hasSetup = useRef(false);
+    const rootGoBack = useRef(() => this.goBack());
+
+    if (!hasSetup.current && Platform.OS === "android") {
+      BackHandler.addEventListener("hardwareBackPress", rootGoBack.current);
+      hasSetup.current = true;
+    }
+
+    useEffect(() => {
+      const goBackUnsub = rootGoBack.current;
+      return () => {
+        BackHandler.removeEventListener("hardwareBackPress", goBackUnsub);
+      };
+    }, []);
+  };
+
   //NOTE: This is the root navigator
   public Navigator = () => {
-    //Note: We use layout effect b/c it's important to start the subscription to the back handler as soon as possible so
-    //that components can subscribe to the BackHandler themselves and override the default behavior if desired
-    useLayoutEffect(() => {
-      if (Platform.OS === "android") {
-        BackHandler.addEventListener("hardwareBackPress", this.goBack);
-        return () => {
-          BackHandler.removeEventListener("hardwareBackPress", this.goBack);
-        };
-      } else {
-        return;
-      }
-    }, []);
-
     const navState = this.#navigationStateStore.useStore();
     const InnerNavigator = this.#InnerNavigator;
+    this.#useRootBackHandler();
 
     return <InnerNavigator state={navState} path={[]} absoluteNavStatePath={[]} />;
   };
@@ -288,6 +297,7 @@ class RouterClass implements Router<any> {
       return null;
     }
 
+    //Match default web behavior by unmounting unfocused screens on the web
     if (Platform.OS === "web" && !isFocused) {
       return null;
     }
@@ -318,7 +328,11 @@ class RouterClass implements Router<any> {
 
     const Provider = this.#AbsoluteNavStatePathContext.Provider;
 
-    return <Provider value={p.absoluteNavStatePath}>{inner}</Provider>;
+    return (
+      <Freeze freeze={!isFocused}>
+        <Provider value={p.absoluteNavStatePath}>{inner}</Provider>
+      </Freeze>
+    );
   };
 
   #InnerLeafNavigator = React.memo((p: { path: string[] }) => {

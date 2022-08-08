@@ -7,6 +7,8 @@ import {
   Query,
   useInfiniteQuery,
   useQuery,
+  onlineManager,
+  focusManager,
   DehydrateOptions,
   HydrateOptions,
 } from "@tanstack/react-query";
@@ -65,7 +67,13 @@ type RQOptions = Pick<
   | "suspense"
 >;
 
-export type ReactSDKOptions = Simplify<TypedSDKOptions & { persister?: PersisterOpts } & RQOptions>;
+export type ReactSDKOptions = Simplify<
+  TypedSDKOptions & {
+    persister?: PersisterOpts;
+    setConnectivityEventListener?: (setOnline: (isOnline: boolean) => void) => () => void;
+    setWindowFocusEventListener?: (setIsFocused: (isFocused: boolean) => void) => () => void;
+  } & RQOptions
+>;
 
 export type ReactSDK<SDK extends DeepAsyncFnRecord<SDK>> = {
   SDK: TypedReactSDK<SDK>;
@@ -119,15 +127,32 @@ class ReactSDKInner<SDK extends DeepAsyncFnRecord<SDK>> {
   #BaseSDK: TypedSDK<SDK>;
 
   constructor(opts: ReactSDKOptions) {
-    const { onError, onSettled, onSuccess } = opts;
+    const {
+      onError,
+      onSettled,
+      onSuccess,
+      persister,
+      setConnectivityEventListener,
+      setWindowFocusEventListener,
+      ...queryOpts
+    } = opts;
     this.#queryClient = new QueryClient({
       defaultOptions: {
         queries: {
           cacheTime: Infinity,
-          staleTime: 1000 * 60 * 5, //5 minutes before stale
+          staleTime: 1000 * 60 * 5, //Default to 5 minutes before stale
+          ...queryOpts,
         },
       },
     });
+
+    if (setConnectivityEventListener) {
+      onlineManager.setEventListener(setConnectivityEventListener);
+    }
+
+    if (setWindowFocusEventListener) {
+      focusManager.setEventListener(setWindowFocusEventListener);
+    }
 
     this.#BaseSDK = createTypedSDK(opts);
 
