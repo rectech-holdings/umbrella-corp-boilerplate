@@ -7,7 +7,7 @@ import {
 } from "@tanstack/react-query";
 import { AsyncFn, DeepAsyncFnRecord } from "create-typed-sdk";
 
-export type TypedReactSDKInvokeOpts = { revalidate?: QueryKey[] };
+export type TypedReactSDKInvokeOpts = { invalidate?: QueryKey[] };
 
 export type TypedReactSDK<T extends DeepAsyncFnRecord<T>> = {
   [key in keyof T]: T[key] extends AsyncFn
@@ -17,7 +17,10 @@ export type TypedReactSDK<T extends DeepAsyncFnRecord<T>> = {
     : never;
 };
 
-export type QueryKey = [...path: string[], arg: unknown];
+export type QueryKey = [...path: string[], arg: unknown] & {
+  //Make QueryKey be a branded type to reduce chances of accidentally supplying an incorrect parameter
+  __isQueryKey: true;
+};
 
 export type TypedGetSDKQueryKey<T extends DeepAsyncFnRecord<T>> = {
   [key in keyof T]: T[key] extends AsyncFn

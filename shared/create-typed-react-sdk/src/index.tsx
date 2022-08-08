@@ -68,7 +68,7 @@ type RQOptions = Pick<
 export type ReactSDKOptions = Simplify<TypedSDKOptions & { persister?: PersisterOpts } & RQOptions>;
 
 export type ReactSDK<SDK extends DeepAsyncFnRecord<SDK>> = {
-  SDK: TypedSDK<SDK>;
+  SDK: TypedReactSDK<SDK>;
   SDKProvider: React.FC<{ children: ReactNode }>;
   getQueryKey: TypedGetSDKQueryKey<SDK>;
   useSDK: () => TypedUseSDK<SDK>;
@@ -161,7 +161,7 @@ class ReactSDKInner<SDK extends DeepAsyncFnRecord<SDK>> {
     const getNext = (path: string[]): any => {
       return new Proxy(() => {}, {
         apply: (__, ___, args) => {
-          return this.#invokeBaseSDK({ path, arg: args[0], type: "SDK" });
+          return this.#invokeBaseSDK({ path, arg: args[0], type: "SDK", extraOpts: args[1] });
         },
         get: (__, prop) => {
           return getNext(path.concat(prop.toString()));
@@ -187,15 +187,19 @@ class ReactSDKInner<SDK extends DeepAsyncFnRecord<SDK>> {
     let prom = curr(p.arg);
 
     if (p.type === "SDK") {
-      if (this.#persisterOpts?.shouldPersist([...p.path, p.arg])) {
+      if (this.#persisterOpts?.shouldPersist([...p.path, p.arg] as QueryKey)) {
         prom.then((newVal: unknown) => {
           this.#queryClient.setQueryData([...p.path, p.arg], newVal);
         });
       }
 
-      if (p.extraOpts?.revalidate) {
+      if (p.extraOpts?.invalidate) {
         prom = prom.then(async (val: any) => {
-          await this.#queryClient.invalidateQueries(p.extraOpts?.revalidate);
+          await Promise.all(
+            p.extraOpts!.invalidate!.map(async (k) => {
+              await this.#queryClient.invalidateQueries({ queryKey: k });
+            }),
+          );
 
           return val;
         });

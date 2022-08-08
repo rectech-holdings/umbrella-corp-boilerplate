@@ -69,11 +69,14 @@ export interface Router<T extends RouteDef> {
    */
   goBack: () => boolean;
 
-  navigate<Path extends PathObjResultLeaf<any, any, any, any, any, any, any, any>>(
+  navigate: <
+    Path extends PathObjResultLeaf<any, any, any, any, any, any, any, any>,
+    Params = ExtractObjectPath<ParamsInputObj<T>, Path[$pathType]>[$paramsType],
+  >(
     p: Path,
-    params: ExtractObjectPath<ParamsInputObj<T>, Path[$pathType]>[$paramsType],
+    params: Params,
     opts?: NavigateOptions,
-  ): void;
+  ) => void;
 
   /**
    * Function w/ callback that lets you to REPLACE the entire navigation state tree. Only the screens navigated to inside the callback will be present.
