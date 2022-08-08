@@ -1,7 +1,7 @@
 import { validateAndCleanInputParams, ParamTypesClass } from "./params.js";
 import { PathObjResult, PathObjResultLeaf, UrlString } from "../types/path.js";
 import { Router, RouterOptions } from "../types/router.js";
-import { MultiTypeComponent, RouteDef, StackRouteDef, TabRouteDef } from "../types/routes.js";
+import { MultiTypeComponent, RouteDef, StackRouteDef, SwitchRouteDef } from "../types/routes.js";
 import { dequal } from "dequal/lite";
 import urlParse from "url-parse";
 import useEvent from "use-event-callback";
@@ -22,7 +22,7 @@ import {
   NavigateOptions,
   RootNavigationState,
   StackNavigationState,
-  TabNavigationState,
+  SwitchNavigationState,
 } from "../types/navigationState.js";
 import queryString from "query-string";
 import { createZustandStore, ZustandStore } from "../utils/createZustandStore.js";
@@ -91,11 +91,15 @@ class RouterClass implements Router<any> {
     this.#navigationStateStore = createZustandStore(
       opts?.initialNavigationState || this.#generateInitialRootState(rootDef),
     );
+
+    this.#navigationStateStore.subscribe((s) => {
+      console.log(JSON.stringify(s, null, 2));
+    });
   }
 
   #generateInitialRootState(rootDef: RouteDef): RootNavigationState<any> {
     if (!("routes" in rootDef) || !rootDef.routes) {
-      throw new Error("The root of your route definition must be a switch, tab, or stack navigator!");
+      throw new Error("The root of your route definition must be a switch or stack navigator!");
     }
 
     const initialRoute = rootDef.initialRoute || Object.keys(rootDef.routes)[0]!;
@@ -106,14 +110,14 @@ class RouterClass implements Router<any> {
         type: "root-stack",
         stack: [initialInnerState],
       };
-    } else if (rootDef.type === "switch" || rootDef.type === "tab") {
+    } else if (rootDef.type === "switch") {
       return {
-        type: rootDef.type === "tab" ? "root-tab" : "root-switch",
-        focusedTabIndex: 0,
-        tabs: [initialInnerState],
+        type: "root-switch",
+        focusedSwitchIndex: 0,
+        switches: [initialInnerState],
       };
     } else {
-      ((a: never) => {})(rootDef.type);
+      ((a: never) => {})(rootDef);
       throw new Error("Unreachable");
     }
   }
@@ -146,14 +150,17 @@ class RouterClass implements Router<any> {
           params,
           stack: [initialInnerState],
         };
-      } else {
+      } else if (def.type === "switch") {
         return {
-          type: (def.type === "tab" ? "tab" : "switch") as any,
+          type: "switch",
           path,
           params,
-          focusedTabIndex: 0,
-          tabs: [initialInnerState],
+          focusedSwitchIndex: 0,
+          switches: [initialInnerState],
         };
+      } else {
+        ((a: never) => {})(def);
+        throw new Error("Unreachable");
       }
     } else {
       ((a: never) => {})(def);
@@ -163,10 +170,10 @@ class RouterClass implements Router<any> {
 
   #getComponentAtPath(
     path: string[],
-    type: "leaf" | "topTabBar" | "bottomTabBar" | "header",
+    type: "leaf" | "footer" | "header",
   ): { (): JSX.Element; Header?: () => JSX.Element } | null;
   #getComponentAtPath(path: string[], type: "wrapper"): ((a: { children: ReactNode }) => JSX.Element) | null;
-  #getComponentAtPath(path: string[], type: "leaf" | "topTabBar" | "bottomTabBar" | "header" | "wrapper"): any {
+  #getComponentAtPath(path: string[], type: "leaf" | "footer" | "header" | "wrapper"): any {
     const childDef = this.#getDefAtPath(path);
 
     let Component: any;
@@ -177,18 +184,11 @@ class RouterClass implements Router<any> {
           "component was defined on a route but is not a react component!" + path.join("/"),
         );
       }
-    } else if (type === "bottomTabBar") {
-      if ("BottomTabBar" in childDef && childDef.BottomTabBar) {
+    } else if (type === "footer") {
+      if ("Footer" in childDef && childDef.Footer) {
         Component = assertIsComponent(
-          childDef.BottomTabBar,
-          "bottomTabBar was defined on route but is not a react component! " + path.join("/"),
-        );
-      }
-    } else if (type === "topTabBar") {
-      if ("TopTabBar" in childDef && childDef.TopTabBar) {
-        Component = assertIsComponent(
-          childDef.TopTabBar,
-          "topTabBar was defined on route but is not a react component! " + path.join("/"),
+          childDef.Footer,
+          "Footer was defined on route but is not a react component! " + path.join("/"),
         );
       }
     } else if (type === "wrapper") {
@@ -198,7 +198,7 @@ class RouterClass implements Router<any> {
           "Wrapper was defined on a route but is not a react component! " + path.join("/"),
         );
       }
-    } else {
+    } else if (type === "header") {
       if (childDef.Header) {
         Component = assertIsComponent(
           childDef.Header,
@@ -215,13 +215,13 @@ class RouterClass implements Router<any> {
     let path: AbsNavStatePath = [];
     let currState: RootNavigationState<any> | InnerNavigationState = rootState;
     while (currState) {
-      if ("tabs" in currState) {
-        const nextState = currState.tabs[currState.focusedTabIndex]!;
+      if ("switches" in currState) {
+        const nextState = currState.switches[currState.focusedSwitchIndex]!;
         if (!nextState) {
-          throw new Error("Unable to find focused tab!");
+          throw new Error("Unable to find focused switch!");
         }
 
-        path.push("tabs", currState.focusedTabIndex, nextState.path);
+        path.push("switches", currState.focusedSwitchIndex, nextState.path);
         currState = nextState as any;
       } else if ("stack" in currState) {
         const focusedIndex = currState.stack.length - 1;
@@ -297,32 +297,24 @@ class RouterClass implements Router<any> {
       return null;
     }
 
-    //Match default web behavior by unmounting unfocused screens on the web
-    if (Platform.OS === "web" && !isFocused) {
-      return null;
-    }
-
     let inner: any;
 
     const InnerLeafNavigator = this.#InnerLeafNavigator;
-    const InnerTabNavigator = this.#InnerTabNavigator;
+    const InnerSwitchNavigator = this.#InnerSwitchNavigator;
     const InnerStackNavigator = this.#InnerStackNavigator;
 
     if (p.state.type === "leaf") {
       inner = <InnerLeafNavigator path={p.path} />;
-    } else if (
-      p.state.type === "tab" ||
-      p.state.type === "root-tab" ||
-      p.state.type === "switch" ||
-      p.state.type === "root-switch"
-    ) {
-      inner = <InnerTabNavigator path={p.path} absoluteNavStatePath={p.absoluteNavStatePath} state={p.state as any} />;
+    } else if (p.state.type === "switch" || p.state.type === "root-switch") {
+      inner = (
+        <InnerSwitchNavigator path={p.path} absoluteNavStatePath={p.absoluteNavStatePath} state={p.state as any} />
+      );
     } else if (p.state.type === "stack" || p.state.type === "root-stack") {
       inner = (
         <InnerStackNavigator path={p.path} absoluteNavStatePath={p.absoluteNavStatePath} state={p.state as any} />
       );
     } else {
-      ((a: never) => {})(p.state.type);
+      ((a: never) => {})(p.state);
       throw new Error("Unreachable");
     }
 
@@ -433,20 +425,19 @@ class RouterClass implements Router<any> {
     dequal,
   );
 
-  #InnerTabNavigator = React.memo(
-    (p: { path: string[]; state: TabNavigationState<any, any, any>; absoluteNavStatePath: (string | number)[] }) => {
+  #InnerSwitchNavigator = React.memo(
+    (p: { path: string[]; state: SwitchNavigationState<any, any, any>; absoluteNavStatePath: (string | number)[] }) => {
       const Wrapper = this.#getComponentAtPath(p.path, "wrapper") || React.Fragment;
       const Header = this.#getComponentAtPath(p.path, "header");
-      const TopTabBar = this.#getComponentAtPath(p.path, "topTabBar");
-      const BottomTabBar = this.#getComponentAtPath(p.path, "bottomTabBar");
+      const Footer = this.#getComponentAtPath(p.path, "footer");
 
-      //Gotta do some weird shenanigans to make the transition smooth and not show a tab too soon (before it has had time to render at least once)
+      //Gotta do some weird shenanigans to make the transition smooth and not show a switch page too soon (before it has had time to render at least once)
       //Hopefully will be fixed by React Native Screens when this issue gets resolved: https://github.com/software-mansion/react-native-screens/issues/1251
-      const focusedTabIndex = p.state.focusedTabIndex;
-      const prevRawFocusedTabIndex = usePreviousValue(focusedTabIndex);
+      const focusedSwitchIndex = p.state.focusedSwitchIndex;
+      const prevRawFocusedSwitchIndex = usePreviousValue(focusedSwitchIndex);
       const [indexHasMounted, setIndexHasMounted] = useState<Record<number, true>>({});
       const isMountedRef = useIsMountedRef();
-      const parentDef = this.#getDefAtPath(p.path)! as TabRouteDef;
+      const parentDef = this.#getDefAtPath(p.path)! as SwitchRouteDef;
 
       const InnerNavigator = this.#InnerNavigator;
 
@@ -454,27 +445,30 @@ class RouterClass implements Router<any> {
         <Wrapper>
           <View style={defaultWrapperStyle}>
             {Header ? <Header /> : null}
-            {TopTabBar ? <TopTabBar /> : null}
             <ScreenContainer style={defaultWrapperStyle}>
-              {p.state.tabs.map((thisNavigationState, i) => {
+              {p.state.switches.map((thisNavigationState, i) => {
+                if (parentDef.keepChildrenMounted !== true && i !== focusedSwitchIndex) {
+                  return null;
+                }
+
                 //Here come the weird shenanigans...
                 let activityState: 0 | 1 | 2;
                 let zIndex: number;
 
                 if (Platform.OS === "ios") {
-                  if (i === focusedTabIndex) {
-                    activityState = indexHasMounted[focusedTabIndex] ? 2 : 1;
-                    zIndex = indexHasMounted[focusedTabIndex] ? 1 : -1;
-                  } else if (i === prevRawFocusedTabIndex) {
-                    activityState = !indexHasMounted[focusedTabIndex] ? 1 : 0;
-                    zIndex = !indexHasMounted[focusedTabIndex] ? 1 : -1;
+                  if (i === focusedSwitchIndex) {
+                    activityState = indexHasMounted[focusedSwitchIndex] ? 2 : 1;
+                    zIndex = indexHasMounted[focusedSwitchIndex] ? 1 : -1;
+                  } else if (i === prevRawFocusedSwitchIndex) {
+                    activityState = !indexHasMounted[focusedSwitchIndex] ? 1 : 0;
+                    zIndex = !indexHasMounted[focusedSwitchIndex] ? 1 : -1;
                   } else {
                     activityState = 0;
                     zIndex = -1;
                   }
                 } else {
-                  activityState = i === focusedTabIndex ? 2 : 0;
-                  zIndex = i === focusedTabIndex ? 1 : -1;
+                  activityState = i === focusedSwitchIndex ? 2 : 0;
+                  zIndex = i === focusedSwitchIndex ? 1 : -1;
                 }
 
                 const thisRoutePath = p.path.concat(thisNavigationState.path);
@@ -516,13 +510,13 @@ class RouterClass implements Router<any> {
                     <InnerNavigator
                       state={thisNavigationState as any}
                       path={thisRoutePath}
-                      absoluteNavStatePath={p.absoluteNavStatePath.concat("tabs", i, thisNavigationState.path)}
+                      absoluteNavStatePath={p.absoluteNavStatePath.concat("switches", i, thisNavigationState.path)}
                     />
                   </Screen>
                 );
               })}
             </ScreenContainer>
-            {BottomTabBar ? <BottomTabBar /> : null}
+            {Footer ? <Footer /> : null}
           </View>
         </Wrapper>
       );
@@ -743,13 +737,13 @@ class RouterClass implements Router<any> {
         const statePath = focusedAbsPath.slice(0, pathToGoBackIndex - 1);
         const navigatorState:
           | StackNavigationState<any, any, any>
-          | TabNavigationState<any, any, any>
+          | SwitchNavigationState<any, any, any>
           | RootNavigationState<any> = getStateAtAbsPath(rootState, statePath);
 
         if (navigatorState.type === "stack" || navigatorState.type === "root-stack") {
           navigatorState.stack.pop();
         } else {
-          navigatorState.focusedTabIndex = 0;
+          navigatorState.focusedSwitchIndex = 0;
         }
       }
     });
@@ -790,16 +784,16 @@ class RouterClass implements Router<any> {
           }
 
           currParentState = currParentState.stack[currParentState.stack.length - 1] as any;
-        } else if ("tabs" in currParentState) {
-          const existingTabIndex = currParentState.tabs.findIndex((a) => a.path === thisPath);
-          if (existingTabIndex === -1) {
-            currParentState.tabs.push(this.#generateInitialInnerState(thisDef, thisPath, params));
+        } else if ("switches" in currParentState) {
+          const existingSwitchIndex = currParentState.switches.findIndex((a) => a.path === thisPath);
+          if (existingSwitchIndex === -1) {
+            currParentState.switches.push(this.#generateInitialInnerState(thisDef, thisPath, params));
           } else {
-            currParentState.tabs[existingTabIndex]!.params = theseParams;
+            currParentState.switches[existingSwitchIndex]!.params = theseParams;
           }
 
-          currParentState.focusedTabIndex = currParentState.tabs.findIndex((a) => a.path === thisPath);
-          currParentState = currParentState.tabs[currParentState.focusedTabIndex] as any;
+          currParentState.focusedSwitchIndex = currParentState.switches.findIndex((a) => a.path === thisPath);
+          currParentState = currParentState.switches[currParentState.focusedSwitchIndex] as any;
         } else if (currParentState.type === "leaf") {
           throw new Error("Invalid leaf route!");
         } else {
@@ -907,7 +901,7 @@ function assertIsComponent<T>(val: T, errMsg: string) {
 }
 
 function absoluteNavStatePathToRegularPath(absNavStatePath: (string | number)[]) {
-  //Absolute nav state paths are always in pairs of 3. E.g. "tabs" -> 0 -> "someRouteName"
+  //Absolute nav state paths are always in pairs of 3. E.g. "switches" -> 0 -> "someRouteName"
   return _.filter(absNavStatePath, (a, i) => (i + 1) % 3 === 0) as string[];
 }
 

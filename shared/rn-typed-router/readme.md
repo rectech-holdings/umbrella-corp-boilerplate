@@ -8,10 +8,10 @@ First define your routes in a nested manner (typically in a `router.tsx` file or
 
 ```tsx
 import { Button, Text, View } from "react-native";
-import { createRouter, createRouteDefinition, ParamTypes } from "rn-typed-router";
+import { createRouter, createRouteDefinition, ParamTypes, lazy } from "rn-typed-router";
 const routeDef = createRouteDefinition({
-  //Declare the type of root navigator. Options are "tab", "switch", or "stack"
-  type: "tab",
+  //Declare the type of root navigator. Options are "switch" or "stack"
+  type: "switch",
   //Declare the routes that live under the root navigator
   routes: {
     //The LOGIN route. Is also the initial route since it comes first in the object
@@ -77,18 +77,21 @@ const routeDef = createRouteDefinition({
   routes: {
     LOGIN: {
       type: "leaf",
-      Component: React.lazy(() => import("./Login")),
+      //Note that
+      Component: lazy(() => import("./Login")),
     },
     MAIN: {
-      type: "tab",
-      BottomTabBar: React.lazy(() => import("./MainTabBar")),
+      type: "switch",
+      //`keepChildrenMounted` makes previously rendered but currently inactive screens stay mounted. The default behavior is to unmount them.
+      keepChildrenMounted: true,
+      Footer: lazy(() => import("./MainTabBar")),
       routes: {
         TAB_1: {
           type: "stack",
           routes: {
             TAB_1_STACK_HOME: {
               type: "leaf",
-              Component: React.lazy(() => import("./Tab1StackHome")),
+              Component: lazy(() => import("./Tab1StackHome")),
             },
             TAB_1_STACK_SCREEN: {
               type: "leaf",
@@ -101,7 +104,7 @@ const routeDef = createRouteDefinition({
         },
         TAB_2: {
           type: "leaf",
-          Component: React.lazy(() => import("./Tab2")),
+          Component: lazy(() => import("./Tab2")),
         },
       },
     },

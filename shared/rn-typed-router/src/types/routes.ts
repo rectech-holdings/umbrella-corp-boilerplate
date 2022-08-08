@@ -3,21 +3,21 @@ import { ScreenProps } from "react-native-screens";
 import { Simplify, SetRequired } from "type-fest";
 import { ParamsTypeRecord } from "../implementations/params.js";
 
-export type RouteDef = StackRouteDef | TabRouteDef | LeafRouteDef;
+export type RouteDef = StackRouteDef | SwitchRouteDef | LeafRouteDef;
 
-export type RouteDefWithoutUI = StackRouteDefWithoutUI | TabRouteDefWithoutUI | LeafRouteDefWithoutUI;
+export type RouteDefWithoutUI = StackRouteDefWithoutUI | SwitchRouteDefWithoutUI | LeafRouteDefWithoutUI;
 
-export type RouteDefWithUIOnly = StackRouteDefWithUIOnly | TabRouteDefWithUIOnly | LeafRouteDefWithUIOnly;
+export type RouteDefWithUIOnly = StackRouteDefWithUIOnly | SwitchRouteDefWithUIOnly | LeafRouteDefWithUIOnly;
 
 export type RouteDefFromMerge<T extends RouteDefWithoutUI> = T extends StackRouteDefWithoutUI
   ? Simplify<
       Omit<T, "routes"> &
         StackRouteDefWithUIOnly & { routes: { [K in keyof T["routes"]]: RouteDefFromMerge<T["routes"][K]> } }
     >
-  : T extends TabRouteDefWithoutUI
+  : T extends SwitchRouteDefWithoutUI
   ? Simplify<
       Omit<T, "routes"> &
-        TabRouteDefWithUIOnly & { routes: { [K in keyof T["routes"]]: RouteDefFromMerge<T["routes"][K]> } }
+        SwitchRouteDefWithUIOnly & { routes: { [K in keyof T["routes"]]: RouteDefFromMerge<T["routes"][K]> } }
     >
   : Simplify<T & LeafRouteDefWithUIOnly>;
 
@@ -26,6 +26,7 @@ type CommonRouteDefWithUIOnly = {
   screenProps?: ScreenProps;
   Wrapper?: MultiTypeComponentWithChildren;
   Header?: MultiTypeComponent;
+  Footer?: MultiTypeComponent;
 };
 
 type CommonRouteDefWithoutUI = {
@@ -49,23 +50,22 @@ export type StackRouteDefWithoutUI = Simplify<
 
 export type StackRouteDefWithUIOnly = Simplify<CommonRouteDefWithUIOnly & Pick<StackRouteDef, "type" | "initialRoute">>;
 
-export type TabRouteDef = {
-  type: "tab" | "switch";
+export type SwitchRouteDef = {
+  type: "switch";
+  keepChildrenMounted?: boolean;
   initialRoute?: string;
-  TopTabBar?: MultiTypeComponent;
-  BottomTabBar?: MultiTypeComponent;
   routes: { [routePath in string]: RouteDef };
 } & CommonRouteDef;
 
-export type TabRouteDefWithoutUI = Simplify<
+export type SwitchRouteDefWithoutUI = Simplify<
   CommonRouteDefWithoutUI &
-    Pick<TabRouteDef, "type"> & {
+    Pick<SwitchRouteDef, "type"> & {
       routes: { [routePath in string]: RouteDefWithoutUI };
     }
 >;
 
-export type TabRouteDefWithUIOnly = Simplify<
-  CommonRouteDefWithUIOnly & Pick<TabRouteDef, "type" | "initialRoute" | "BottomTabBar" | "TopTabBar">
+export type SwitchRouteDefWithUIOnly = Simplify<
+  CommonRouteDefWithUIOnly & Pick<SwitchRouteDef, "type" | "initialRoute">
 >;
 
 export type LeafRouteDef = Simplify<

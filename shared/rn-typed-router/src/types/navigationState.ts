@@ -1,6 +1,6 @@
 import { InferParamsOutput, ParamsTypeRecord as ParamsTypeRecord } from "../implementations/params.js";
 import { DistributiveOmit } from "../utils/typescript-utils.js";
-import { LeafRouteDef, RouteDef, StackRouteDef, TabRouteDef } from "./routes.js";
+import { LeafRouteDef, RouteDef, StackRouteDef, SwitchRouteDef } from "./routes.js";
 
 type RouteDefRecord = Record<string, RouteDef>;
 
@@ -17,16 +17,16 @@ export type StackNavigationState<
   stack: InnerNavigationStateRecord<RouteRecord>[];
 };
 
-export type TabNavigationState<
+export type SwitchNavigationState<
   K extends PropertyKey,
   ParamsType extends ParamsTypeRecord | undefined,
   RouteRecord extends RouteDefRecord,
 > = {
-  type: "tab" | "switch";
+  type: "switch";
   path: K;
   params?: ParamsType extends ParamsTypeRecord ? ParamsValueRecord<ParamsType> : undefined;
-  focusedTabIndex: number;
-  tabs: InnerNavigationStateRecord<RouteRecord>[];
+  focusedSwitchIndex: number;
+  switches: InnerNavigationStateRecord<RouteRecord>[];
 };
 
 export type LeafNavigationState<K extends PropertyKey, ParamsType extends ParamsTypeRecord | undefined> = {
@@ -37,22 +37,22 @@ export type LeafNavigationState<K extends PropertyKey, ParamsType extends Params
 
 export type InnerNavigationState =
   | LeafNavigationState<any, any>
-  | TabNavigationState<any, any, any>
+  | SwitchNavigationState<any, any, any>
   | StackNavigationState<any, any, any>;
 
 type InnerNavigationStateRecord<ThisRouteDefRecord extends RouteDefRecord> = {
   [K in keyof ThisRouteDefRecord]: ThisRouteDefRecord[K] extends StackRouteDef
     ? StackNavigationState<K, ThisRouteDefRecord[K]["params"], ThisRouteDefRecord[K]["routes"]>
-    : ThisRouteDefRecord[K] extends TabRouteDef
-    ? TabNavigationState<K, ThisRouteDefRecord[K]["params"], ThisRouteDefRecord[K]["routes"]>
+    : ThisRouteDefRecord[K] extends SwitchRouteDef
+    ? SwitchNavigationState<K, ThisRouteDefRecord[K]["params"], ThisRouteDefRecord[K]["routes"]>
     : LeafNavigationState<K, ThisRouteDefRecord[K]["params"]>;
 }[keyof ThisRouteDefRecord];
 
-export type RootNavigationState<T extends RouteDef> = T extends TabRouteDef
+export type RootNavigationState<T extends RouteDef> = T extends SwitchRouteDef
   ? {
-      type: "root-tab" | "root-switch";
-      focusedTabIndex: number;
-      tabs: InnerNavigationStateRecord<T["routes"]>[];
+      type: "root-switch";
+      focusedSwitchIndex: number;
+      switches: InnerNavigationStateRecord<T["routes"]>[];
     }
   : T extends StackRouteDef
   ? {
@@ -63,7 +63,7 @@ export type RootNavigationState<T extends RouteDef> = T extends TabRouteDef
 
 /**
  * An array that maps _exactly_ to a nav state path, suitable for accessing or setting with lodash.
- * Is composed of triplets of form: `['stack' | 'tabs', number, string]` where the third value is the route name
+ * Is composed of triplets of form: `['stack', number, string]` where the third value is the route name
  * E.g. `_.get(rootNavState, someAbsNavStatePath)`
  * E.g. `_.set(rootNavState, someAbsNavStatePath, someDeepStateVal)`
  */

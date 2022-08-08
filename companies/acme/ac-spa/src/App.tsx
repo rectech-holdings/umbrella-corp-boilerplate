@@ -35,7 +35,7 @@ const { Navigator, navigate, PATHS } = createRouter({
                   },
                 );
 
-                navigate(PATHS.main, {});
+                navigate(PATHS.main.dashboard, {});
               }}
             >
               Go to main
@@ -48,16 +48,34 @@ const { Navigator, navigate, PATHS } = createRouter({
       },
     },
     main: {
-      type: "leaf",
-      Component: () => (
-        <div
-          onClick={() => {
-            navigate(PATHS.login, {});
-          }}
-        >
-          Main screen foos
-        </div>
-      ),
+      type: "switch",
+      keepChildrenMounted: true,
+      routes: {
+        dashboard: {
+          type: "leaf",
+          Component: () => (
+            <div
+              onClick={() => {
+                navigate(PATHS.main.chat, {});
+              }}
+            >
+              Main screen foos
+            </div>
+          ),
+        },
+        chat: {
+          type: "leaf",
+          Component: () => (
+            <div
+              onClick={() => {
+                navigate(PATHS.main.dashboard, {});
+              }}
+            >
+              Chat screen foos
+            </div>
+          ),
+        },
+      },
     },
   },
 });

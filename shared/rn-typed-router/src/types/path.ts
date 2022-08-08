@@ -1,5 +1,5 @@
 import { ExtractObjectPath, FilterNullable } from "../utils/typescript-utils.js";
-import { RouteDefWithoutUI, LeafRouteDefWithoutUI, TabRouteDefWithoutUI, StackRouteDefWithoutUI } from "./routes.js";
+import { RouteDefWithoutUI, LeafRouteDefWithoutUI, SwitchRouteDefWithoutUI, StackRouteDefWithoutUI } from "./routes.js";
 import { Simplify } from "type-fest";
 import { GetInputParamsFromPath } from "../implementations/params.js";
 
@@ -35,7 +35,7 @@ export type PathObjResultLeaf<
   [$routeDef]: "leaf";
 };
 
-export type PathObjResultTab<
+export type PathObjResultSwitch<
   P1 extends string | null = null,
   P2 extends string | null = null,
   P3 extends string | null = null,
@@ -45,7 +45,7 @@ export type PathObjResultTab<
   P7 extends string | null = null,
   P8 extends string | null = null,
 > = PathObjResultBase<P1, P2, P3, P4, P5, P6, P7, P8> & {
-  [$routeDef]: "tab";
+  [$routeDef]: "switch";
 };
 
 export type PathObjResultStack<
@@ -72,7 +72,7 @@ export type PathObjResult<
   P8 extends string | null = null,
 > =
   | PathObjResultStack<P1, P2, P3, P4, P5, P6, P7, P8>
-  | PathObjResultTab<P1, P2, P3, P4, P5, P6, P7, P8>
+  | PathObjResultSwitch<P1, P2, P3, P4, P5, P6, P7, P8>
   | PathObjResultLeaf<P1, P2, P3, P4, P5, P6, P7, P8>
   | PathObjResultBase<P1, P2, P3, P4, P5, P6, P7, P8>;
 
@@ -88,10 +88,10 @@ export type PathObj<
   P8 extends string | null = null,
 > = T extends LeafRouteDefWithoutUI
   ? Simplify<PathObjResultLeaf<P1, P2, P3, P4, P5, P6, P7, P8>>
-  : T extends TabRouteDefWithoutUI
-  ? Simplify<PathObjWithRoutes<T, P1, P2, P3, P4, P5, P6, P7> & PathObjResultTab<P1, P2, P3, P4, P5, P6, P7, P8>>
+  : T extends SwitchRouteDefWithoutUI
+  ? Simplify<PathObjWithRoutes<T, P1, P2, P3, P4, P5, P6, P7> & PathObjResultSwitch<P1, P2, P3, P4, P5, P6, P7, P8>>
   : T extends StackRouteDefWithoutUI
-  ? Simplify<PathObjWithRoutes<T, P1, P2, P3, P4, P5, P6, P7> & PathObjResultTab<P1, P2, P3, P4, P5, P6, P7, P8>>
+  ? Simplify<PathObjWithRoutes<T, P1, P2, P3, P4, P5, P6, P7> & PathObjResultSwitch<P1, P2, P3, P4, P5, P6, P7, P8>>
   : never;
 
 type PathObjWithRoutes<
