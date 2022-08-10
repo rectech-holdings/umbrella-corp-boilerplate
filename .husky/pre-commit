@@ -2,5 +2,5 @@
 . "$(dirname -- "$0")/_/husky.sh"
 
 node scripts/post-install.mjs --non-interactive
-yarn lint-staged
+pnpm lint-staged
 

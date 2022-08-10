@@ -25,7 +25,7 @@ if (shouldThrow) {
 }
 
 if (shouldReinstall) {
-  // await execaCommand("yarn install", {
+  // await execaCommand("pnpm install", {
   //   buffer: false,
   //   shell: true,
   //   stdout: process.stdout,

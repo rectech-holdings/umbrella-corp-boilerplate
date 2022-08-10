@@ -1,4 +1,3 @@
-import React from "react";
 import {
   BackHandler as RNWBackHandler,
   Platform as RNWPlatform,
@@ -21,10 +20,6 @@ import type {
   ScreenContainer as RNScreenContainer,
   ScreenStack as RNScreenStack,
 } from "react-native-screens";
-
-function Div(a: any) {
-  return React.createElement("div", a);
-}
 
 export const BackHandler: typeof RNBackHandler = RNWBackHandler;
 export const Platform: typeof RNPlatform = RNWPlatform;

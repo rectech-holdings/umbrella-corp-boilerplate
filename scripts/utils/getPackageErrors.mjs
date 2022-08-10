@@ -22,7 +22,7 @@ export async function getPackageErrors() {
     if (isWorkspacePackage(pkgName)) {
       if ((pkgJson?.scripts?.dev || pkgJson?.scripts?.build) && !pkgJson?.scripts?.["build-dev"]) {
         errors.push({
-          msg: `Required "build-dev" script not found ${pkgJsonFile}! Whenever a "dev" or "build" script is declared in a package, there must be a "build-dev" script as well.`,
+          msg: `Required "build-dev" script not found ${pkgJsonFile}! Whenever a "dev" or "build" script is declared in a package.json, there must be a "build-dev" script as well. Typically this is just `,
         });
       }
 

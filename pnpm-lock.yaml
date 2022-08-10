@@ -448,7 +448,16 @@ importers:
       typescript: 4.7.4
 
   shared/whitelabel-form:
-    specifiers: {}
+    specifiers:
+      immer: 9.0.15
+      lodash: 4.17.21
+      type-fest: 2.16.0
+      use-sync-external-store: 1.2.0
+    dependencies:
+      immer: 9.0.15
+      lodash: 4.17.21
+      type-fest: 2.16.0
+      use-sync-external-store: 1.2.0
 
 packages:
 

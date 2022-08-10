@@ -43,7 +43,7 @@ const devEnv = String(fs.readFileSync(new URL("../.env", import.meta.url)))
   .split("\n")
   .join(" ");
 
-const migrateProc = execaCommand(`${devEnv} yarn prisma migrate deploy`, {
+const migrateProc = execaCommand(`${devEnv} pnpm prisma migrate deploy`, {
   shell: true,
   env: false,
   all: true,
