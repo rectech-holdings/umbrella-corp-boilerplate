@@ -1,7 +1,7 @@
 import { SimpleStore } from "../types/Store.js";
 import { produce } from "immer";
 import _ from "lodash";
-import { useSyncExternalStore } from "use-sync-external-store";
+import { useSyncExternalStore } from "use-sync-external-store/shim";
 
 export function createSimpleStore<T extends object>(initState: T): SimpleStore<T> {
   const ee = createSimpleEmitter();

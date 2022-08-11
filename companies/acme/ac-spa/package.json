@@ -10,21 +10,22 @@
     "test": "integration-tester"
   },
   "dependencies": {
-    "ac-shared-frontend": "workspace:*",
     "ac-api": "workspace:*",
-    "rn-typed-router": "workspace:*",
+    "ac-shared-frontend": "workspace:*",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "react-whitelabel-form": "workspace:*",
+    "rn-typed-router": "workspace:*"
   },
   "devDependencies": {
-    "react-test-renderer": "18.0.0",
-    "integration-tester": "workspace:*",
     "@types/node": "18.0.3",
     "@types/react": "18.0.15",
     "@types/react-dom": "18.0.6",
     "@types/react-test-renderer": "18.0.0",
     "@vitejs/plugin-react": "2.0.0-beta.0",
     "concurrently": "7.2.2",
+    "integration-tester": "workspace:*",
+    "react-test-renderer": "18.0.0",
     "typescript": "4.7.4",
     "vite": "3.0.0-beta.6"
   }

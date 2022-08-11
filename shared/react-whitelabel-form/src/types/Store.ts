@@ -20,4 +20,5 @@ export type FormStore<T extends object> = SimpleStore<T> & {
   //Form Specific
   validate: () => boolean;
   silentlyValidate: () => boolean;
+  reset: (newState?: T) => void;
 };

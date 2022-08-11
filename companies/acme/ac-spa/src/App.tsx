@@ -4,6 +4,29 @@ import "./App.css";
 import { publicConfig } from "./config/public/index.js";
 import { createApiReactSDK } from "ac-api";
 import { createRouter } from "rn-typed-router";
+import { createUseWhitelabelForm, createWhitelabelComponent } from "react-whitelabel-form";
+
+type InputProps = React.DetailedHTMLProps<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>;
+
+const useAcmeForm = createUseWhitelabelForm({
+  Input: createWhitelabelComponent<{ label: string } & InputProps, string>((p) => {
+    const { label, onChangeValue, onChange, errors, ...rest } = p;
+
+    return (
+      <div>
+        <label>{label}</label>
+        <input
+          {...rest}
+          onChange={(e) => {
+            p.onChangeValue(e.target.value);
+            onChange?.(e);
+          }}
+        />
+        {errors.length ? <div>{errors[0]}</div> : null}
+      </div>
+    );
+  }),
+});
 
 const {
   SDK: AcmeSDK,
@@ -20,28 +43,40 @@ const { Navigator, navigate, PATHS } = createRouter({
       type: "leaf",
       Component: () => {
         const { data } = useAcmeSDK().loans.getAllLoans({});
+
+        const { Input, store } = useAcmeForm({ initState: { text: "" } });
+
         return (
           <div>
             <div>Login screen</div>
-            <button
-              onClick={async () => {
-                await AcmeSDK.loans.createLoan(
-                  {
-                    loanTitle: "asdf",
-                    ownerEmail: Math.random().toString().slice(2) + "asdf@asdf.com",
-                  },
-                  {
-                    invalidate: [getAcmeQueryKey.loans()],
-                  },
-                );
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!store.validate()) {
+                  return false;
+                }
 
-                navigate(PATHS.main.dashboard, {});
+                // await AcmeSDK.loans.createLoan(
+                //   {
+                //     loanTitle: store.get().text,
+                //     ownerEmail: Math.random().toString().slice(2) + "asdf@asdf.com",
+                //   },
+                //   {
+                //     invalidate: [getAcmeQueryKey.loans()],
+                //   },
+                // );
+
+                store.reset();
+
+                // navigate(PATHS.main.dashboard, {});
+
+                return false;
               }}
             >
-              Go to main
-            </button>
+              <Input required field={(s) => s.text} label="Loan Id" />
+            </form>
             {data?.map((a) => (
-              <div key={a.id}>{a.id}</div>
+              <div key={a.id}>{a.title}</div>
             ))}
           </div>
         );
@@ -93,13 +128,3 @@ function App() {
 }
 
 export default App;
-
-await AcmeSDK.loans.createLoan(
-  {
-    loanTitle: "asdf",
-    ownerEmail: Math.random().toString().slice(2) + "asdf@asdf.com",
-  },
-  {
-    invalidate: [getAcmeQueryKey.loans()],
-  },
-);

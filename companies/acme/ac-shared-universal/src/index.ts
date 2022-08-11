@@ -13,7 +13,7 @@ export const RN_APP_ROOT_ROUTE_DEFINITION = createNonUIRouteDefinition({
       type: "leaf",
     },
     MAIN: {
-      type: "tab",
+      type: "switch",
       routes: {
         TAB_1: {
           type: "stack",

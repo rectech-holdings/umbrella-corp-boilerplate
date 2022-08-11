@@ -70,8 +70,9 @@ function createUseFormReturnValue(
 
   const executeCurrentValidators = (opts: { force?: boolean; silent?: boolean }) => {
     let isValid = true;
-    currentValidatorsByComponentId.forEach((validator) => {
-      const thisIsValid = validator(opts);
+
+    currentValidatorsByComponentId.forEach((maybeValidateThisFormControl) => {
+      const thisIsValid = maybeValidateThisFormControl(opts);
       if (isValid) {
         isValid = thisIsValid;
       }
@@ -98,6 +99,10 @@ function createUseFormReturnValue(
     store: {
       silentlyValidate: () => executeCurrentValidators({ force: true, silent: true }),
       validate: () => executeCurrentValidators({ force: true }),
+      reset: (replacementState) => {
+        const nextState = replacementState ?? formOpts.initState;
+        dataStore.set(nextState);
+      },
       ...baseDataStore,
     },
     ...Components,
@@ -121,7 +126,7 @@ function createWhiteLabelComponentForForm(formProps: {
     const fieldPath = detectAccessedPath(compProps.field as any);
     const fieldPathRef = useRef(fieldPath);
 
-    const maybeValidateThisFormControl = () =>
+    const maybeValidateThisFormControl = (opts?: { force?: boolean; silent?: boolean }) =>
       maybeValidateFormControl({
         ...formProps,
         ...compProps,
@@ -129,7 +134,13 @@ function createWhiteLabelComponentForForm(formProps: {
         fieldPath,
         mode: formProps.mode ?? compProps.mode,
         reValidateMode: formProps.revalidateMode ?? compProps.reValidateMode,
+        opts,
       });
+
+    /*** Lazily propagate validator function to the parent form...***/
+    if (!formProps.currentValidatorsByComponentId.get(formControlId)) {
+      formProps.currentValidatorsByComponentId.set(formControlId, maybeValidateThisFormControl);
+    }
 
     /** Lazily set value */
     let value = formProps.dataStore.useStoreValue((a) => _.get(a, fieldPath));
@@ -137,11 +148,6 @@ function createWhiteLabelComponentForForm(formProps: {
     if (typeof value === "undefined" && typeof compProps.defaultValue !== "undefined") {
       (formProps.dataStore.setPath as any)(fieldPath, compProps.defaultValue, { silent: true }); //Use the secret "silent" flag on setPath so it doesn't trigger a re-render
       value = compProps.defaultValue;
-    }
-
-    /*** Lazily propagate validator function to the parent form...***/
-    if (!formProps.currentValidatorsByComponentId.get(formControlId)) {
-      formProps.currentValidatorsByComponentId.set(formControlId, maybeValidateThisFormControl);
     }
 
     /** Update parent validator reference if the field changes. I think this is okay to do in render? */
