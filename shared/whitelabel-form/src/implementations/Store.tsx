@@ -2,11 +2,10 @@ import { SimpleStore } from "../types/Store.js";
 import { produce } from "immer";
 import _ from "lodash";
 import { useSyncExternalStore } from "use-sync-external-store";
-import { BaseFormControlProps, InputProps, SelectProps, UseFormOpts, UseFormReturnValue } from "../types/Form.js";
 import { useLayoutEffect, useState } from "react";
 import { EMAIL_REGEX, LINK_REGEX } from "../utils/utils.js";
 
-function createSimpleStore<T extends object>(initState: T): SimpleStore<T> {
+export function createSimpleStore<T extends object>(initState: T): SimpleStore<T> {
   const ee = createSimpleEmitter();
   let currState = initState;
 
@@ -70,34 +69,6 @@ function createSimpleStore<T extends object>(initState: T): SimpleStore<T> {
 }
 
 export function createFormStore<ExtraProps extends object>(c: UseFormOpts<any>) {
-  const dataStore = createSimpleStore(c.initState);
-  const uiStore = createSimpleStore(
-    {} as Record<
-      string,
-      | {
-          errors?: string[];
-          isDirty?: boolean;
-          hasFocused?: boolean;
-          hasBlurred?: boolean;
-          hasValidated?: boolean;
-        }
-      | undefined
-    >,
-  );
-
-  const currentValidators: Map<string, (a?: { force?: boolean; silent?: boolean }) => boolean> = new Map();
-
-  const doValidateCurrentValidators = (opts: { force?: boolean; silent?: boolean }) => {
-    let isValid = true;
-    currentValidators.forEach((validator) => {
-      const thisIsValid = validator(opts);
-      if (isValid) {
-        isValid = thisIsValid;
-      }
-    });
-    return isValid;
-  };
-
   return {
     useRegisterForm(
       props:
@@ -362,29 +333,4 @@ function createSimpleEmitter() {
 let id = 1;
 function useId() {
   return useState(() => String(id++))[0];
-}
-
-function createWildcardObject(pathRef: (string | Symbol)[]): any {
-  return new Proxy(
-    {},
-    {
-      get(t, key) {
-        pathRef.push(key);
-        return createWildcardObject(pathRef);
-      },
-      set() {
-        return false;
-      },
-    },
-  );
-}
-
-//Do some Proxy weirdness to detect which path was accessed
-function detectAccessedPath<T extends object>(fn: (obj: T) => string[]): string[] {
-  const accessedPath: string[] = [];
-  const wildcard = createWildcardObject(accessedPath);
-
-  fn(wildcard);
-
-  return accessedPath;
 }
