@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useId, useInsertionEffect, useState } from "react";
 import logo from "./logo.svg";
 import "./App.css";
 import { publicConfig } from "./config/public/index.js";
@@ -53,28 +53,31 @@ const { Navigator, navigate, PATHS } = createRouter({
               onSubmit={async (e) => {
                 e.preventDefault();
                 if (!store.validate()) {
-                  return false;
+                  return;
                 }
 
-                // await AcmeSDK.loans.createLoan(
-                //   {
-                //     loanTitle: store.get().text,
-                //     ownerEmail: Math.random().toString().slice(2) + "asdf@asdf.com",
-                //   },
-                //   {
-                //     invalidate: [getAcmeQueryKey.loans()],
-                //   },
-                // );
+                await AcmeSDK.loans.createLoan(
+                  {
+                    loanTitle: store.get().text,
+                    ownerEmail: Math.random().toString().slice(2) + "asdf@asdf.com",
+                  },
+                  {
+                    invalidate: [getAcmeQueryKey.loans()],
+                  },
+                );
 
                 store.reset();
-
-                // navigate(PATHS.main.dashboard, {});
-
-                return false;
               }}
             >
               <Input required field={(s) => s.text} label="Loan Id" />
             </form>
+            <button
+              onClick={() => {
+                navigate(PATHS.main.dashboard, {});
+              }}
+            >
+              Navigate to main
+            </button>
             {data?.map((a) => (
               <div key={a.id}>{a.title}</div>
             ))}

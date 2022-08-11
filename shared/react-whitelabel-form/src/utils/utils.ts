@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 export type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never;
 
@@ -13,5 +13,9 @@ export const LINK_REGEX =
 
 let id = 1;
 export function useId() {
-  return useState(() => String(id++))[0];
+  const idRef = useRef<number>();
+  if (!idRef.current) {
+    idRef.current = id++;
+  }
+  return idRef.current.toString();
 }

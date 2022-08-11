@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import {
   AuthorFacingWhitelabelComponent,
   ComponentsMap,
@@ -77,6 +77,7 @@ function createUseFormReturnValue(
         isValid = thisIsValid;
       }
     });
+
     return isValid;
   };
 
@@ -124,25 +125,20 @@ function createWhiteLabelComponentForForm(formProps: {
     const formControlId = useId();
     const errors = formProps.uiStore.useStoreValue((b) => b[formControlId]?.errors) ?? [];
     const fieldPath = detectAccessedPath(compProps.field as any);
-    const fieldPathRef = useRef(fieldPath);
 
     const maybeValidateThisFormControl = (opts?: { force?: boolean; silent?: boolean }) =>
-      maybeValidateFormControl({
-        ...formProps,
-        ...compProps,
-        formControlId,
-        fieldPath,
-        mode: formProps.mode ?? compProps.mode,
-        reValidateMode: formProps.revalidateMode ?? compProps.reValidateMode,
+      maybeValidateFormControl(
+        {
+          ...formProps,
+          ...compProps,
+          formControlId,
+          fieldPath,
+          mode: formProps.mode ?? compProps.mode,
+          reValidateMode: formProps.revalidateMode ?? compProps.reValidateMode,
+        },
         opts,
-      });
-
-    /*** Lazily propagate validator function to the parent form...***/
-    if (!formProps.currentValidatorsByComponentId.get(formControlId)) {
-      formProps.currentValidatorsByComponentId.set(formControlId, maybeValidateThisFormControl);
-    }
-
-    /** Lazily set value */
+      );
+    /** Lazily set value using defaultValue*/
     let value = formProps.dataStore.useStoreValue((a) => _.get(a, fieldPath));
     // //I'm not 110% sure, but I think it's safe to lazily set the form defaultValue the first time the form control is rendered.
     if (typeof value === "undefined" && typeof compProps.defaultValue !== "undefined") {
@@ -150,18 +146,14 @@ function createWhiteLabelComponentForForm(formProps: {
       value = compProps.defaultValue;
     }
 
-    /** Update parent validator reference if the field changes. I think this is okay to do in render? */
-    if (fieldPathRef.current.join("") !== fieldPath.join("")) {
-      formProps.currentValidatorsByComponentId.set(formControlId, maybeValidateThisFormControl);
-      fieldPathRef.current = fieldPath;
-    }
-
-    /** Remove component validator in parent form if the component unmounts */
+    /*** Propagate validator function to the parent form...***/
+    //Hop
     useEffect(() => {
+      formProps.currentValidatorsByComponentId.set(formControlId, maybeValidateThisFormControl);
       return () => {
         formProps.currentValidatorsByComponentId.delete(formControlId);
       };
-    }, []);
+    }, [fieldPath.join("")]);
 
     if (typeof compProps["onChangeValue"] !== "undefined") {
       throw new Error("Unable to use reserved field `onChangeValue` as a prop for white label components");
@@ -283,7 +275,7 @@ function maybeValidateFormControl(
   }
 
   if (c.required) {
-    if (typeof currValue === "undefined") {
+    if (!currValue) {
       errorStrings.push(typeof c.required === "string" && c.required ? c.required : "Required");
     }
   }

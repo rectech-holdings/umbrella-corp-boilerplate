@@ -91,10 +91,6 @@ class RouterClass implements Router<any> {
     this.#navigationStateStore = createZustandStore(
       opts?.initialNavigationState || this.#generateInitialRootState(rootDef),
     );
-
-    this.#navigationStateStore.subscribe((s) => {
-      console.log(JSON.stringify(s, null, 2));
-    });
   }
 
   #generateInitialRootState(rootDef: RouteDef): RootNavigationState<any> {
@@ -645,7 +641,6 @@ class RouterClass implements Router<any> {
           const theseParamTypes = this.#getDefAtPath(thisRegularPath).params;
 
           if (!theseParamTypes) {
-            console.log(val);
             throw new Error("No param types found for route! " + thisRegularPath);
           }
 
