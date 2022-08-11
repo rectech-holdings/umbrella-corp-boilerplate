@@ -18,6 +18,6 @@ export type SimpleStore<T extends object> = {
 
 export type FormStore<T extends object> = SimpleStore<T> & {
   //Form Specific
-  validate: (o?: {}) => boolean;
-  silentlyValidate: (o?: {}) => boolean;
+  validate: () => boolean;
+  silentlyValidate: () => boolean;
 };

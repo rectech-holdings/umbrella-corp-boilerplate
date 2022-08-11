@@ -1,6 +1,5 @@
 import _ from "lodash";
-import { useEffect, useId, useRef } from "react";
-import { Simplify } from "type-fest";
+import { useEffect, useRef } from "react";
 import {
   AuthorFacingWhitelabelComponent,
   ComponentsMap,
@@ -9,77 +8,14 @@ import {
   ReValidateMode,
   StringWhiteLabelComponentProps,
   UseFormOpts,
-  WhitelabelComponent,
   WhitelabelComponentProps,
-  WhitelabelComponentWithOptions,
   WhiteLabelComponentWithOptionsWrapper,
   WhiteLabelComponentWrapper,
   CreateUseWhitelabelFormReturnValue,
 } from "../types/Form.js";
-import { FormStore, SimpleStore } from "../types/Store.js";
-import { EMAIL_REGEX, LINK_REGEX } from "../utils/utils.js";
+import { SimpleStore } from "../types/Store.js";
+import { EMAIL_REGEX, LINK_REGEX, useId } from "../utils/utils.js";
 import { createSimpleStore } from "./Store.js";
-
-// export function createWhitelabelForm<ExtraProps extends object>(
-//   a: CreateWhiteLabelFormOptions<ExtraProps>,
-// ): CreateWhitelabelFormReturnValue<ExtraProps> {
-//   const Input: DevSuppliedInputComponent<any> = a.components?.Input ?? DefaultDevSuppliedInput;
-//   const Select: DevSuppliedSelectComponent<any, unknown> = a.components?.Select ?? DefaultDevSuppliedSelect;
-
-//   const useForm: UseForm<ExtraProps> = (b) => {
-//     const [useFormRetVal] = useState(() => {
-//       const { useRegisterForm, useStoreValue, ...store } = createFormStore<ExtraProps>(b);
-
-//       const InputWrapper: (a: InputProps<ExtraProps, {}>, ref: ForwardedRef<HTMLInputElement>) => JSX.Element | null = (
-//         c,
-//         ref,
-//       ) => {
-//         const { nativeProps, errors } = useRegisterForm({ ...c, formControlType: "input" });
-//         return <Input forwardedRef={ref} native={nativeProps} errors={errors} />;
-//       };
-
-//       const SelectWrapper: (
-//         a: SelectProps<ExtraProps, {}, unknown>,
-//         ref: ForwardedRef<HTMLSelectElement>,
-//       ) => JSX.Element | null = (c, ref) => {
-//         const { nativeProps, errors } = useRegisterForm({ ...c, formControlType: "select" });
-
-//         return <Select options={c.opts.options} forwardedRef={ref} native={nativeProps as any} errors={errors} />;
-//       };
-
-//       const useFormRet: UseFormReturnValue<ExtraProps, any> = {
-//         Input: forwardRef(InputWrapper) as any,
-//         Select: forwardRef(SelectWrapper) as any,
-//         useStoreValue,
-//         store,
-//       };
-
-//       return useFormRet;
-//     });
-
-//     return useFormRetVal;
-//   };
-
-//   const ret: CreateWhitelabelFormReturnValue<ExtraProps> = {
-//     useForm,
-//   };
-
-//   return ret;
-// }
-
-// const { useForm } = createWhitelabelForm({
-//   type: "dom",
-//   components: {
-//     Input: (a) => {
-//       return <input />;
-//     },
-//   },
-// });
-
-// function App() {
-//   const { Input } = useForm({ initState: { blah: "" } });
-//   <Input opts={{ field: (s) => s.blah }} />;
-// }
 
 export function createWhitelabelComponent<ExtraProps extends object, Value>(
   Comp: AuthorFacingWhitelabelComponent<ExtraProps, Value>,
@@ -425,110 +361,6 @@ function maybeValidateFormControl(
 
   return !errorStrings.length;
 }
-
-// const useAcmeForm = createUseWhitelabelForm({
-//   DatePicker: createWhitelabelComponent<{ blah: string }, Date>({
-//     Component: (p) => {
-//       return null;
-//     },
-//   }),
-//   Input: createWhitelabelComponent<{ blerp: string }, string>({ Component: () => null }),
-//   Select: createWhitelabelComponentWithOptions<{ blah: number }, { label: string }>({ Component: (c) => null }),
-// });
-
-// function App() {
-//   const { DatePicker, Input, Select, store, useStoreValue } = useAcmeForm({
-//     initState: { someText: "", someDate: new Date(), blooop: 123 },
-//   });
-
-//   const blah = useStoreValue((s) => s.someDate);
-
-//   return (
-//     <>
-//       <Select
-//         field={(s) => s.someDate}
-//         defaultValue={new Date()}
-//         options={[{ label: "asdf", value: new Date() }]}
-//         blah={123}
-//       />
-//       <DatePicker field={(s) => s.someDate} defaultValue={new Date()} blah="asdf" />
-//     </>
-//   );
-// }
-
-// const AuthorFacingComponents: Record<string, any> = {};
-// function useCyberdyneForm(a: any): any {
-//   const [ret] = useState(() => {
-//     const dataStore = createSimpleStore(a.initState);
-//     const uiStore = createSimpleStore(
-//       {} as Record<
-//         string,
-//         | {
-//             errors?: string[];
-//             isDirty?: boolean;
-//             hasFocused?: boolean;
-//             hasBlurred?: boolean;
-//             hasValidated?: boolean;
-//           }
-//         | undefined
-//       >,
-//     );
-
-//     const innerRet: any = {};
-//     Object.keys(AuthorFacingComponents).forEach((K) => {
-//       const AuthorComponent = AuthorFacingComponents[K] as AuthorFacingWhitelabelComponent<{}, string>;
-
-//       const ConsumerComponent: (
-//         p: WhitelabelComponentProps<Record<string, any>, Record<string, any>, any> & StringWhiteLabelComponentProps,
-//       ) => JSX.Element = (p) => {
-//         const {
-//           field,
-//           defaultValue,
-//           mode,
-//           reValidateMode,
-//           validate,
-//           required,
-//           isEmail,
-//           isUrl,
-//           max,
-//           maxLength,
-//           minLength,
-//           min,
-//           pattern,
-//           onFocus: onFocusConsumerSupplied,
-//           onBlur: onBlurConsumerSupplied,
-//           ...restProps
-//         } = p;
-
-//         const formControlId = useId();
-//         const errors = uiStore.useStoreValue((a) => a[formControlId]?.errors) ?? [];
-
-//         const fieldPath = detectAccessedPath(field as any);
-
-//         let value = dataStore.useStoreValue((a) => _.get(a, fieldPath));
-
-//         return (
-//           <AuthorComponent
-//             {...restProps}
-//             errors={errors}
-//             onBlur={() => {
-//               if (typeof onBlurConsumerSupplied === "function") {
-//                 onBlurConsumerSupplied();
-//               }
-//             }}
-//             onFocus={() => {}}
-//             onChangeValue={() => {}}
-//             value={value}
-//           />
-//         );
-//       };
-
-//       innerRet[K] = ConsumerComponent;
-//     });
-//   });
-
-//   return ret;
-// }
 
 function createWildcardObject(pathRef: (string | Symbol)[]): any {
   return new Proxy(
