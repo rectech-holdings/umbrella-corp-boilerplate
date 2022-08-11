@@ -4,11 +4,35 @@ import "./App.css";
 import { publicConfig } from "./config/public/index.js";
 import { createApiReactSDK } from "ac-api";
 import { createRouter } from "rn-typed-router";
-import { createUseWhitelabelForm, createWhitelabelComponent } from "react-whitelabel-form";
+import {
+  createUseWhitelabelForm,
+  createWhitelabelComponent,
+  createWhitelabelComponentWithOptions,
+} from "react-whitelabel-form";
 
 type InputProps = React.DetailedHTMLProps<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>;
+type SelectProps = React.DetailedHTMLProps<React.SelectHTMLAttributes<HTMLSelectElement>, HTMLSelectElement>;
 
 const useAcmeForm = createUseWhitelabelForm({
+  Select: createWhitelabelComponentWithOptions<{ label: string } & SelectProps, { label: string; key: string }>((p) => {
+    const { onChangeValue, onChange, ...rest } = p;
+    return (
+      <select
+        {...rest}
+        value={p.options.find((o) => o.key === p.value)?.key}
+        onChange={(e) => {
+          p.onChangeValue(p.options.find((o) => o.key === e.target.value)?.value);
+          onChange?.(e);
+        }}
+      >
+        {p.options.map((o) => (
+          <option key={o.key} value={o.key}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+    );
+  }),
   Input: createWhitelabelComponent<{ label: string } & InputProps, string>((p) => {
     const { label, onChangeValue, onChange, errors, ...rest } = p;
 
@@ -44,7 +68,9 @@ const { Navigator, navigate, PATHS } = createRouter({
       Component: () => {
         const { data } = useAcmeSDK().loans.getAllLoans({});
 
-        const { Input, store } = useAcmeForm({ initState: { text: "" } });
+        const { Input, Select, store, useStoreValue } = useAcmeForm({
+          initState: { text: "", selectVal: { complexVal: 123 } },
+        });
 
         return (
           <div>
@@ -69,6 +95,15 @@ const { Navigator, navigate, PATHS } = createRouter({
                 store.reset();
               }}
             >
+              <Select
+                options={[
+                  { key: "1", label: "Option 1", value: { complexVal: 123 } },
+                  { key: "2", label: "Option 2", value: { complexVal: 234 } },
+                  { key: "3", label: "Option 3", value: { complexVal: 345 } },
+                ]}
+                field={(s) => s.selectVal}
+                label={"Select Option"}
+              />
               <Input required field={(s) => s.text} label="Loan Id" />
             </form>
             <button

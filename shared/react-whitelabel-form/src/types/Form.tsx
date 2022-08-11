@@ -1,5 +1,7 @@
-import { Simplify } from "type-fest";
+import { Simplify, Merge } from "type-fest";
 import { FormStore } from "./Store.js";
+
+type MergeAndSimplify<T, U> = Simplify<Merge<T, U>>;
 
 export type ValidateMode = "onChange" | "onBlur" | "onValidate" | "onTouched" | "all";
 export type ReValidateMode = "onChange" | "onBlur" | "onValidate";
@@ -27,25 +29,31 @@ export type ComponentsMap = Record<
 >;
 
 export type AuthorFacingWhitelabelComponent<ExtraProps extends object, Value> = (
-  a: ExtraProps & {
-    errors: string[];
-    onFocus: () => void;
-    onBlur: () => void;
-    value: Value;
-    onChangeValue: (newVal: Value) => void;
-  },
+  a: MergeAndSimplify<
+    ExtraProps,
+    {
+      errors: string[];
+      onFocus: () => void;
+      onBlur: () => void;
+      value: Value;
+      onChangeValue: (newVal: Value) => void;
+    }
+  >,
 ) => JSX.Element | null;
 
-export type BaseWhiteLabelComponentProps<ExtraProps extends object, State extends object, Value> = ExtraProps & {
-  field: (s: State) => Value;
-  defaultValue?: Value;
-  mode?: ValidateMode;
-  reValidateMode?: ReValidateMode;
-  validate?: (currVal: Value) => null | undefined | false | "" | string | string[];
-  required?: true | string;
-  max?: Value | [Value, string];
-  min?: Value | [Value, string];
-};
+export type BaseWhiteLabelComponentProps<ExtraProps extends object, State extends object, Value> = MergeAndSimplify<
+  ExtraProps,
+  {
+    field: (s: State) => Value;
+    defaultValue?: Value;
+    mode?: ValidateMode;
+    reValidateMode?: ReValidateMode;
+    validate?: (currVal: Value) => null | undefined | false | "" | string | string[];
+    required?: true | string;
+    max?: Value | [Value, string];
+    min?: Value | [Value, string];
+  }
+>;
 
 export type StringWhiteLabelComponentProps = {
   isEmail?: true | string;
@@ -68,7 +76,7 @@ export type WhitelabelComponentWithOptions<
   State extends object,
   ExtraOptionProps extends object,
 > = <Value>(
-  a: WhitelabelComponentProps<ExtraProps & OptionsType<Value, ExtraOptionProps>, State, Value>,
+  a: WhitelabelComponentProps<MergeAndSimplify<ExtraProps, OptionsType<Value, ExtraOptionProps>>, State, Value>,
 ) => JSX.Element | null;
 
 export type WhiteLabelComponentWrapper<Value, ExtraProps extends object> = {
