@@ -9,6 +9,7 @@ import {
   useState,
 } from "react";
 import { Simplify } from "type-fest";
+import { createWhitelabelForm } from "../implementations/Form.js";
 import { createFormStore } from "../implementations/Store.js";
 import { FormStore } from "./Store.js";
 
@@ -113,98 +114,100 @@ export type UseForm<ExtraProps extends object> = <State extends object>(
   opts: UseFormOpts<State>,
 ) => UseFormReturnValue<ExtraProps, State>;
 
-type AuthorFacingComponent<ExtraProps extends object, Value> = (
+type AuthorFacingComponent<ExtraProps extends object, Value = string> = (
   a: ExtraProps & {
     errors: string[];
     onFocus: () => void;
     onBlur: () => void;
     value: Value;
-    onChangeValue: (newVal: unknown) => void;
+    onChangeValue: (newVal: Value) => void;
   },
 ) => ReactNode;
 
-type BaseConsumerFacingComponentProps<ExtraProps extends object, State extends object, Value> = {
+type ConsumerFacingComponentProps<ExtraProps extends object, State extends object, Value> = {
   field: (s: State) => Value;
   defaultValue?: Value;
 } & ExtraProps;
 
 type ConsumerFacingComponent<ExtraProps extends object, State extends object, Value> = (
-  a: BaseConsumerFacingComponentProps<ExtraProps, State, Value>,
+  a: ConsumerFacingComponentProps<ExtraProps, State, Value>,
 ) => JSX.Element | null;
 
-function createWhitelabelComponent<Value, ExtraProps extends object>(a: {
+type ConsumerFacingComponentWithOptions<
+  ExtraProps extends object,
+  State extends object,
+  ExtraOptionOptions extends object,
+> = <Value>(
+  a: ConsumerFacingComponentProps<ExtraProps & OptionsType<Value, ExtraOptionOptions>, State, Value>,
+) => JSX.Element | null;
+
+type WhiteLabelComponentWrapper<Value, ExtraProps extends object> = {
+  __ExtraProps: ExtraProps;
+  __Value: Value;
+};
+
+type WhiteLabelComponentWithOptionsWrapper<ExtraProps extends object, ExtraOptionOptions extends object = {}> = {
+  __hasOptions: true;
+  __ExtraProps: ExtraProps;
+  __ExtraOptionOptions: ExtraOptionOptions;
+};
+
+function createWhitelabelComponent<ExtraProps extends object, Value>(a: {
   Component: AuthorFacingComponent<ExtraProps, Value>;
   deserialize?: (val: string) => Value;
   serialize?: (a: Value) => string;
-}): {
-  useWhitelabelComponent: <State extends object>(a: {
+}): WhiteLabelComponentWrapper<Value, ExtraProps> {
+  return null as any;
+}
+
+type OptionsType<Value, ExtraOptionOptions extends object> = { options: ({ value: Value } & ExtraOptionOptions)[] };
+
+function createWhitelabelComponentWithOptions<ExtraProps extends object, ExtraOptionOptions extends object = {}>(a: {
+  Component: AuthorFacingComponent<ExtraProps & OptionsType<unknown, ExtraOptionOptions>, unknown>;
+}): WhiteLabelComponentWithOptionsWrapper<ExtraProps, ExtraOptionOptions> {
+  return null as any;
+}
+
+function createBlahForm<Components extends object>(
+  a: Components,
+): {
+  useForm: <State extends object>(a: {
     initState: State;
-  }) => ConsumerFacingComponent<ExtraProps, State, Value>;
+  }) => {
+    [K in keyof Components]: Components[K] extends WhiteLabelComponentWrapper<any, any>
+      ? ConsumerFacingComponent<Components[K]["__ExtraProps"], State, Components[K]["__Value"]>
+      : Components[K] extends WhiteLabelComponentWithOptionsWrapper<any, any>
+      ? ConsumerFacingComponentWithOptions<Components[K]["__ExtraProps"], State, Components[K]["__ExtraOptionOptions"]>
+      : never;
+  };
 } {
   return null as any;
 }
 
-const { useWhitelabelComponent: useInputComponent } = createWhitelabelComponent<
-  Date,
-  {
-    label: string;
-  }
->({
-  Component: (p) => {
-    return <input onBlur={p.onBlur} onFocus={p.onFocus} value={p.value as any} />;
-  },
-  deserialize: (a) => new Date(a),
-  serialize: (a) => a.toISOString(),
+const { useForm: useBlahForm } = createBlahForm({
+  DatePicker: createWhitelabelComponent<{ blah: string }, Date>({
+    Component: () => null,
+    deserialize: (a) => new Date(a),
+    serialize: (a) => a.toISOString(),
+  }),
+  Input: createWhitelabelComponent<{ blerp: string }, string>({ Component: () => null }),
+  Select: createWhitelabelComponentWithOptions<{ blah: number }, { label: string }>({
+    Component: (c) => null,
+  }),
 });
 
-function Blaaaah() {
-  const Input = useInputComponent({ initState: { blergh: new Date() } });
+function Blaahb() {
+  const { DatePicker, Input, Select } = useBlahForm({ initState: { blergh: new Date(), blooop: 123 } });
 
-  <Input field={(s) => s.blergh} defaultValue={new Date()} label="asdf" />;
+  return (
+    <>
+      <Select
+        field={(s) => s.blergh}
+        defaultValue={new Date()}
+        options={[{ label: "asdf", value: new Date() }]}
+        blah={123}
+      />
+      <DatePicker field={(s) => s.blergh} defaultValue={new Date()} blah="asdf" />
+    </>
+  );
 }
-
-type Colors = "red" | "green" | "blue";
-
-const { useWhitelabelComponent: useSelectComponent } = createWhitelabelComponent<
-  Colors,
-  {
-    label: string;
-    options: { value: Colors; label: string }[];
-  }
->({
-  Component: (p) => {
-    return null;
-  },
-});
-
-function Blaaaah2() {
-  const Select = useSelectComponent({ initState: { blergh: "red" as Colors } });
-
-  <Select
-    field={(s) => s.blergh}
-    defaultValue={"blue"}
-    label="asdf"
-    options={[
-      { label: "red", value: "red" },
-      { label: "green", value: "green" },
-    ]}
-  />;
-}
-
-// function Select<State extends object, Value>(a: {
-//   field: (s: State) => Value;
-//   options: { value: Value; label: string }[];
-//   defaultValue?: Value
-// }) {
-//   return null;
-// }
-
-// <Select
-//   field={(c) => c.type}
-//   options={[
-//     { value: "red", label: "red" },
-//     { value: "green", label: "green" },
-//     { value: "blue", label: "blue" },
-//   ]}
-//   defaultValue={"red"}
-// />;
