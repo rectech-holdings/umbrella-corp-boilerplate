@@ -112,3 +112,99 @@ export type UseFormReturnValue<ExtraProps extends object, State extends object> 
 export type UseForm<ExtraProps extends object> = <State extends object>(
   opts: UseFormOpts<State>,
 ) => UseFormReturnValue<ExtraProps, State>;
+
+type AuthorFacingComponent<ExtraProps extends object, Value> = (
+  a: ExtraProps & {
+    errors: string[];
+    onFocus: () => void;
+    onBlur: () => void;
+    value: Value;
+    onChangeValue: (newVal: unknown) => void;
+  },
+) => ReactNode;
+
+type BaseConsumerFacingComponentProps<ExtraProps extends object, State extends object, Value> = {
+  field: (s: State) => Value;
+  defaultValue?: Value;
+} & ExtraProps;
+
+type ConsumerFacingComponent<ExtraProps extends object, State extends object, Value> = (
+  a: BaseConsumerFacingComponentProps<ExtraProps, State, Value>,
+) => JSX.Element | null;
+
+function createWhitelabelComponent<Value, ExtraProps extends object>(a: {
+  Component: AuthorFacingComponent<ExtraProps, Value>;
+  deserialize?: (val: string) => Value;
+  serialize?: (a: Value) => string;
+}): {
+  useWhitelabelComponent: <State extends object>(a: {
+    initState: State;
+  }) => ConsumerFacingComponent<ExtraProps, State, Value>;
+} {
+  return null as any;
+}
+
+const { useWhitelabelComponent: useInputComponent } = createWhitelabelComponent<
+  Date,
+  {
+    label: string;
+  }
+>({
+  Component: (p) => {
+    return <input onBlur={p.onBlur} onFocus={p.onFocus} value={p.value as any} />;
+  },
+  deserialize: (a) => new Date(a),
+  serialize: (a) => a.toISOString(),
+});
+
+function Blaaaah() {
+  const Input = useInputComponent({ initState: { blergh: new Date() } });
+
+  <Input field={(s) => s.blergh} defaultValue={new Date()} label="asdf" />;
+}
+
+type Colors = "red" | "green" | "blue";
+
+const { useWhitelabelComponent: useSelectComponent } = createWhitelabelComponent<
+  Colors,
+  {
+    label: string;
+    options: { value: Colors; label: string }[];
+  }
+>({
+  Component: (p) => {
+    return null;
+  },
+});
+
+function Blaaaah2() {
+  const Select = useSelectComponent({ initState: { blergh: "red" as Colors } });
+
+  <Select
+    field={(s) => s.blergh}
+    defaultValue={"blue"}
+    label="asdf"
+    options={[
+      { label: "red", value: "red" },
+      { label: "green", value: "green" },
+    ]}
+  />;
+}
+
+// function Select<State extends object, Value>(a: {
+//   field: (s: State) => Value;
+//   options: { value: Value; label: string }[];
+//   defaultValue?: Value
+// }) {
+//   return null;
+// }
+
+// <Select
+//   field={(c) => c.type}
+//   options={[
+//     { value: "red", label: "red" },
+//     { value: "green", label: "green" },
+//     { value: "blue", label: "blue" },
+//   ]}
+//   defaultValue={"red"}
+// />;

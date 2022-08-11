@@ -1,4 +1,5 @@
-import { useState, ForwardedRef, forwardRef } from "react";
+import { useState, ForwardedRef, forwardRef, ReactNode, Component } from "react";
+import { Simplify } from "type-fest";
 import {
   DevSuppliedInputComponent,
   DevSuppliedSelectComponent,
@@ -75,4 +76,18 @@ export function createWhitelabelForm<ExtraProps extends object>(
   };
 
   return ret;
+}
+
+const { useForm } = createWhitelabelForm({
+  type: "dom",
+  components: {
+    Input: (a) => {
+      return <input />;
+    },
+  },
+});
+
+function App() {
+  const { Input } = useForm({ initState: { blah: "" } });
+  <Input opts={{ field: (s) => s.blah }} />;
 }
