@@ -186,6 +186,7 @@ importers:
       ac-api: workspace:*
       ac-shared-frontend: workspace:*
       ac-shared-universal: workspace:*
+      babel-plugin-react-native-web: 0.18.7
       jest: 28.1.2
       metro-config: 0.71.3
       metro-react-native-babel-preset: 0.70.3
@@ -210,6 +211,7 @@ importers:
       ac-api: link:../ac-api
       ac-shared-frontend: link:../ac-shared-frontend
       ac-shared-universal: link:../ac-shared-universal
+      babel-plugin-react-native-web: 0.18.7
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
       react-native: 0.69.1_xkwn5kfn4p5g5vhhoajshjctr4
@@ -4395,6 +4397,10 @@ packages:
       '@babel/helper-define-polyfill-provider': 0.3.1_@babel+core@7.18.6
     transitivePeerDependencies:
       - supports-color
+
+  /babel-plugin-react-native-web/0.18.7:
+    resolution: {integrity: sha512-DF7huAePyphXsqWhGyshjQAU9qektOqOSP2NHevtUBhsgLu57D4gEGZM1xPtbJYvW6/DoxuaXUAqjYqfexT+gQ==}
+    dev: false
 
   /babel-plugin-syntax-trailing-function-commas/7.0.0-beta.0:
     resolution: {integrity: sha512-Xj9XuRuz3nTSbaTXWv3itLOcxyF4oPD8douBBmj7U9BBC6nEBYfyOJYQMf/8PJAFotC62UY5dFfIGEPr7WswzQ==}

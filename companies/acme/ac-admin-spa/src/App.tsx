@@ -1,21 +1,32 @@
 import { createApiReactSDK } from "ac-api";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import "./App.css";
 
-const { ApiSDK } = createApiReactSDK();
+let SDK: Awaited<ReturnType<typeof createApiReactSDK>>;
+const sdkProm = createApiReactSDK().then((a) => {
+  SDK = a;
+});
 
 function App() {
-  return <AppInner />;
+  return (
+    <Suspense fallback={null}>
+      <AppInner />
+    </Suspense>
+  );
 }
 
 function AppInner() {
+  if (!SDK) {
+    throw sdkProm;
+  }
+
   const [loanId, setLoanId] = useState(123);
 
-  const resp = ApiSDK.useSDK().loans.getLoan(loanId);
+  const resp = SDK.useSDK().loans.getLoan(loanId);
 
   if (resp.status === "error") {
     return <div>Error fetching data</div>;
-  } else if (resp.status === "loading" || resp.status === "idle") {
+  } else if (resp.status === "loading") {
     return <div>Loading...</div>;
   }
 

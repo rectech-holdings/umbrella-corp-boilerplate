@@ -1,6 +1,8 @@
 .env
 node_modules
 dist
+dist-rn
+dist-web
 build
 coverage
 tsconfig.tsbuildinfo

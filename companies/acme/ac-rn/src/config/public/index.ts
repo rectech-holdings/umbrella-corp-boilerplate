@@ -9,7 +9,7 @@ if (typeof window !== "undefined") {
   CONFIG_ENV = process.env.VITE_CONFIG_ENV || "";
 }
 
-export const publicConfig = (async () => {
+export async function getPublicConfig() {
   let conf: PublicConfig;
   if (CONFIG_ENV === "production") {
     conf = (await import("./public.production.js")).publicConfig;
@@ -20,5 +20,6 @@ export const publicConfig = (async () => {
   } else {
     throw new Error(`No config found for CONFIG_ENV "${CONFIG_ENV}"!`);
   }
+
   return conf;
-})();
+}

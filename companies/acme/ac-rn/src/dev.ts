@@ -1,4 +1,4 @@
-import { publicConfig } from "./config/public/index.js";
+import { getPublicConfig } from "./config/public/index.js";
 
 (async () => {
   const { createServer } = await import("vite");
@@ -6,7 +6,7 @@ import { publicConfig } from "./config/public/index.js";
     clearScreen: false,
   });
 
-  const port = (await publicConfig).port;
+  const port = (await getPublicConfig()).port;
   await server.listen(port);
 
   setTimeout(() => {

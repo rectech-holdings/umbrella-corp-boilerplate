@@ -1,4 +1,4 @@
-import { useEffect, useId, useInsertionEffect, useState } from "react";
+import { Suspense, useEffect, useId, useInsertionEffect, useState } from "react";
 import logo from "./logo.svg";
 import "./App.css";
 import { View } from "react-native";
@@ -13,6 +13,11 @@ import {
 
 type InputProps = React.DetailedHTMLProps<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>;
 type SelectProps = React.DetailedHTMLProps<React.SelectHTMLAttributes<HTMLSelectElement>, HTMLSelectElement>;
+
+let Acme: Awaited<ReturnType<typeof createApiReactSDK>>;
+const AcmeProm = createApiReactSDK().then((a) => {
+  Acme = a;
+});
 
 const useAcmeForm = createUseWhitelabelForm({
   Select: createWhitelabelComponentWithOptions<{ label: string } & SelectProps, { label: string; key: string }>((p) => {
@@ -53,21 +58,13 @@ const useAcmeForm = createUseWhitelabelForm({
   }),
 });
 
-const {
-  SDK: AcmeSDK,
-  useSDK: useAcmeSDK,
-  usePaginatedSDK: useAcmePaginatedSDK,
-  SDKProvider: AcmeSDKProvider,
-  getQueryKey: getAcmeQueryKey,
-} = createApiReactSDK({});
-
 const { Navigator, navigate, PATHS } = createRouter({
   type: "switch",
   routes: {
     login: {
       type: "leaf",
       Component: () => {
-        const { data } = useAcmeSDK().loans.getAllLoans({});
+        const { data } = Acme.useSDK().loans.getAllLoans({});
 
         const { Input, Select, store, useStoreValue } = useAcmeForm({
           initState: { text: "", selectVal: { complexVal: 123 } },
@@ -86,13 +83,13 @@ const { Navigator, navigate, PATHS } = createRouter({
                   return;
                 }
 
-                await AcmeSDK.loans.createLoan(
+                await Acme.SDK.loans.createLoan(
                   {
                     loanTitle: store.get().text,
                     ownerEmail: Math.random().toString().slice(2) + "asdf@asdf.com",
                   },
                   {
-                    invalidate: [getAcmeQueryKey.loans()],
+                    invalidate: [Acme.getQueryKey.loans()],
                   },
                 );
 
@@ -157,15 +154,25 @@ const { Navigator, navigate, PATHS } = createRouter({
   },
 });
 
-publicConfig.then((a) => {}).catch((e) => {});
-
 function App() {
+  return (
+    <Suspense>
+      <AppInner />
+    </Suspense>
+  );
+}
+
+function AppInner() {
+  if (!Acme) {
+    throw AcmeProm;
+  }
+
   const [count, setCount] = useState(0);
 
   return (
-    <AcmeSDKProvider>
+    <Acme.SDKProvider>
       <Navigator />
-    </AcmeSDKProvider>
+    </Acme.SDKProvider>
   );
 }
 

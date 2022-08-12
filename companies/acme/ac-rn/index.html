@@ -7,6 +7,11 @@
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/web-main.tsx"></script>
+    <script>
+      var global = global || window
+      window.__DEV__ = true;
+      window.setImmediate = setTimeout
+    </script>
+    <script type="module" src="/dist-web/web-main.js"></script>
   </body>
 </html>
