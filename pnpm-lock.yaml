@@ -256,6 +256,7 @@ importers:
       '@types/node': 18.0.3
       '@types/react': 18.0.15
       '@types/react-dom': 18.0.6
+      '@types/react-native': 0.69.2
       '@types/react-test-renderer': 18.0.0
       '@vitejs/plugin-react': 2.0.0-beta.0
       ac-api: workspace:*
@@ -264,16 +265,21 @@ importers:
       integration-tester: workspace:*
       react: 18.2.0
       react-dom: 18.2.0
+      react-native: 0.69.1
+      react-native-web: 0.18.7
       react-test-renderer: 18.0.0
       react-whitelabel-form: workspace:*
       rn-typed-router: workspace:*
       typescript: 4.7.4
       vite: 3.0.0-beta.6
     dependencies:
+      '@types/react-native': 0.69.2
       ac-api: link:../ac-api
       ac-shared-frontend: link:../ac-shared-frontend
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
+      react-native: 0.69.1_react@18.2.0
+      react-native-web: 0.18.7_biqbaboplfbrettd7655fr4n2y
       react-whitelabel-form: link:../../../shared/react-whitelabel-form
       rn-typed-router: link:../../../shared/rn-typed-router
     devDependencies:
@@ -3263,7 +3269,7 @@ packages:
       lodash: 4.17.21
       minimist: 1.2.6
       prompts: 2.4.2
-      react-native: 0.69.1_xkwn5kfn4p5g5vhhoajshjctr4
+      react-native: 0.69.1_react@18.2.0
       semver: 6.3.0
     transitivePeerDependencies:
       - bufferutil
@@ -3650,7 +3656,6 @@ packages:
     resolution: {integrity: sha512-AVdWv4B8/++T5QQdnpveb2OVqD+0i8SOoT63ZRD+lNtQIYxzDak91V0k6olthy+H261d4t/MRBC1cfX1Rwsb6A==}
     dependencies:
       '@types/react': 18.0.15
-    dev: true
 
   /@types/react-test-renderer/18.0.0:
     resolution: {integrity: sha512-C7/5FBJ3g3sqUahguGi03O79b8afNeSD6T8/GU50oQrJCU0bVCCGQHaGKUbg2Ce8VQEEqTw8/HiS6lXHHdgkdQ==}
@@ -7991,6 +7996,34 @@ packages:
   /jsc-android/250230.2.1:
     resolution: {integrity: sha512-KmxeBlRjwoqCnBBKGsihFtvsBHyUFlBxJPK4FzeYcIuBfdjv6jFys44JITAgSTbQD+vIdwMEfyZklsuQX0yI1Q==}
 
+  /jscodeshift/0.13.1:
+    resolution: {integrity: sha512-lGyiEbGOvmMRKgWk4vf+lUrCWO/8YR8sUR3FKF1Cq5fovjZDlIcw3Hu5ppLHAnEXshVffvaM0eyuY/AbOeYpnQ==}
+    hasBin: true
+    peerDependencies:
+      '@babel/preset-env': ^7.1.6
+    dependencies:
+      '@babel/core': 7.18.6
+      '@babel/parser': 7.18.8
+      '@babel/plugin-proposal-class-properties': 7.18.6_@babel+core@7.18.6
+      '@babel/plugin-proposal-nullish-coalescing-operator': 7.18.6_@babel+core@7.18.6
+      '@babel/plugin-proposal-optional-chaining': 7.18.6_@babel+core@7.18.6
+      '@babel/plugin-transform-modules-commonjs': 7.18.6_@babel+core@7.18.6
+      '@babel/preset-flow': 7.18.6_@babel+core@7.18.6
+      '@babel/preset-typescript': 7.18.6_@babel+core@7.18.6
+      '@babel/register': 7.18.6_@babel+core@7.18.6
+      babel-core: 7.0.0-bridge.0_@babel+core@7.18.6
+      chalk: 4.1.2
+      flow-parser: 0.121.0
+      graceful-fs: 4.2.10
+      micromatch: 3.1.10
+      neo-async: 2.6.2
+      node-dir: 0.1.17
+      recast: 0.20.5
+      temp: 0.8.4
+      write-file-atomic: 2.4.3
+    transitivePeerDependencies:
+      - supports-color
+
   /jscodeshift/0.13.1_@babel+preset-env@7.18.6:
     resolution: {integrity: sha512-lGyiEbGOvmMRKgWk4vf+lUrCWO/8YR8sUR3FKF1Cq5fovjZDlIcw3Hu5ppLHAnEXshVffvaM0eyuY/AbOeYpnQ==}
     hasBin: true
@@ -10273,6 +10306,17 @@ packages:
     resolution: {integrity: sha512-xWGDIW6x921xtzPkhiULtthJHoJvBbF3q26fzloPCK0hsvxtPVelvftw3zjbHWSkR2km9Z+4uxbDDK/6Zw9B8w==}
     dev: true
 
+  /react-native-codegen/0.69.1:
+    resolution: {integrity: sha512-TOZEqBarczcyYN3iZE3VpKkooOevaAzBq9n7lU0h9mQUvtRhLVyolc+a5K6cWI0e4v4K69I0MqzjPcPeFKo32Q==}
+    dependencies:
+      '@babel/parser': 7.18.8
+      flow-parser: 0.121.0
+      jscodeshift: 0.13.1
+      nullthrows: 1.1.1
+    transitivePeerDependencies:
+      - '@babel/preset-env'
+      - supports-color
+
   /react-native-codegen/0.69.1_@babel+preset-env@7.18.6:
     resolution: {integrity: sha512-TOZEqBarczcyYN3iZE3VpKkooOevaAzBq9n7lU0h9mQUvtRhLVyolc+a5K6cWI0e4v4K69I0MqzjPcPeFKo32Q==}
     dependencies:
@@ -10350,6 +10394,25 @@ packages:
       warn-once: 0.1.0
     dev: false
 
+  /react-native-web/0.18.7_biqbaboplfbrettd7655fr4n2y:
+    resolution: {integrity: sha512-5DwcsrAqLjOvzJJk/XPozEtqCOF3hrCJ55buLOEPMxvS8lKxRdeMF9SZUI2zyqE8JcMFGtQzLhWAZGeaTrXaRg==}
+    peerDependencies:
+      react: ^17.0.2 || ^18.0.0
+      react-dom: ^17.0.2 || ^18.0.0
+    dependencies:
+      '@babel/runtime': 7.18.6
+      create-react-class: 15.7.0
+      fbjs: 3.0.4
+      inline-style-prefixer: 6.0.1
+      normalize-css-color: 1.0.2
+      postcss-value-parser: 4.2.0
+      react: 18.2.0
+      react-dom: 18.2.0_react@18.2.0
+      styleq: 0.1.2
+    transitivePeerDependencies:
+      - encoding
+    dev: false
+
   /react-native-web/0.18.7_react@18.2.0:
     resolution: {integrity: sha512-5DwcsrAqLjOvzJJk/XPozEtqCOF3hrCJ55buLOEPMxvS8lKxRdeMF9SZUI2zyqE8JcMFGtQzLhWAZGeaTrXaRg==}
     peerDependencies:
@@ -10367,6 +10430,54 @@ packages:
     transitivePeerDependencies:
       - encoding
     dev: false
+
+  /react-native/0.69.1_react@18.2.0:
+    resolution: {integrity: sha512-585NmzSuYUfday8YsfqgreFAZbXRI/kxKsiuaShwGHgkwdtmE5qA7WfGItgxZBOZD6g/Hm1YBUqSwIm07tPa6A==}
+    engines: {node: '>=14'}
+    hasBin: true
+    peerDependencies:
+      react: 18.0.0
+    dependencies:
+      '@jest/create-cache-key-function': 27.5.1
+      '@react-native-community/cli': 8.0.3_react-native@0.69.1
+      '@react-native-community/cli-platform-android': 8.0.5
+      '@react-native-community/cli-platform-ios': 8.0.4
+      '@react-native/assets': 1.0.0
+      '@react-native/normalize-color': 2.0.0
+      '@react-native/polyfills': 2.0.0
+      abort-controller: 3.0.0
+      anser: 1.4.10
+      base64-js: 1.5.1
+      event-target-shim: 5.0.1
+      hermes-engine: 0.11.0
+      invariant: 2.2.4
+      jsc-android: 250230.2.1
+      memoize-one: 5.2.1
+      metro-react-native-babel-transformer: 0.70.3
+      metro-runtime: 0.70.3
+      metro-source-map: 0.70.3
+      mkdirp: 0.5.6
+      nullthrows: 1.1.1
+      pretty-format: 26.6.2
+      promise: 8.1.0
+      react: 18.2.0
+      react-devtools-core: 4.24.0
+      react-native-codegen: 0.69.1
+      react-native-gradle-plugin: 0.0.7
+      react-refresh: 0.4.3
+      react-shallow-renderer: 16.14.1_react@18.2.0
+      regenerator-runtime: 0.13.9
+      scheduler: 0.21.0
+      stacktrace-parser: 0.1.10
+      use-sync-external-store: 1.2.0_react@18.2.0
+      whatwg-fetch: 3.6.2
+      ws: 6.2.2
+    transitivePeerDependencies:
+      - '@babel/preset-env'
+      - bufferutil
+      - encoding
+      - supports-color
+      - utf-8-validate
 
   /react-native/0.69.1_xkwn5kfn4p5g5vhhoajshjctr4:
     resolution: {integrity: sha512-585NmzSuYUfday8YsfqgreFAZbXRI/kxKsiuaShwGHgkwdtmE5qA7WfGItgxZBOZD6g/Hm1YBUqSwIm07tPa6A==}

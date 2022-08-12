@@ -10,8 +10,9 @@ const routeDef = createExtendingRouteDefinition(RN_APP_ROOT_ROUTE_DEFINITION, {
       Component: lazy(() => import("./pages/Login.js")),
     },
     MAIN: {
-      type: "tab",
-      BottomTabBar: lazy(() => import("./pages/MainTabBar.js")),
+      type: "switch",
+      keepChildrenMounted: true,
+      Footer: lazy(() => import("./pages/MainTabBar.js")),
       routes: {
         TAB_1: {
           type: "stack",

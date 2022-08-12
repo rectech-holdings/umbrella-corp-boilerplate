@@ -1,6 +1,7 @@
 import { useEffect, useId, useInsertionEffect, useState } from "react";
 import logo from "./logo.svg";
 import "./App.css";
+import { View } from "react-native";
 import { publicConfig } from "./config/public/index.js";
 import { createApiReactSDK } from "ac-api";
 import { createRouter } from "rn-typed-router";
@@ -74,6 +75,9 @@ const { Navigator, navigate, PATHS } = createRouter({
 
         return (
           <div>
+            <View>
+              <span>INSIDE A VIEW</span>
+            </View>
             <div>Login screen</div>
             <form
               onSubmit={async (e) => {

@@ -65,7 +65,7 @@ export type SwitchRouteDefWithoutUI = Simplify<
 >;
 
 export type SwitchRouteDefWithUIOnly = Simplify<
-  CommonRouteDefWithUIOnly & Pick<SwitchRouteDef, "type" | "initialRoute">
+  CommonRouteDefWithUIOnly & Pick<SwitchRouteDef, "type" | "initialRoute" | "keepChildrenMounted">
 >;
 
 export type LeafRouteDef = Simplify<

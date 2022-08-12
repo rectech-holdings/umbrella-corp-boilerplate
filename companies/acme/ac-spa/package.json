@@ -10,10 +10,13 @@
     "test": "integration-tester"
   },
   "dependencies": {
+    "@types/react-native": "0.69.2",
     "ac-api": "workspace:*",
     "ac-shared-frontend": "workspace:*",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-native": "0.69.1",
+    "react-native-web": "0.18.7",
     "react-whitelabel-form": "workspace:*",
     "rn-typed-router": "workspace:*"
   },
