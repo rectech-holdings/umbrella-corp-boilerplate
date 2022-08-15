@@ -1,16 +1,19 @@
 {
   "name": "ac-app",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "dev": "expo start --web",
-    "build-dev": "echo nothing"
+    "dev": "run-p dev:*",
+    "dev:expo": "expo start --web",
+    "dev:ts": "tsc -w --preserveWatchOutput",
+    "build-dev": "tsc"
   },
   "dependencies": {
     "@rnx-kit/metro-config": "1.2.34",
     "@rnx-kit/metro-resolver-symlinks": "0.1.21",
     "expo": "46.0.7",
     "expo-status-bar": "1.4.0",
+    "npm-run-all": "4.1.5",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-native": "0.69.4",
@@ -22,7 +25,10 @@
   },
   "devDependencies": {
     "@babel/core": "7.18.10",
-    "@expo/webpack-config": "0.17.0"
+    "@expo/webpack-config": "0.17.0",
+    "@types/react": "18.0.15",
+    "@types/react-native": "0.69.5",
+    "typescript": "4.7.4"
   },
   "private": true
 }

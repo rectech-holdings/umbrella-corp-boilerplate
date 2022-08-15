@@ -10,7 +10,7 @@ export default function App() {
     <SafeAreaProvider style={{ flex: 1 }}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <View style={styles.container}>
-          <Text>Open up App.js to start working on your app!!!!!</Text>
+          <Text>Open up App.js to start working on your app!!!</Text>
           <StatusBar style="auto" />
         </View>
       </GestureHandlerRootView>
