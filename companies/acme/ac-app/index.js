@@ -1,3 +1,6 @@
+// Probably switch back to vanilla app entry rather than this weird file once this bug is resolved
+// https://stackoverflow.com/questions/71668256/deprecation-notice-reactdom-render-is-no-longer-supported-in-react-18
+
 import App from "./App.js";
 import "expo/build/Expo.fx";
 import { AppRegistry, Platform } from "react-native";
