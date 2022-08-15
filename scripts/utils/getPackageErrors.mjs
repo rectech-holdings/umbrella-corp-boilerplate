@@ -94,7 +94,9 @@ export async function getPackageErrors() {
               },
             });
           } else if (priorVersion && priorVersion.version !== version) {
-            const higherVersion = semver.gt(priorVersion.version, version) ? priorVersion.version : version;
+            const higherVersion = semver.gt(semver.minVersion(priorVersion.version), semver.minVersion(version))
+              ? priorVersion.version
+              : version;
             const lowerVersion = higherVersion === version ? priorVersion.version : version;
 
             const msg = `The packages ${pkgJson.name} and ${priorVersion.name} are on different versions of ${dep}.`;
