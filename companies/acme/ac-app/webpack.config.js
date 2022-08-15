@@ -1,27 +1,29 @@
 const createExpoWebpackConfigAsync = require("@expo/webpack-config");
-const findWorkspacePackages = require("@pnpm/find-workspace-packages").default;
-const findWorkspaceDir = require("@pnpm/find-workspace-dir").default;
-
-async function getWorkspaceInfo() {
-  const orig = console.error;
-  console.error = () => {}; //Prevent logging some annoying errors...
-  const workspaceDir = await findWorkspaceDir(process.cwd());
-  const packages = await findWorkspacePackages(workspaceDir);
-  console.error = orig;
-  return packages.map((a) => a.manifest.name);
-}
+const thisPackageJson = require("./package.json");
 
 module.exports = async function (env, argv) {
-  const workspacePackages = await getWorkspaceInfo();
+  const config = await createExpoWebpackConfigAsync(env, argv);
 
-  const config = await createExpoWebpackConfigAsync(
-    {
-      ...env,
-      babel: { dangerouslyAddModulePathsToTranspile: workspacePackages },
+  //This ensures that peerDependencies inside dependencies (like when the dep wants react or react-dom) get resolved from THIS directory, not inside the requiring dependency
+  config.resolve.plugins.push({
+    apply(resolver) {
+      resolver.plugin("module", function (req, callback) {
+        if (thisPackageJson.dependencies[req.request]) {
+          this.doResolve(
+            "resolve",
+            {
+              ...req,
+              request: require.resolve(req.request),
+            },
+            "MonoRepo Resolver",
+            callback,
+          );
+        } else {
+          callback();
+        }
+      });
     },
-    argv,
-  );
+  });
 
-  // Customize the config before returning it.
   return config;
 };

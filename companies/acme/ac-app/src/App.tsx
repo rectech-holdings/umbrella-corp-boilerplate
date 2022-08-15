@@ -41,11 +41,7 @@ function AppInner() {
 }
 
 function SomeComponent() {
-  useEffect(() => {
-    Acme.SDK.loans.getAllLoans({}).then((a) => {
-      console.log(a);
-    }, console.error);
-  }, []);
+  const { data } = Acme.useSDK().loans.getAllLoans({});
 
   return null;
 }
