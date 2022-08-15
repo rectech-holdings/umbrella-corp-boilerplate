@@ -31,8 +31,6 @@ import { usePreviousValue } from "../utils/usePreviousValue.js";
 import { BackHandler, Keyboard, Platform, Screen, ScreenContainer, ScreenStack, StyleSheet, View } from "./primitives";
 import { Freeze } from "../utils/react-freeze.js";
 
-const defaultWrapperStyle = Platform.OS === "web" ? {} : { flex: 1 };
-
 export function createRouter<T extends RouteDef>(rootDefinition: T, opts?: RouterOptions): Router<T> {
   const thisRouter: Router<any> = new RouterClass(rootDefinition, opts);
 
@@ -341,7 +339,7 @@ class RouterClass implements Router<any> {
     return (
       <Wrapper>
         {LeafHeader ? <LeafHeader /> : null}
-        <View style={defaultWrapperStyle}>
+        <View style={{ flex: 1 }}>
           <Leaf />
         </View>
       </Wrapper>
@@ -358,7 +356,7 @@ class RouterClass implements Router<any> {
 
       return (
         <Wrapper>
-          <ScreenStack style={defaultWrapperStyle}>
+          <ScreenStack style={{ flex: 1 }}>
             {p.state.stack.map((thisNavigationState, i) => {
               const Header = this.#getComponentAtPath(p.path, "header");
               const thisRoutePath = p.path.concat(thisNavigationState.path);
@@ -404,7 +402,7 @@ class RouterClass implements Router<any> {
                   {...screenProps}
                 >
                   {Header ? <Header /> : null}
-                  <View style={defaultWrapperStyle}>
+                  <View style={{ flex: 1 }}>
                     <InnerNavigator
                       state={thisNavigationState as any}
                       path={thisRoutePath}
@@ -439,9 +437,9 @@ class RouterClass implements Router<any> {
 
       return (
         <Wrapper>
-          <View style={defaultWrapperStyle}>
+          <View style={{ flex: 1 }}>
             {Header ? <Header /> : null}
-            <ScreenContainer style={defaultWrapperStyle}>
+            <ScreenContainer style={{ flex: 1 }}>
               {p.state.switches.map((thisNavigationState, i) => {
                 if (parentDef.keepChildrenMounted !== true && i !== focusedSwitchIndex) {
                   return null;

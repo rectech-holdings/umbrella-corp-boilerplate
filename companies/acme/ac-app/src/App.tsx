@@ -1,7 +1,7 @@
 import { Suspense, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { GestureHandlerRootView, BorderlessButton } from "react-native-gesture-handler";
 import Animated, { useSharedValue, useAnimatedStyle } from "react-native-reanimated";
 import { createApiReactSDK } from "ac-api";
 
@@ -11,6 +11,7 @@ const AcmeProm = createApiReactSDK().then((a) => {
 });
 
 import { StyleSheet, Text, View } from "react-native";
+import { Navigator } from "./Router.js";
 
 export default function App() {
   return (
@@ -27,13 +28,9 @@ function AppInner() {
 
   return (
     <Acme.SDKProvider>
-      <SafeAreaProvider style={{ flex: 1 }}>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <View style={styles.container}>
-            <Text>Open up App.js to start working on your app!!!</Text>
-            <StatusBar style="auto" />
-            <SomeComponent />
-          </View>
+      <SafeAreaProvider style={{ flex: 1 }} testID="a">
+        <GestureHandlerRootView style={{ flex: 1 }} testID="b">
+          <Navigator />
         </GestureHandlerRootView>
       </SafeAreaProvider>
     </Acme.SDKProvider>
@@ -43,7 +40,15 @@ function AppInner() {
 function SomeComponent() {
   const { data } = Acme.useSDK().loans.getAllLoans({});
 
-  return null;
+  return (
+    <BorderlessButton
+      onPress={() => {
+        console.log("WADDUP!!!!");
+      }}
+    >
+      <Text>GESTURE HANDLER BUTTOn</Text>
+    </BorderlessButton>
+  );
 }
 
 const styles = StyleSheet.create({
