@@ -24,6 +24,7 @@
         "backgroundColor": "#FFFFFF"
       }
     },
+    "extra": {},
     "web": {
       "favicon": "./assets/favicon.png"
     }

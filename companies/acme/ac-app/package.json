@@ -9,8 +9,11 @@
     "build-dev": "tsc"
   },
   "dependencies": {
+    "@pnpm/find-workspace-dir": "4.0.2",
+    "@pnpm/find-workspace-packages": "4.0.18",
     "@rnx-kit/metro-config": "1.2.34",
     "@rnx-kit/metro-resolver-symlinks": "0.1.21",
+    "ac-api": "workspace:*",
     "expo": "46.0.7",
     "expo-status-bar": "1.4.0",
     "npm-run-all": "4.1.5",
