@@ -1,6 +1,6 @@
 import { RN_APP_ROOT_ROUTE_DEFINITION } from "ac-shared-universal";
 
-import { createRouter, lazy, createExtendingRouteDefinition, ParamTypes } from "rn-typed-router";
+import { createRouter, lazy, createExtendingRouteDefinition, ParamTypes } from "react-typed-navigator";
 
 const routeDef = createExtendingRouteDefinition(RN_APP_ROOT_ROUTE_DEFINITION, {
   type: "switch",

@@ -8,7 +8,7 @@ First define your routes in a nested manner (typically in a `router.tsx` file or
 
 ```tsx
 import { Button, Text, View } from "react-native";
-import { createRouter, createRouteDefinition, ParamTypes, lazy } from "rn-typed-router";
+import { createRouter, createRouteDefinition, ParamTypes, lazy } from "react-typed-navigator";
 const routeDef = createRouteDefinition({
   //Declare the type of root navigator. Options are "switch" or "stack"
   type: "switch",
@@ -71,7 +71,7 @@ export function App() {
 import React from "react";
 import { Button, Text, View } from "react-native";
 
-import { createRouter, createRouteDefinition, ParamTypes } from "rn-typed-router";
+import { createRouter, createRouteDefinition, ParamTypes } from "react-typed-navigator";
 const routeDef = createRouteDefinition({
   type: "switch",
   routes: {

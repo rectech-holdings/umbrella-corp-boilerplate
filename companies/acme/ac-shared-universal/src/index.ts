@@ -4,7 +4,7 @@ import {
   createRouteDefinition,
   ParamTypes,
   createNonUIRouteDefinition,
-} from "rn-typed-router-core";
+} from "react-typed-navigator-core";
 
 export const RN_APP_ROOT_ROUTE_DEFINITION = createNonUIRouteDefinition({
   type: "switch",

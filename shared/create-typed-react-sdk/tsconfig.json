@@ -3,5 +3,5 @@
   "compilerOptions": {
     "outDir": "dist"
   },
-  "include": ["src/**/*", "../rn-typed-router/src/react-freeze.tsx"]
+  "include": ["src/**/*", "../react-typed-navigator/src/react-freeze.tsx"]
 }

@@ -11,6 +11,6 @@
     "dev": "tsc -w --preserveWatchOutput"
   },
   "dependencies": {
-    "rn-typed-router-core": "workspace:*"
+    "react-typed-navigator-core": "workspace:*"
   }
 }

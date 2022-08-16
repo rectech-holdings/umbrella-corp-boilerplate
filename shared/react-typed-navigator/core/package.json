@@ -1,5 +1,5 @@
 {
-  "name": "rn-typed-router-core",
+  "name": "react-typed-navigator-core",
   "//NOTE:": "This package exists to create an entry point that doesn't require react runtime peer dependencies",
   "private": true,
   "type": "module",
@@ -11,7 +11,7 @@
     "build-dev": "pnpm build"
   },
   "dependencies": {
-    "rn-typed-router": "workspace:*",
+    "react-typed-navigator": "workspace:*",
     "typescript": "4.7.4"
   }
 }

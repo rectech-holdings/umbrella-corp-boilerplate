@@ -100,7 +100,7 @@ export interface Router<T extends RouteDef> {
    * inputs from the {@link Router#generateUrl} function.
    *
    * @example
-   * import { UrlString } from 'rn-typed-router';
+   * import { UrlString } from 'react-typed-navigator';
    * // Typical
    * navigateToUrl(generateUrl(PATHS.baz, { bazParam: 1}))
    * // Cast string to UrlString
