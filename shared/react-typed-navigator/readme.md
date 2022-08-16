@@ -1,8 +1,12 @@
-# RN Typed Router
+# React Typed Navigator
 
 This is a nested router solution meant as a replacement for react-navigation, with a focus on performance and type correctness.
 
 First define your routes in a nested manner (typically in a `router.tsx` file or the like) to create your `Navigator` and navigation functions. Next, render your `Navigator` at the root of your app. Finally, use the navigation constants and functions exported from your route definition (e.g. the exports defined in `router.tsx`) to interact with the router, navigate, get params, etcetera.
+
+The architecture lends itself to aggressive performance optimization since navigators do not need
+to pass a navigation prop to their children (unlike most solutions). Because of this, we can enable two performance optimzations: (1) navigators are wrapped with `React.memo` to prevent
+unnecessary re-renders and (2) We ["freeze"](https://www.npmjs.com/package/react-freeze) not-currently-visible routes to prevent their render functions from firing.
 
 ## Basic Example:
 
