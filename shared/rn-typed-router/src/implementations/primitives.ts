@@ -21,6 +21,8 @@ import type {
   ScreenStack as RNScreenStack,
 } from "react-native-screens";
 
+import * as historyRaw from "history";
+
 export const BackHandler: typeof RNBackHandler = RNWBackHandler;
 export const Platform: typeof RNPlatform = RNWPlatform;
 export const Keyboard: typeof RNKeyboard = RNWKeyboard;
@@ -29,3 +31,4 @@ export const View: typeof RNView = RNWView;
 export const Screen: typeof RNScreen = RNWView;
 export const ScreenContainer: typeof RNScreenContainer = RNWView;
 export const ScreenStack: typeof RNScreenStack = RNWView;
+export const history = historyRaw;

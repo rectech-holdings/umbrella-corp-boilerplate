@@ -16,6 +16,7 @@
   "dependencies": {
     "@types/url-parse": "1.4.8",
     "dequal": "2.0.3",
+    "history": "5.3.0",
     "immer": "9.0.15",
     "lodash": "4.17.21",
     "path-to-regexp": "6.2.1",
@@ -32,9 +33,9 @@
   },
   "peerDependencies": {
     "react": "*",
+    "react-dom": "*",
     "react-native": "*",
-    "react-native-screens": "*",
-    "react-dom": "*"
+    "react-native-screens": "*"
   },
   "peerDependenciesMeta": {
     "react-native": {

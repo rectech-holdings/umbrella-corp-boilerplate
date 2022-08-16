@@ -1,4 +1,4 @@
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, StrictMode } from "react";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { GestureHandlerRootView, BorderlessButton } from "react-native-gesture-handler";
@@ -15,9 +15,11 @@ import { Navigator } from "./Router.js";
 
 export default function App() {
   return (
-    <Suspense>
-      <AppInner />
-    </Suspense>
+    <StrictMode>
+      <Suspense>
+        <AppInner />
+      </Suspense>
+    </StrictMode>
   );
 }
 

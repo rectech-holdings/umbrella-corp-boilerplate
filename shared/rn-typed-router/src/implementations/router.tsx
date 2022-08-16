@@ -28,7 +28,17 @@ import queryString from "query-string";
 import { createZustandStore, ZustandStore } from "../utils/createZustandStore.js";
 import { useIsMountedRef } from "../utils/useIsMountedRef.js";
 import { usePreviousValue } from "../utils/usePreviousValue.js";
-import { BackHandler, Keyboard, Platform, Screen, ScreenContainer, ScreenStack, StyleSheet, View } from "./primitives";
+import {
+  BackHandler,
+  history,
+  Keyboard,
+  Platform,
+  Screen,
+  ScreenContainer,
+  ScreenStack,
+  StyleSheet,
+  View,
+} from "./primitives";
 import { Freeze } from "../utils/react-freeze.js";
 
 export function createRouter<T extends RouteDef>(rootDefinition: T, opts?: RouterOptions): Router<T> {
@@ -84,11 +94,57 @@ class RouterClass implements Router<any> {
 
   #navigationStateStore: ZustandStore<RootNavigationState<any>>;
 
+  #history = Platform.OS === "web" ? history.createBrowserHistory() : null;
+
+  #unsubscribes: (() => void)[] | null = null;
+  //This fn gets called during the root Navigator render
+  #maybeSetupSubscriptions() {
+    if (this.#unsubscribes !== null) {
+      return;
+    }
+    this.#unsubscribes = [];
+
+    if (Platform.OS === "android") {
+      const fn = () => this.goBack();
+      BackHandler.addEventListener("hardwareBackPress", fn);
+      this.#unsubscribes.push(() => {
+        BackHandler.removeEventListener("hardwareBackPress", fn);
+      });
+    }
+
+    if (Platform.OS === "web" && this.#history) {
+      this.#unsubscribes.push(
+        this.#history.listen((e) => {
+          const url = e.location.pathname + e.location.search;
+          if (e.action === history.Action.Pop) {
+            const { path, params } = parseUrl(url);
+            this.#navigateToPath(path, params, { browserHistoryAction: "none" });
+          }
+        }),
+      );
+    }
+  }
+
+  //This gets called when the root navigator is unmounted
+  #tearDownSubscriptions() {
+    this.#unsubscribes?.forEach((fn) => fn());
+    this.#unsubscribes = null;
+  }
+
   constructor(rootDef: RouteDef, opts?: RouterOptions) {
     this.#rootDef = rootDef;
     this.#navigationStateStore = createZustandStore(
       opts?.initialNavigationState || this.#generateInitialRootState(rootDef),
     );
+
+    if (Platform.OS === "web") {
+      const currUrl = this.getFocusedUrl();
+      const browserUrl = window.location.pathname + window.location.search;
+      if (currUrl !== browserUrl) {
+        const { path, params } = parseUrl(browserUrl);
+        this.#navigateToPath(path, params, { browserHistoryAction: "replace" });
+      }
+    }
   }
 
   #generateInitialRootState(rootDef: RouteDef): RootNavigationState<any> {
@@ -247,31 +303,16 @@ class RouterClass implements Router<any> {
     });
   };
 
-  #useRootBackHandler = () => {
-    //Note: We setup the back handler subscription lazily in render b/c it's important to start the subscription to the back handler as soon as possible so
-    //that components can subscribe to the BackHandler themselves and override the default behavior if desired
-
-    const hasSetup = useRef(false);
-    const rootGoBack = useRef(() => this.goBack());
-
-    if (!hasSetup.current && Platform.OS === "android") {
-      BackHandler.addEventListener("hardwareBackPress", rootGoBack.current);
-      hasSetup.current = true;
-    }
-
-    useEffect(() => {
-      const goBackUnsub = rootGoBack.current;
-      return () => {
-        BackHandler.removeEventListener("hardwareBackPress", goBackUnsub);
-      };
-    }, []);
-  };
-
   //NOTE: This is the root navigator
   public Navigator = () => {
     const navState = this.#navigationStateStore.useStore();
     const InnerNavigator = this.#InnerNavigator;
-    this.#useRootBackHandler();
+    this.#maybeSetupSubscriptions();
+    useEffect(() => {
+      return () => {
+        this.#tearDownSubscriptions();
+      };
+    }, []);
 
     return <InnerNavigator state={navState} path={[]} absoluteNavStatePath={[]} />;
   };
@@ -721,7 +762,7 @@ class RouterClass implements Router<any> {
 
   public goBack = () => {
     Keyboard.dismiss();
-    return this.#navigationStateStore.modifyImmutably((rootState) => {
+    const ret = this.#navigationStateStore.modifyImmutably((rootState) => {
       const focusedAbsPath = this.#getFocusedAbsoluteNavStatePath();
 
       const pathToGoBackIndex = _.findLastIndex(focusedAbsPath, (a) => typeof a === "number" && a !== 0);
@@ -740,10 +781,20 @@ class RouterClass implements Router<any> {
         }
       }
     });
+
+    if (ret && this.#history && Platform.OS === "web") {
+      this.#history.back();
+    }
+
+    return ret;
   };
 
-  #navigateToPath = (path: string[], params: Record<string, any>, opts?: NavigateOptions) => {
-    const { resetTouchedStackNavigators = true } = opts || {};
+  #navigateToPath = (
+    path: string[],
+    params: Record<string, any>,
+    opts?: NavigateOptions & { browserHistoryAction?: "push" | "none" | "replace" },
+  ) => {
+    const { resetTouchedStackNavigators = true, browserHistoryAction = "push" } = opts || {};
 
     if (this.#getDefAtPath(path).type !== "leaf") {
       throw new Error(
@@ -751,7 +802,7 @@ class RouterClass implements Router<any> {
       );
     }
 
-    this.#navigationStateStore.modifyImmutably((rootState) => {
+    const didChange = this.#navigationStateStore.modifyImmutably((rootState) => {
       let currParentState = rootState as RootNavigationState<any> | InnerNavigationState;
       for (let i = 0; i < path.length; i++) {
         const thisDef = this.#getDefAtPath(path.slice(0, i + 1));
@@ -795,6 +846,22 @@ class RouterClass implements Router<any> {
         }
       }
     });
+
+    if (!didChange) {
+      return;
+    }
+
+    if (Platform.OS === "web" && this.#history && browserHistoryAction !== "none") {
+      const url = "/" + this.#generateUrlFromPathArr(path, params);
+      if (browserHistoryAction === "push") {
+        this.#history.push(url);
+      } else if (browserHistoryAction === "replace") {
+        this.#history.replace(url);
+      } else {
+        ((a: never) => {})(browserHistoryAction);
+        throw new Error("Unreachable");
+      }
+    }
   };
 
   public navigate = (
@@ -807,7 +874,7 @@ class RouterClass implements Router<any> {
     return this.#navigateToPath(path, params, opts);
   };
 
-  public navigateToUrl = (url: string) => {
+  public navigateToUrl(url: string) {
     const v = this.validateUrl(url);
     if (!v.isValid) {
       throw new Error(v.errors.join("\n"));
@@ -816,7 +883,7 @@ class RouterClass implements Router<any> {
     const { path, params } = parseUrl(url);
 
     return this.#navigateToPath(path, params);
-  };
+  }
 
   public reset = () => {
     //TODO...
@@ -900,7 +967,11 @@ function absoluteNavStatePathToRegularPath(absNavStatePath: (string | number)[])
 
 function parseUrl(url: string) {
   const prefix = url.match(/^[^.]+?:\/\//) ? "http://example.com/" : "";
-  const { query, pathname } = urlParse(prefix + url);
+  let { query, pathname } = urlParse(prefix + url);
+
+  if (pathname.startsWith("/")) {
+    pathname = pathname.slice(1);
+  }
 
   return { path: pathname.split("/"), params: queryString.parse(query) };
 }
