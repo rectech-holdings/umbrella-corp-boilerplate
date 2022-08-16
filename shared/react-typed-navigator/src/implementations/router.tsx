@@ -139,9 +139,9 @@ class RouterClass implements Router<any> {
 
     if (Platform.OS === "web") {
       const currUrl = this.getFocusedUrl();
-      const browserUrl = window.location.pathname + window.location.search;
+      const browserUrl = (window.location.pathname + window.location.search).replace(/^\//, "");
       if (currUrl !== browserUrl) {
-        const { path, params } = parseUrl(browserUrl);
+        const { path, params } = parseUrl(browserUrl ? browserUrl : currUrl);
         this.#navigateToPath(path, params, { browserHistoryAction: "replace" });
       }
     }
@@ -854,6 +854,18 @@ class RouterClass implements Router<any> {
       { dryRun: true },
     );
 
+    if (Platform.OS === "web" && this.#history && browserHistoryAction !== "none") {
+      const url = "/" + this.#generateUrlFromPathArr(path, params);
+      if (browserHistoryAction === "push") {
+        this.#history.push(url);
+      } else if (browserHistoryAction === "replace") {
+        this.#history.replace(url);
+      } else {
+        ((a: never) => {})(browserHistoryAction);
+        throw new Error("Unreachable");
+      }
+    }
+
     if (!hasChanges) {
       return;
     }
@@ -861,29 +873,13 @@ class RouterClass implements Router<any> {
     const nextPath = absoluteNavStatePathToRegularPath(this.#getFocusedAbsoluteNavStatePath(nextState));
     const Leaf = this.#getComponentAtPath(nextPath, "leaf");
 
-    const performNavigation = () => {
-      this.#navigationStateStore.set(nextState);
-
-      if (Platform.OS === "web" && this.#history && browserHistoryAction !== "none") {
-        const url = "/" + this.#generateUrlFromPathArr(path, params);
-        if (browserHistoryAction === "push") {
-          this.#history.push(url);
-        } else if (browserHistoryAction === "replace") {
-          this.#history.replace(url);
-        } else {
-          ((a: never) => {})(browserHistoryAction);
-          throw new Error("Unreachable");
-        }
-      }
-    };
-
     //Some optimization on lazy components to defer state change until AFTER the lazy component has loaded. Reduces jank a bit.
     if (Leaf?.loadComponent && !Leaf.hasLoaded?.()) {
       Promise.race([Leaf.loadComponent(), new Promise((res) => setTimeout(res, 150))]).then(() => {
-        performNavigation();
+        this.#navigationStateStore.set(nextState);
       }, console.error);
     } else {
-      performNavigation();
+      this.#navigationStateStore.set(nextState);
     }
   };
 
@@ -1006,7 +1002,8 @@ function absoluteNavStatePathToRegularPath(absNavStatePath: (string | number)[])
 }
 
 function parseUrl(url: string) {
-  const prefix = url.match(/^[^.]+?:\/\//) ? "http://example.com/" : "";
+  const prefix = url.match(/^[^.]+?:\/\//) ? "" : "http://example.com/";
+
   let { query, pathname } = urlParse(prefix + url);
 
   if (pathname.startsWith("/")) {
