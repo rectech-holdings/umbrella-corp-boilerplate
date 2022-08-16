@@ -221,7 +221,12 @@ class RouterClass implements Router<any> {
   #getComponentAtPath(
     path: string[],
     type: "leaf" | "footer" | "header",
-  ): { (): JSX.Element; Header?: () => JSX.Element } | null;
+  ): {
+    (): JSX.Element;
+    Header?: () => JSX.Element;
+    loadComponent?: () => Promise<void>;
+    hasLoaded?: () => boolean;
+  } | null;
   #getComponentAtPath(path: string[], type: "wrapper"): ((a: { children: ReactNode }) => JSX.Element) | null;
   #getComponentAtPath(path: string[], type: "leaf" | "footer" | "header" | "wrapper"): any {
     const childDef = this.#getDefAtPath(path);
@@ -260,8 +265,7 @@ class RouterClass implements Router<any> {
     return Component;
   }
 
-  #getFocusedAbsoluteNavStatePath() {
-    const rootState = this.#navigationStateStore.get();
+  #getFocusedAbsoluteNavStatePath(rootState: RootNavigationState<any> = this.#navigationStateStore.get()) {
     let path: AbsNavStatePath = [];
     let currState: RootNavigationState<any> | InnerNavigationState = rootState;
     while (currState) {
@@ -762,7 +766,7 @@ class RouterClass implements Router<any> {
 
   public goBack = () => {
     Keyboard.dismiss();
-    const ret = this.#navigationStateStore.modifyImmutably((rootState) => {
+    const { hasChanges } = this.#navigationStateStore.modifyImmutably((rootState) => {
       const focusedAbsPath = this.#getFocusedAbsoluteNavStatePath();
 
       const pathToGoBackIndex = _.findLastIndex(focusedAbsPath, (a) => typeof a === "number" && a !== 0);
@@ -782,11 +786,11 @@ class RouterClass implements Router<any> {
       }
     });
 
-    if (ret && this.#history && Platform.OS === "web") {
+    if (hasChanges && this.#history && Platform.OS === "web") {
       this.#history.back();
     }
 
-    return ret;
+    return hasChanges;
   };
 
   #navigateToPath = (
@@ -802,65 +806,84 @@ class RouterClass implements Router<any> {
       );
     }
 
-    const didChange = this.#navigationStateStore.modifyImmutably((rootState) => {
-      let currParentState = rootState as RootNavigationState<any> | InnerNavigationState;
-      for (let i = 0; i < path.length; i++) {
-        const thisDef = this.#getDefAtPath(path.slice(0, i + 1));
-        const thisPath = path[i]!;
-        const theseParams = thisDef.params ? _.pick(params, Object.keys(thisDef.params)) : undefined;
+    const { hasChanges, nextState } = this.#navigationStateStore.modifyImmutably(
+      (rootState) => {
+        let currParentState = rootState as RootNavigationState<any> | InnerNavigationState;
+        for (let i = 0; i < path.length; i++) {
+          const thisDef = this.#getDefAtPath(path.slice(0, i + 1));
+          const thisPath = path[i]!;
+          const theseParams = thisDef.params ? _.pick(params, Object.keys(thisDef.params)) : undefined;
 
-        if ("stack" in currParentState) {
-          if (resetTouchedStackNavigators) {
-            currParentState.stack = currParentState.stack.slice(0, 1);
-            if (currParentState.stack[0]!.path !== thisPath) {
-              currParentState.stack.push(this.#generateInitialInnerState(thisDef, thisPath, params));
-            }
-          } else {
-            const existingPerfectMatchIndex = currParentState.stack.findIndex(
-              (a) => a.path === thisPath && _.isEqual(a.params, theseParams),
-            );
-
-            if (existingPerfectMatchIndex !== -1) {
-              currParentState.stack = currParentState.stack.slice(0, existingPerfectMatchIndex + 1);
+          if ("stack" in currParentState) {
+            if (resetTouchedStackNavigators) {
+              currParentState.stack = currParentState.stack.slice(0, 1);
+              if (currParentState.stack[0]!.path !== thisPath) {
+                currParentState.stack.push(this.#generateInitialInnerState(thisDef, thisPath, params));
+              }
             } else {
-              currParentState.stack.push(this.#generateInitialInnerState(thisDef, thisPath, params));
+              const existingPerfectMatchIndex = currParentState.stack.findIndex(
+                (a) => a.path === thisPath && _.isEqual(a.params, theseParams),
+              );
+
+              if (existingPerfectMatchIndex !== -1) {
+                currParentState.stack = currParentState.stack.slice(0, existingPerfectMatchIndex + 1);
+              } else {
+                currParentState.stack.push(this.#generateInitialInnerState(thisDef, thisPath, params));
+              }
             }
-          }
 
-          currParentState = currParentState.stack[currParentState.stack.length - 1] as any;
-        } else if ("switches" in currParentState) {
-          const existingSwitchIndex = currParentState.switches.findIndex((a) => a.path === thisPath);
-          if (existingSwitchIndex === -1) {
-            currParentState.switches.push(this.#generateInitialInnerState(thisDef, thisPath, params));
+            currParentState = currParentState.stack[currParentState.stack.length - 1] as any;
+          } else if ("switches" in currParentState) {
+            const existingSwitchIndex = currParentState.switches.findIndex((a) => a.path === thisPath);
+            if (existingSwitchIndex === -1) {
+              currParentState.switches.push(this.#generateInitialInnerState(thisDef, thisPath, params));
+            } else {
+              currParentState.switches[existingSwitchIndex]!.params = theseParams;
+            }
+
+            currParentState.focusedSwitchIndex = currParentState.switches.findIndex((a) => a.path === thisPath);
+            currParentState = currParentState.switches[currParentState.focusedSwitchIndex] as any;
+          } else if (currParentState.type === "leaf") {
+            throw new Error("Invalid leaf route!");
           } else {
-            currParentState.switches[existingSwitchIndex]!.params = theseParams;
+            ((a: never) => {})(currParentState);
+            throw new Error("Unreachable");
           }
-
-          currParentState.focusedSwitchIndex = currParentState.switches.findIndex((a) => a.path === thisPath);
-          currParentState = currParentState.switches[currParentState.focusedSwitchIndex] as any;
-        } else if (currParentState.type === "leaf") {
-          throw new Error("Invalid leaf route!");
-        } else {
-          ((a: never) => {})(currParentState);
-          throw new Error("Unreachable");
         }
-      }
-    });
+      },
+      { dryRun: true },
+    );
 
-    if (!didChange) {
+    if (!hasChanges) {
       return;
     }
 
-    if (Platform.OS === "web" && this.#history && browserHistoryAction !== "none") {
-      const url = "/" + this.#generateUrlFromPathArr(path, params);
-      if (browserHistoryAction === "push") {
-        this.#history.push(url);
-      } else if (browserHistoryAction === "replace") {
-        this.#history.replace(url);
-      } else {
-        ((a: never) => {})(browserHistoryAction);
-        throw new Error("Unreachable");
+    const nextPath = absoluteNavStatePathToRegularPath(this.#getFocusedAbsoluteNavStatePath(nextState));
+    const Leaf = this.#getComponentAtPath(nextPath, "leaf");
+
+    const performNavigation = () => {
+      this.#navigationStateStore.set(nextState);
+
+      if (Platform.OS === "web" && this.#history && browserHistoryAction !== "none") {
+        const url = "/" + this.#generateUrlFromPathArr(path, params);
+        if (browserHistoryAction === "push") {
+          this.#history.push(url);
+        } else if (browserHistoryAction === "replace") {
+          this.#history.replace(url);
+        } else {
+          ((a: never) => {})(browserHistoryAction);
+          throw new Error("Unreachable");
+        }
       }
+    };
+
+    //Some optimization on lazy components to defer state change until AFTER the lazy component has loaded. Reduces jank a bit.
+    if (Leaf?.loadComponent && !Leaf.hasLoaded?.()) {
+      Promise.race([Leaf.loadComponent(), new Promise((res) => setTimeout(res, 150))]).then(() => {
+        performNavigation();
+      }, console.error);
+    } else {
+      performNavigation();
     }
   };
 
@@ -890,19 +913,31 @@ class RouterClass implements Router<any> {
   };
 }
 
-export function lazy<T extends MultiTypeComponent>(a: () => Promise<{ default: T }>): T {
+type LazyComponent<T extends MultiTypeComponent> = T & {
+  loadComponent?: () => Promise<void>;
+  isLoaded: () => boolean;
+};
+
+export function lazy<T extends MultiTypeComponent>(component: () => Promise<{ default: T }>): LazyComponent<T> {
   let Component: any;
   let prom: any;
 
-  function Inner() {
-    if (!Component && !prom) {
-      prom = a().then((b) => {
+  const loadComponent = () => {
+    if (!prom) {
+      prom = component().then((b) => {
         Component = b.default;
         const compName = Component.name || Component.displayName;
         //@ts-ignore
         fn.displayName = compName ? "Lazy" + compName : "LazyComponent";
       });
+    }
 
+    return prom;
+  };
+
+  function Inner() {
+    if (!Component) {
+      loadComponent();
       throw prom;
     }
 
@@ -917,7 +952,12 @@ export function lazy<T extends MultiTypeComponent>(a: () => Promise<{ default: T
     );
   } as any as T;
 
-  return fn;
+  (fn as any).loadComponent = loadComponent;
+  (fn as any).hasLoaded = () => {
+    return !!Component;
+  };
+
+  return fn as any;
 }
 
 /**
