@@ -5,7 +5,7 @@ import { PATHS, goBack, useParams } from "../Router.js";
 export default function Tab1StackScreen() {
   const { someParam } = useParams(PATHS.MAIN.TAB_1.TAB_1_STACK_SCREEN);
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "red" }}>
       <Text>Tab 1 Stack Screen ({someParam})</Text>
       <Button
         onPress={() => {

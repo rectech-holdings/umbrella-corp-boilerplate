@@ -4,7 +4,7 @@ import { PATHS, navigate } from "../Router.js";
 
 export default function Login() {
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "pink" }}>
       <View style={{ flex: 1 }}>
         <Text>This is the Login Page</Text>
       </View>

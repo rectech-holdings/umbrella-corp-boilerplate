@@ -15,11 +15,11 @@ import { Navigator } from "./Router.js";
 
 export default function App() {
   return (
-    <StrictMode>
-      <Suspense>
-        <AppInner />
-      </Suspense>
-    </StrictMode>
+    // <StrictMode>
+    <Suspense>
+      <AppInner />
+    </Suspense>
+    // </StrictMode>
   );
 }
 

@@ -6,7 +6,8 @@
     "dev": "run-p dev:*",
     "dev:expo": "expo start --web",
     "dev:ts": "tsc -w --preserveWatchOutput",
-    "build-dev": "tsc"
+    "build-dev": "tsc",
+    "clean": "watchman watch-del-all && rm -rf $TMPDIR/metro-* && rm -rf $TMPDIR/react-native-packager-cache-*"
   },
   "dependencies": {
     "@rnx-kit/metro-config": "1.2.34",

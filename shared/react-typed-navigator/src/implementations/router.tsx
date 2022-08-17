@@ -330,7 +330,6 @@ class RouterClass implements Router<any> {
     absoluteNavStatePath: (string | number)[];
   }) => {
     const hasEverBeenFocused = this.#useAbsoluteNavStatePathHasEverBeenFocused(p.absoluteNavStatePath);
-    const isFocused = this.useIsFocused(p.absoluteNavStatePath);
 
     if (!hasEverBeenFocused) {
       return null;
@@ -359,11 +358,7 @@ class RouterClass implements Router<any> {
 
     const Provider = this.#AbsoluteNavStatePathContext.Provider;
 
-    return (
-      <Freeze freeze={!isFocused}>
-        <Provider value={p.absoluteNavStatePath}>{inner}</Provider>
-      </Freeze>
-    );
+    return <Provider value={p.absoluteNavStatePath}>{inner}</Provider>;
   };
 
   #InnerLeafNavigator = React.memo((p: { path: string[] }) => {
@@ -429,8 +424,9 @@ class RouterClass implements Router<any> {
                       ? "containedTransparentModal"
                       : "push"
                   }
+                  hideKeyboardOnSwipe={true}
+                  gestureEnabled={true}
                   onDismissed={(e) => {
-                    Keyboard.dismiss();
                     this.#navigationStateStore.modifyImmutably((rootState) => {
                       const parentState = getStateAtAbsPath(rootState, p.absoluteNavStatePath);
                       if (!parentState || !("stack" in parentState)) {
@@ -446,14 +442,16 @@ class RouterClass implements Router<any> {
                   }}
                   {...screenProps}
                 >
-                  {Header ? <Header /> : null}
-                  <View style={{ flex: 1 }}>
-                    <InnerNavigator
-                      state={thisNavigationState as any}
-                      path={thisRoutePath}
-                      absoluteNavStatePath={p.absoluteNavStatePath.concat("stack", i, thisNavigationState.path)}
-                    />
-                  </View>
+                  <Freeze freeze={i < p.state.stack.length - 2}>
+                    {Header ? <Header /> : null}
+                    <View style={{ flex: 1 }}>
+                      <InnerNavigator
+                        state={thisNavigationState as any}
+                        path={thisRoutePath}
+                        absoluteNavStatePath={p.absoluteNavStatePath.concat("stack", i, thisNavigationState.path)}
+                      />
+                    </View>
+                  </Freeze>
                 </Screen>
               );
             })}
@@ -486,18 +484,15 @@ class RouterClass implements Router<any> {
             {Header ? <Header /> : null}
             <ScreenContainer style={{ flex: 1 }}>
               {p.state.switches.map((thisNavigationState, i) => {
-                if (parentDef.keepChildrenMounted !== true && i !== focusedSwitchIndex) {
-                  return null;
-                }
-
                 //Here come the weird shenanigans...
                 let activityState: 0 | 1 | 2;
                 let zIndex: number;
 
                 if (Platform.OS === "ios") {
                   if (i === focusedSwitchIndex) {
-                    activityState = indexHasMounted[focusedSwitchIndex] ? 2 : 1;
-                    zIndex = indexHasMounted[focusedSwitchIndex] ? 1 : -1;
+                    const shouldDisplay = indexHasMounted[focusedSwitchIndex] || prevRawFocusedSwitchIndex === null;
+                    activityState = shouldDisplay ? 2 : 1;
+                    zIndex = shouldDisplay ? 1 : -1;
                   } else if (i === prevRawFocusedSwitchIndex) {
                     activityState = !indexHasMounted[focusedSwitchIndex] ? 1 : 0;
                     zIndex = !indexHasMounted[focusedSwitchIndex] ? 1 : -1;
@@ -508,6 +503,10 @@ class RouterClass implements Router<any> {
                 } else {
                   activityState = i === focusedSwitchIndex ? 2 : 0;
                   zIndex = i === focusedSwitchIndex ? 1 : -1;
+                }
+
+                if (parentDef.keepChildrenMounted !== true && activityState === 0) {
+                  return null;
                 }
 
                 const thisRoutePath = p.path.concat(thisNavigationState.path);
@@ -546,11 +545,13 @@ class RouterClass implements Router<any> {
                     ]}
                     {...screenProps}
                   >
-                    <InnerNavigator
-                      state={thisNavigationState as any}
-                      path={thisRoutePath}
-                      absoluteNavStatePath={p.absoluteNavStatePath.concat("switches", i, thisNavigationState.path)}
-                    />
+                    <Freeze freeze={activityState === 0}>
+                      <InnerNavigator
+                        state={thisNavigationState as any}
+                        path={thisRoutePath}
+                        absoluteNavStatePath={p.absoluteNavStatePath.concat("switches", i, thisNavigationState.path)}
+                      />
+                    </Freeze>
                   </Screen>
                 );
               })}
@@ -660,7 +661,7 @@ class RouterClass implements Router<any> {
     const componentPath = absoluteNavStatePathToRegularPath(componentAbsPath);
 
     if (!pathSatisfiesPathConstraint(componentPath, constraintPath)) {
-      throw new Error(`Cannot find params at path ${constraintPath}!`);
+      throw new Error(`Cannot find params at path ${constraintPath}! Current path is ${componentPath}`);
     }
 
     return this.#navigationStateStore.useStore(() => {
@@ -914,6 +915,10 @@ type LazyComponent<T extends MultiTypeComponent> = T & {
   isLoaded: () => boolean;
 };
 
+/**
+ * A custom `lazy` function used as an alternative to `React.lazy`. Let's us do some optimizations on routing to prevent
+ * some dropped frames and get around some Suspense errors we were seeing.
+ */
 export function lazy<T extends MultiTypeComponent>(component: () => Promise<{ default: T }>): LazyComponent<T> {
   let Component: any;
   let prom: any;
@@ -1002,6 +1007,10 @@ function absoluteNavStatePathToRegularPath(absNavStatePath: (string | number)[])
 }
 
 function parseUrl(url: string) {
+  if (url.startsWith("/")) {
+    url = url.slice(1);
+  }
+
   const prefix = url.match(/^[^.]+?:\/\//) ? "" : "http://example.com/";
 
   let { query, pathname } = urlParse(prefix + url);

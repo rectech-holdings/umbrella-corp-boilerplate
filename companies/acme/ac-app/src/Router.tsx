@@ -4,6 +4,7 @@ import { createRouter, lazy, createExtendingRouteDefinition, ParamTypes } from "
 
 const routeDef = createExtendingRouteDefinition(RN_APP_ROOT_ROUTE_DEFINITION, {
   type: "switch",
+  initialRoute: "MAIN",
   routes: {
     LOGIN: {
       type: "leaf",

@@ -3,7 +3,14 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { PATHS, navigate } from "../Router.js";
 export default function Tab1StackHome() {
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "blue" }}>
+      <Text>Tab 1</Text>
+      <Text>Tab 1</Text>
+      <Text>Tab 1</Text>
+      <Text>Tab 1</Text>
+      <Text>Tab 1</Text>
+      <Text>Tab 1</Text>
+      <Text>Tab 1</Text>
       <Text>Tab 1</Text>
       <Button
         onPress={() => {
