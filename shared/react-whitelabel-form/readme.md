@@ -52,4 +52,37 @@ const useAcmeForm = createUseWhitelabelForm({
     );
   }),
 });
+
+function App() {
+  const { Input, Select, store, useStoreValue } = useAcmeForm({
+    initState: { text: "", selectVal: { complexVal: 123 } },
+  });
+
+  return (
+    <form
+      onSubmit={async (e) => {
+        e.preventDefault();
+        if (!store.validate()) {
+          return;
+        }
+
+        const data = store.get();
+        //Do something with the data...
+
+        store.reset();
+      }}
+    >
+      <Select
+        options={[
+          { key: "1", label: "Option 1", value: { complexVal: 123 } },
+          { key: "2", label: "Option 2", value: { complexVal: 234 } },
+          { key: "3", label: "Option 3", value: { complexVal: 345 } },
+        ]}
+        field={(s) => s.selectVal}
+        label={"Select Option"}
+      />
+      <Input required field={(s) => s.text} label="Loan Id" />
+    </form>
+  );
+}
 ```
