@@ -14,7 +14,7 @@ export default function Tab1StackHome() {
       <Text>Tab 1</Text>
       <Button
         onPress={() => {
-          navigate(PATHS.MAIN.TAB_1.TAB_1_STACK_SCREEN, { someParam: 123 });
+          navigate(PATHS.main.tab_1.tab_1_stack_screen, { someParam: 123 });
         }}
         title="Push Stack Screen"
       />

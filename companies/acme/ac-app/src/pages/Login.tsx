@@ -11,7 +11,7 @@ export default function Login() {
 
       <Button
         onPress={() => {
-          navigate(PATHS.MAIN.TAB_1.TAB_1_STACK_HOME, {});
+          navigate(PATHS.main.tab_1.tab_1_stack_home, {});
         }}
         title="Click to Login"
       />

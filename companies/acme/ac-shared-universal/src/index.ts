@@ -9,19 +9,19 @@ import {
 export const RN_APP_ROOT_ROUTE_DEFINITION = createNonUIRouteDefinition({
   type: "switch",
   routes: {
-    LOGIN: {
+    login: {
       type: "leaf",
     },
-    MAIN: {
+    main: {
       type: "switch",
       routes: {
-        TAB_1: {
+        tab_1: {
           type: "stack",
           routes: {
-            TAB_1_STACK_HOME: {
+            tab_1_stack_home: {
               type: "leaf",
             },
-            TAB_1_STACK_SCREEN: {
+            tab_1_stack_screen: {
               type: "leaf",
               params: {
                 someParam: ParamTypes.number(),
@@ -29,7 +29,7 @@ export const RN_APP_ROOT_ROUTE_DEFINITION = createNonUIRouteDefinition({
             },
           },
         },
-        TAB_2: {
+        tab_2: {
           type: "leaf",
         },
       },

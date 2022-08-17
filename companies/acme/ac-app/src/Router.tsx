@@ -4,25 +4,31 @@ import { createRouter, lazy, createExtendingRouteDefinition, ParamTypes } from "
 
 const routeDef = createExtendingRouteDefinition(RN_APP_ROOT_ROUTE_DEFINITION, {
   type: "switch",
-  initialRoute: "MAIN",
+  initialRoute: "main",
+  ErrorHandler(p) {
+    return null;
+  },
+  NotFoundHandler(p) {
+    return null;
+  },
   routes: {
-    LOGIN: {
+    login: {
       type: "leaf",
       Component: lazy(() => import("./pages/Login.js")),
     },
-    MAIN: {
+    main: {
       type: "switch",
       keepChildrenMounted: true,
       Footer: lazy(() => import("./pages/MainTabBar.js")),
       routes: {
-        TAB_1: {
+        tab_1: {
           type: "stack",
           routes: {
-            TAB_1_STACK_HOME: {
+            tab_1_stack_home: {
               type: "leaf",
               Component: lazy(() => import("./pages/Tab1StackHome.js")),
             },
-            TAB_1_STACK_SCREEN: {
+            tab_1_stack_screen: {
               type: "leaf",
               Component: lazy(() => import("./pages/Tab1StackScreen.js")),
               params: {
@@ -31,7 +37,7 @@ const routeDef = createExtendingRouteDefinition(RN_APP_ROOT_ROUTE_DEFINITION, {
             },
           },
         },
-        TAB_2: {
+        tab_2: {
           type: "leaf",
           Component: lazy(() => import("./pages/Tab2.js")),
         },

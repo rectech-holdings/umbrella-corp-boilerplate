@@ -17,7 +17,7 @@ export default function MainTabBar() {
         <Button
           title="Tab 1"
           onPress={() => {
-            navigate(PATHS.MAIN.TAB_1.TAB_1_STACK_HOME, {});
+            navigate(PATHS.main.tab_1.tab_1_stack_home, {});
           }}
         />
       </View>
@@ -25,7 +25,7 @@ export default function MainTabBar() {
         <Button
           title="Tab 2"
           onPress={() => {
-            navigate(PATHS.MAIN.TAB_2, {});
+            navigate(PATHS.main.tab_2, {});
           }}
         />
       </View>

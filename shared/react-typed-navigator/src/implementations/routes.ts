@@ -32,5 +32,7 @@ export function createExtendingRouteDefinition<T1 extends RouteDefWithoutUI, T2 
   def1: T1,
   def2: T2,
 ): T2 {
+  //TODO: Verify that def2 does NOT have any extra routes not found in def1
+
   return def2;
 }

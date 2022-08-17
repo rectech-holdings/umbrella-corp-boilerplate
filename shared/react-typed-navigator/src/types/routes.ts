@@ -27,6 +27,8 @@ type CommonRouteDefWithUIOnly = {
   Wrapper?: MultiTypeComponentWithChildren;
   Header?: MultiTypeComponent;
   Footer?: MultiTypeComponent;
+  ErrorHandler?: (a: { error: unknown }) => ReactNode;
+  NotFoundHandler?: (a: { url: string; path: string[]; params?: ParamsTypeRecord }) => ReactNode;
 };
 
 type CommonRouteDefWithoutUI = {
