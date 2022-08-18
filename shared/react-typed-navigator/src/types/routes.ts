@@ -27,8 +27,8 @@ type CommonRouteDefWithUIOnly = {
   Wrapper?: MultiTypeComponentWithChildren;
   Header?: MultiTypeComponent;
   Footer?: MultiTypeComponent;
-  ErrorHandler?: (a: { error: unknown }) => ReactNode;
-  NotFoundHandler?: (a: { url: string; path: string[]; params?: ParamsTypeRecord }) => ReactNode;
+  ErrorHandler?: (a: { error: unknown }) => JSX.Element | null;
+  NotFoundHandler?: () => JSX.Element | null;
 };
 
 type CommonRouteDefWithoutUI = {
@@ -79,10 +79,7 @@ export type LeafRouteDef = Simplify<
 
 export type MultiTypeComponent<Props = {}> = ((a: Props) => ReactNode) | React.FC<Props> | React.Component<Props>;
 
-type MultiTypeComponentWithChildren =
-  | ((a: { children: ReactNode }) => ReactNode)
-  | React.FC<{ children: ReactNode }>
-  | React.Component<{ children: ReactNode }>;
+type MultiTypeComponentWithChildren = (a: { children: ReactNode }) => JSX.Element | null;
 
 export type LeafRouteDefWithoutUI = Simplify<Pick<LeafRouteDef, "type"> & CommonRouteDefWithoutUI>;
 export type LeafRouteDefWithUIOnly = Simplify<Pick<LeafRouteDef, "Component" | "type"> & CommonRouteDefWithUIOnly>;

@@ -1,4 +1,4 @@
-import { validateAndCleanInputParams, ParamTypesClass } from "./params.js";
+import { validateAndCleanInputParams, ParamTypesClass, ParamsTypeRecord } from "./params.js";
 import { PathObjResult, PathObjResultLeaf, UrlString } from "../types/path.js";
 import { Router, RouterOptions } from "../types/router.js";
 import { MultiTypeComponent, RouteDef, StackRouteDef, SwitchRouteDef } from "../types/routes.js";
@@ -53,11 +53,15 @@ class RouterClass implements Router<any> {
   #getDefAtPath = _.memoize(
     (pathArr: string[]) => {
       let retDef: RouteDef;
-      forEachRouteDefUsingPathArray(this.#rootDef, pathArr, (def, route) => {
-        if (!def) {
-          throw new Error(`Unable to find route definitition ${route} for the path ${pathArr.join("/")}`);
+      forEachRouteDefUsingPathArray(this.#rootDef, pathArr, (a) => {
+        if (!a.thisDef) {
+          throw new NotFoundError({
+            msg: `Unable to find route definitition for the path ${pathArr.join("/")}`,
+            path: pathArr,
+          });
+        } else {
+          retDef = a.thisDef;
         }
-        retDef = def;
       });
       return retDef!;
     },
@@ -68,13 +72,16 @@ class RouterClass implements Router<any> {
   #getAccumulatedParamTypesAtPath = _.memoize(
     (pathArr: string[], throwOnNotFound: boolean): Record<string, any> => {
       const paramTypes: Record<string, ParamTypesClass<any, any, any>> = {};
-      forEachRouteDefUsingPathArray(this.#rootDef, pathArr, (def, route) => {
-        if (!def) {
+      forEachRouteDefUsingPathArray(this.#rootDef, pathArr, (a) => {
+        if (!a.thisDef) {
           if (throwOnNotFound) {
-            throw new Error(`Unable to find route definitition ${route} for the path ${pathArr.join("/")}`);
+            throw new NotFoundError({
+              msg: `Unable to find route definitition for the path ${pathArr.join("/")}`,
+              path: pathArr,
+            });
           }
         } else {
-          Object.assign(paramTypes, def.params || {});
+          Object.assign(paramTypes, a.thisDef.params || {});
         }
       });
 
@@ -133,9 +140,13 @@ class RouterClass implements Router<any> {
 
   constructor(rootDef: RouteDef, opts?: RouterOptions) {
     this.#rootDef = rootDef;
-    this.#navigationStateStore = createZustandStore(
-      opts?.initialNavigationState || this.#generateInitialRootState(rootDef),
-    );
+    if (opts?.initialNavigationState) {
+      //TODO: Validate opts?.initialNavigationState and clear it with warning if invalid
+    }
+
+    const initState = opts?.initialNavigationState || this.#generateInitialRootState(rootDef);
+
+    this.#navigationStateStore = createZustandStore(initState);
 
     if (Platform.OS === "web") {
       const currUrl = this.getFocusedUrl();
@@ -180,11 +191,11 @@ class RouterClass implements Router<any> {
     const params = def.params ? _.pick(allAccumulatedParams, Object.keys(def.params)) : undefined;
 
     if (def.type === "leaf") {
-      return {
+      return omitUndefined({
         type: "leaf",
         path,
         params,
-      };
+      });
     } else if ("routes" in def) {
       const initialRoute = def.initialRoute || Object.keys(def.routes)[0]!;
       const initialInnerState = this.#generateInitialInnerState(
@@ -194,20 +205,20 @@ class RouterClass implements Router<any> {
       );
 
       if (def.type == "stack") {
-        return {
+        return omitUndefined({
           type: "stack",
           path,
           params,
           stack: [initialInnerState],
-        };
+        });
       } else if (def.type === "switch") {
-        return {
+        return omitUndefined({
           type: "switch",
           path,
           params,
           focusedSwitchIndex: 0,
           switches: [initialInnerState],
-        };
+        });
       } else {
         ((a: never) => {})(def);
         throw new Error("Unreachable");
@@ -227,43 +238,76 @@ class RouterClass implements Router<any> {
     loadComponent?: () => Promise<void>;
     hasLoaded?: () => boolean;
   } | null;
-  #getComponentAtPath(path: string[], type: "wrapper"): ((a: { children: ReactNode }) => JSX.Element) | null;
-  #getComponentAtPath(path: string[], type: "leaf" | "footer" | "header" | "wrapper"): any {
-    const childDef = this.#getDefAtPath(path);
-
-    let Component: any;
-    if (type === "leaf") {
-      if ("Component" in childDef && childDef.Component) {
-        Component = assertIsComponent(
-          childDef.Component,
-          "component was defined on a route but is not a react component!" + path.join("/"),
-        );
-      }
-    } else if (type === "footer") {
-      if ("Footer" in childDef && childDef.Footer) {
-        Component = assertIsComponent(
-          childDef.Footer,
-          "Footer was defined on route but is not a react component! " + path.join("/"),
-        );
-      }
-    } else if (type === "wrapper") {
-      if (childDef.Wrapper) {
-        Component = assertIsComponent(
-          childDef.Wrapper,
-          "Wrapper was defined on a route but is not a react component! " + path.join("/"),
-        );
-      }
-    } else if (type === "header") {
-      if (childDef.Header) {
-        Component = assertIsComponent(
-          childDef.Header,
-          "header was defined on a route but is not a react component! " + path.join("/"),
-        );
-      }
-    }
-
-    return Component;
+  #getComponentAtPath(path: string[], type: "wrappingComponents"): ((a: { children: ReactNode }) => JSX.Element) | null;
+  #getComponentAtPath(path: string[], type: "leaf" | "footer" | "header" | "wrappingComponents"): any {
+    return this.#getComponentAtPathMemoized(path, type);
   }
+
+  #getComponentAtPathMemoized = _.memoize(
+    (path: string[], type: "leaf" | "footer" | "header" | "wrappingComponents"): any => {
+      const childDef = this.#getDefAtPath(path);
+
+      let Component: any;
+      if (type === "leaf") {
+        if ("Component" in childDef && childDef.Component) {
+          Component = assertIsComponent(
+            childDef.Component,
+            "component was defined on a route but is not a react component!" + path.join("/"),
+          );
+        }
+      } else if (type === "footer") {
+        if ("Footer" in childDef && childDef.Footer) {
+          Component = assertIsComponent(
+            childDef.Footer,
+            "Footer was defined on route but is not a react component! " + path.join("/"),
+          );
+        }
+      } else if (type === "wrappingComponents") {
+        const Wrapper = childDef.Wrapper
+          ? assertIsComponent(
+              childDef.Wrapper,
+              "Wrapper was defined on a route but is not a react component! " + path.join("/"),
+            )
+          : React.Fragment;
+
+        const ErrorHandler = childDef.ErrorHandler
+          ? assertIsComponent(
+              childDef.ErrorHandler,
+              "ErrorHandler was defined on a route but is not a react component! " + path.join("/"),
+            )
+          : null;
+
+        if (ErrorHandler) {
+          Component = class InnerErrorHandler extends React.Component<{ children: ReactNode }> {
+            state: { error?: unknown } = {};
+            componentDidCatch(error: unknown) {
+              this.setState({ error });
+            }
+
+            render() {
+              if (this.state.error && ErrorHandler) {
+                return <ErrorHandler error={this.state.error} />;
+              }
+
+              return <Wrapper>{this.props.children}</Wrapper>;
+            }
+          };
+        } else {
+          Component = Wrapper;
+        }
+      } else if (type === "header") {
+        if (childDef.Header) {
+          Component = assertIsComponent(
+            childDef.Header,
+            "header was defined on a route but is not a react component! " + path.join("/"),
+          );
+        }
+      }
+
+      return Component;
+    },
+    (a, b) => a.join("") + b,
+  );
 
   #getFocusedAbsoluteNavStatePath(rootState: RootNavigationState<any> = this.#navigationStateStore.get()) {
     let path: AbsNavStatePath = [];
@@ -335,6 +379,17 @@ class RouterClass implements Router<any> {
       return null;
     }
 
+    if (p.state.shouldRenderNotFoundError) {
+      const { NotFoundHandler } = this.#getDefAtPath(p.path);
+      if (!NotFoundHandler) {
+        throw new Error(
+          "Error in router internals. Should not set state property `shouldRenderNotFoundError` unless a NotFoundHandler is also defined",
+        );
+      }
+
+      return <NotFoundHandler />;
+    }
+
     let inner: any;
 
     const InnerLeafNavigator = this.#InnerLeafNavigator;
@@ -370,7 +425,7 @@ class RouterClass implements Router<any> {
         throw new Error(`Header at ${p.path.join("/")} does not return a valid react component!`);
       }
     }
-    const Wrapper = this.#getComponentAtPath(p.path, "wrapper") || React.Fragment;
+    const Wrapper = this.#getComponentAtPath(p.path, "wrappingComponents") || React.Fragment;
 
     if (!Leaf) {
       throw new Error("No component defined on leaf route definition!");
@@ -388,7 +443,7 @@ class RouterClass implements Router<any> {
 
   #InnerStackNavigator = React.memo(
     (p: { path: string[]; state: StackNavigationState<any, any, any>; absoluteNavStatePath: (string | number)[] }) => {
-      const Wrapper = this.#getComponentAtPath(p.path, "wrapper") || React.Fragment;
+      const Wrapper = this.#getComponentAtPath(p.path, "wrappingComponents") || React.Fragment;
 
       const parentDef = this.#getDefAtPath(p.path)! as StackRouteDef;
 
@@ -464,12 +519,13 @@ class RouterClass implements Router<any> {
 
   #InnerSwitchNavigator = React.memo(
     (p: { path: string[]; state: SwitchNavigationState<any, any, any>; absoluteNavStatePath: (string | number)[] }) => {
-      const Wrapper = this.#getComponentAtPath(p.path, "wrapper") || React.Fragment;
+      const Wrapper = this.#getComponentAtPath(p.path, "wrappingComponents") || React.Fragment;
       const Header = this.#getComponentAtPath(p.path, "header");
       const Footer = this.#getComponentAtPath(p.path, "footer");
 
       //Gotta do some weird shenanigans to make the transition smooth and not show a switch page too soon (before it has had time to render at least once)
       //Hopefully will be fixed by React Native Screens when this issue gets resolved: https://github.com/software-mansion/react-native-screens/issues/1251
+      //TODO: The web could also use this optimization. There's a bit of a flash. Could probably just be a timeout though
       const focusedSwitchIndex = p.state.focusedSwitchIndex;
       const prevRawFocusedSwitchIndex = usePreviousValue(focusedSwitchIndex);
       const [indexHasMounted, setIndexHasMounted] = useState<Record<number, true>>({});
@@ -597,7 +653,11 @@ class RouterClass implements Router<any> {
     const pr = validateAndCleanInputParams(inputParams, paramTypes);
 
     if (!pr.isValid) {
-      throw new Error(pr.errors.join("\n"));
+      throw new NotFoundError({
+        msg: pr.errors.join("\n"),
+        path: pathArr,
+        params: inputParams,
+      });
     }
 
     const { params: cleanedParams } = pr;
@@ -616,9 +676,9 @@ class RouterClass implements Router<any> {
 
     const errors: string[] = [];
 
-    forEachRouteDefUsingPathArray(this.#rootDef, path, (def, route) => {
-      if (!def) {
-        errors.push(`Unable to find route ${route} for the url path ${path.join("/")}`);
+    forEachRouteDefUsingPathArray(this.#rootDef, path, (a) => {
+      if (!a.thisDef) {
+        errors.push(`Unable to find route for the url path ${path.join("/")}`);
       }
     });
 
@@ -639,19 +699,6 @@ class RouterClass implements Router<any> {
     return this.#generateUrlFromPathArr(pathArr, inputParams);
   };
 
-  #assertPathConstraintIsSatisfied = (
-    pathConstraint: PathObjResult<any, any, any, any, any, any, any, any>,
-    path: string[],
-  ) => {
-    const constraintPathStr = this.#getPathArrFromPathObjResult(pathConstraint).join("/");
-    const pathStr = path.join("/");
-    if (pathStr !== constraintPathStr) {
-      throw new Error(
-        `Invalid path accessed! The path ${pathStr} does not satisfy the required path ${constraintPathStr}`,
-      );
-    }
-  };
-
   public useParams = (
     pathConstraint: PathObjResult<any, any, any, any, any, any, any, any>,
     selector?: (a: Record<string, any>) => any,
@@ -661,7 +708,10 @@ class RouterClass implements Router<any> {
     const componentPath = absoluteNavStatePathToRegularPath(componentAbsPath);
 
     if (!pathSatisfiesPathConstraint(componentPath, constraintPath)) {
-      throw new Error(`Cannot find params at path ${constraintPath}! Current path is ${componentPath}`);
+      throw new NotFoundError({
+        msg: `Cannot find params at path ${constraintPath}! Current path is ${componentPath}`,
+        path: componentPath,
+      });
     }
 
     return this.#navigationStateStore.useStore(() => {
@@ -685,13 +735,21 @@ class RouterClass implements Router<any> {
           const theseParamTypes = this.#getDefAtPath(thisRegularPath).params;
 
           if (!theseParamTypes) {
-            throw new Error("No param types found for route! " + thisRegularPath);
+            throw new NotFoundError({
+              msg: "No param types found for route! " + thisRegularPath,
+              path: absoluteNavStatePathToRegularPath(navStatePath),
+              params: { ...accumulatedParams, ...val.params },
+            });
           }
 
           const pr = validateAndCleanInputParams(val.params || {}, theseParamTypes);
 
           if (!pr.isValid) {
-            throw new Error(pr.errors.join("\n"));
+            throw new NotFoundError({
+              msg: pr.errors.join("\n"),
+              path: absoluteNavStatePathToRegularPath(navStatePath),
+              params: { ...accumulatedParams, ...val.params },
+            });
           }
 
           Object.assign(accumulatedParams, pr.params);
@@ -706,8 +764,15 @@ class RouterClass implements Router<any> {
     const absPath = this.#getFocusedAbsoluteNavStatePath();
 
     const focusedPath = absoluteNavStatePathToRegularPath(absPath);
+    const constraintPathStr = this.#getPathArrFromPathObjResult(pathConstraint).join("/");
 
-    this.#assertPathConstraintIsSatisfied(pathConstraint, focusedPath);
+    const pathStr = focusedPath.join("/");
+    if (pathStr !== constraintPathStr) {
+      throw new Error(
+        `Invalid path accessed! The currentpath ${pathStr} does not satisfy the required path ${constraintPathStr}`,
+      );
+    }
+
     return this.#getAccumulatedParamsAtAbsoluteNavStatePath(absPath);
   };
 
@@ -794,20 +859,12 @@ class RouterClass implements Router<any> {
     return hasChanges;
   };
 
-  #navigateToPath = (
+  #modifyStateForNavigateToPath(
     path: string[],
     params: Record<string, any>,
-    opts?: NavigateOptions & { browserHistoryAction?: "push" | "none" | "replace" },
-  ) => {
-    const { resetTouchedStackNavigators = true, browserHistoryAction = "push" } = opts || {};
-
-    if (this.#getDefAtPath(path).type !== "leaf") {
-      throw new Error(
-        `Unable to navigate to non leaf path ${path.join("/")}! Make sure you completely specify the path.`,
-      );
-    }
-
-    const { hasChanges, nextState } = this.#navigationStateStore.modifyImmutably(
+    opts: { resetTouchedStackNavigators: boolean; isModifyingForNotFoundError: boolean },
+  ) {
+    return this.#navigationStateStore.modifyImmutably(
       (rootState) => {
         let currParentState = rootState as RootNavigationState<any> | InnerNavigationState;
         for (let i = 0; i < path.length; i++) {
@@ -816,7 +873,7 @@ class RouterClass implements Router<any> {
           const theseParams = thisDef.params ? _.pick(params, Object.keys(thisDef.params)) : undefined;
 
           if ("stack" in currParentState) {
-            if (resetTouchedStackNavigators) {
+            if (opts.resetTouchedStackNavigators) {
               currParentState.stack = currParentState.stack.slice(0, 1);
               if (currParentState.stack[0]!.path !== thisPath) {
                 currParentState.stack.push(this.#generateInitialInnerState(thisDef, thisPath, params));
@@ -851,11 +908,74 @@ class RouterClass implements Router<any> {
             throw new Error("Unreachable");
           }
         }
+        if (opts.isModifyingForNotFoundError) {
+          //Set shouldRenderNotFoundError on the terminal state if there was a not found error
+          currParentState.shouldRenderNotFoundError = true;
+        } else {
+          //After a successful navigate like this, ensure there's no lingering `shouldRenderNotFoundError` properties anywhere in the state
+          traverse(rootState, (obj) => {
+            if (obj && typeof obj === "object" && "shouldRenderNotFoundError" in obj) {
+              delete obj["shouldRenderNotFoundError"];
+            }
+          });
+        }
       },
       { dryRun: true },
     );
+  }
 
-    if (Platform.OS === "web" && this.#history && browserHistoryAction !== "none") {
+  #navigateToPath = (path: string[], params: Record<string, any>, opts?: NavigateToPathOpts) => {
+    const { resetTouchedStackNavigators = true, browserHistoryAction = "push" } = opts || {};
+
+    let ret: { hasChanges: boolean; nextState: RootNavigationState<any> }, error: any;
+    try {
+      if (this.#getDefAtPath(path).type !== "leaf") {
+        throw new NotFoundError({
+          msg: `Unable to navigate to non leaf path ${path.join("/")}! Make sure you completely specify the path.`,
+          path,
+          params,
+        });
+      }
+
+      ret = this.#modifyStateForNavigateToPath(path, params, {
+        resetTouchedStackNavigators,
+        isModifyingForNotFoundError: false,
+      });
+    } catch (e) {
+      error = e;
+    }
+
+    if (error) {
+      if (error instanceof NotFoundError) {
+        const info: ForEachRouteDefCallbackVal[] = [];
+        forEachRouteDefUsingPathArray(this.#rootDef, error.path, (a) => (a.thisDef ? info.push(a) : null));
+
+        const notFoundHandlerInfo = info.reverse().find((a) => a.thisDef.NotFoundHandler);
+
+        if (!notFoundHandlerInfo) {
+          throw error;
+        } else {
+          ret = this.#modifyStateForNavigateToPath(
+            notFoundHandlerInfo.thisPath,
+            {},
+            { resetTouchedStackNavigators, isModifyingForNotFoundError: true },
+          );
+        }
+      } else {
+        throw error;
+      }
+    }
+
+    const { hasChanges, nextState } = ret!;
+
+    if (!hasChanges) {
+      return;
+    }
+
+    const nextPath = absoluteNavStatePathToRegularPath(this.#getFocusedAbsoluteNavStatePath(nextState));
+    const Leaf = this.#getComponentAtPath(nextPath, "leaf");
+
+    if (!error && Platform.OS === "web" && this.#history && browserHistoryAction !== "none") {
       const url = "/" + this.#generateUrlFromPathArr(path, params);
       if (browserHistoryAction === "push") {
         this.#history.push(url);
@@ -867,15 +987,8 @@ class RouterClass implements Router<any> {
       }
     }
 
-    if (!hasChanges) {
-      return;
-    }
-
-    const nextPath = absoluteNavStatePathToRegularPath(this.#getFocusedAbsoluteNavStatePath(nextState));
-    const Leaf = this.#getComponentAtPath(nextPath, "leaf");
-
     //Some optimization on lazy components to defer state change until AFTER the lazy component has loaded. Reduces jank a bit.
-    if (Leaf?.loadComponent && !Leaf.hasLoaded?.()) {
+    if (Leaf && Leaf.loadComponent && !Leaf.hasLoaded?.()) {
       Promise.race([Leaf.loadComponent(), new Promise((res) => setTimeout(res, 150))]).then(() => {
         this.#navigationStateStore.set(nextState);
       }, console.error);
@@ -894,7 +1007,7 @@ class RouterClass implements Router<any> {
     return this.#navigateToPath(path, params, opts);
   };
 
-  public navigateToUrl(url: string) {
+  public navigateToUrl(url: string, opts?: NavigateOptions) {
     const v = this.validateUrl(url);
     if (!v.isValid) {
       throw new Error(v.errors.join("\n"));
@@ -902,7 +1015,7 @@ class RouterClass implements Router<any> {
 
     const { path, params } = parseUrl(url);
 
-    return this.#navigateToPath(path, params);
+    return this.#navigateToPath(path, params, opts);
   }
 
   public reset = () => {
@@ -961,27 +1074,27 @@ export function lazy<T extends MultiTypeComponent>(component: () => Promise<{ de
   return fn as any;
 }
 
+type ForEachRouteDefCallbackVal = { thisDef: RouteDef; thisRouteName: string; thisPath: string[] };
+
 /**
  * Iterates through the route definition with the given path, calling `process` for each route definition from root to leaf
  */
 function forEachRouteDefUsingPathArray(
   rootDef: RouteDef,
   pathArr: string[],
-  processFn: (val: RouteDef | null, routeName: string) => void,
+  processFn: (a: ForEachRouteDefCallbackVal | { thisDef: null; thisPath: string[] }) => void,
 ) {
-  processFn(rootDef, "");
+  processFn({ thisDef: rootDef, thisRouteName: "", thisPath: [] });
 
   let currDef: RouteDef | null = rootDef;
-  const arr = [...pathArr];
-  while (arr.length) {
-    const route = arr.shift()!;
+  for (let i = 0; i < pathArr.length; i++) {
+    const route = pathArr[i];
+    const thisPath = pathArr.slice(0, i + 1);
     if (currDef && route && "routes" in currDef && currDef.routes?.[route as any]) {
       currDef = currDef.routes[route as any] as any;
+      processFn({ thisDef: currDef!, thisRouteName: route, thisPath });
     } else {
-      currDef = null;
-    }
-    processFn(currDef, route);
-    if (!currDef) {
+      processFn({ thisDef: null, thisPath });
       break;
     }
   }
@@ -1036,3 +1149,30 @@ function getStateAtAbsPath(state: RootNavigationState<any>, path: (string | numb
 function pathSatisfiesPathConstraint(path: (string | number)[], pathConstraint: (string | number)[]) {
   return _.isEqual(path, pathConstraint.slice(0, path.length));
 }
+
+class NotFoundError extends Error {
+  path: string[];
+  params?: ParamsTypeRecord;
+
+  constructor(a: { msg: string; path: string[]; params?: ParamsTypeRecord }) {
+    super(a.msg);
+    this.path = a.path;
+    this.params = a.params;
+  }
+}
+
+function omitUndefined<T extends Record<string, any>>(obj: T): T {
+  return _.omitBy(obj, _.isUndefined) as any;
+}
+
+function traverse(jsonObj: any, fn: (val: any) => any) {
+  fn(jsonObj);
+
+  if (jsonObj !== null && typeof jsonObj == "object") {
+    Object.entries(jsonObj).forEach(([key, value]) => {
+      traverse(value, fn);
+    });
+  }
+}
+
+type NavigateToPathOpts = NavigateOptions & { browserHistoryAction?: "push" | "none" | "replace" };

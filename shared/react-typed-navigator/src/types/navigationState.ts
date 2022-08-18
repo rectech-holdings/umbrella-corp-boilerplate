@@ -14,6 +14,7 @@ export type StackNavigationState<
   type: "stack";
   path: K;
   params?: ParamsType extends ParamsTypeRecord ? ParamsValueRecord<ParamsType> : undefined;
+  shouldRenderNotFoundError?: true;
   stack: InnerNavigationStateRecord<RouteRecord>[];
 };
 
@@ -25,6 +26,7 @@ export type SwitchNavigationState<
   type: "switch";
   path: K;
   params?: ParamsType extends ParamsTypeRecord ? ParamsValueRecord<ParamsType> : undefined;
+  shouldRenderNotFoundError?: true;
   focusedSwitchIndex: number;
   switches: InnerNavigationStateRecord<RouteRecord>[];
 };
@@ -32,6 +34,7 @@ export type SwitchNavigationState<
 export type LeafNavigationState<K extends PropertyKey, ParamsType extends ParamsTypeRecord | undefined> = {
   type: "leaf";
   path: K;
+  shouldRenderNotFoundError?: true;
   params?: ParamsType extends ParamsTypeRecord ? ParamsValueRecord<ParamsType> : undefined;
 };
 
@@ -52,11 +55,13 @@ export type RootNavigationState<T extends RouteDef> = T extends SwitchRouteDef
   ? {
       type: "root-switch";
       focusedSwitchIndex: number;
+      shouldRenderNotFoundError?: true;
       switches: InnerNavigationStateRecord<T["routes"]>[];
     }
   : T extends StackRouteDef
   ? {
       type: "root-stack";
+      shouldRenderNotFoundError?: true;
       stack: InnerNavigationStateRecord<T["routes"]>[];
     }
   : never;

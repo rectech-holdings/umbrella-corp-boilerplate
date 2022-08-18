@@ -1,4 +1,5 @@
 import { RN_APP_ROOT_ROUTE_DEFINITION } from "ac-shared-universal";
+import { View, Text } from "react-native";
 
 import { createRouter, lazy, createExtendingRouteDefinition, ParamTypes } from "react-typed-navigator";
 
@@ -6,10 +7,18 @@ const routeDef = createExtendingRouteDefinition(RN_APP_ROOT_ROUTE_DEFINITION, {
   type: "switch",
   initialRoute: "main",
   ErrorHandler(p) {
-    return null;
+    return (
+      <View style={{ flex: 1 }}>
+        <Text>This is the error handler</Text>
+      </View>
+    );
   },
-  NotFoundHandler(p) {
-    return null;
+  NotFoundHandler() {
+    return (
+      <View style={{ flex: 1 }}>
+        <Text>This is the root NotFoundHandler</Text>
+      </View>
+    );
   },
   routes: {
     login: {
@@ -23,6 +32,13 @@ const routeDef = createExtendingRouteDefinition(RN_APP_ROOT_ROUTE_DEFINITION, {
       routes: {
         tab_1: {
           type: "stack",
+          NotFoundHandler() {
+            return (
+              <View style={{ flex: 1 }}>
+                <Text>This is an inner NotFoundHandler</Text>
+              </View>
+            );
+          },
           routes: {
             tab_1_stack_home: {
               type: "leaf",

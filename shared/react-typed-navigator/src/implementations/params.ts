@@ -82,7 +82,12 @@ function validateAndCleanParams(
     let val = validateType === "output" ? params[k] : params[k] ?? dft;
 
     if (tp === "number") {
-      val = parseInt(val);
+      const parsed = parseInt(val);
+      if (!isNaN(parsed)) {
+        val = parsed;
+      } else {
+        errors.push(`Value ${val} for param "${k}" is not required numeric type`);
+      }
     }
 
     const matchesType = tp === "enum" ? !!eOpts.find((a) => a === val) : typeof val === tp;
