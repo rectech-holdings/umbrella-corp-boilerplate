@@ -1,21 +1,12 @@
 import { validateAndCleanInputParams, ParamTypesClass, ParamsTypeRecord } from "./params.js";
 import { PathObjResult, PathObjResultLeaf, UrlString } from "../types/path.js";
-import { Router, RouterOptions } from "../types/router.js";
+import { LinkProps, Router, RouterOptions } from "../types/router.js";
 import { MultiTypeComponent, RouteDef, StackRouteDef, SwitchRouteDef } from "../types/routes.js";
 import { dequal } from "dequal/lite";
 import urlParse from "url-parse";
 import useEvent from "use-event-callback";
 import _ from "lodash";
-import React, {
-  createContext,
-  ReactNode,
-  Suspense,
-  useContext,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { createContext, ReactNode, Suspense, useContext, useEffect, useRef, useState } from "react";
 import {
   AbsNavStatePath,
   InnerNavigationState,
@@ -37,9 +28,12 @@ import {
   ScreenContainer,
   ScreenStack,
   StyleSheet,
+  Text,
+  TouchableOpacity,
   View,
 } from "./primitives";
 import { Freeze } from "../utils/react-freeze.js";
+import type { TextProps, TouchableOpacityProps } from "react-native";
 
 export function createRouter<T extends RouteDef>(rootDefinition: T, opts?: RouterOptions): Router<T> {
   const thisRouter: Router<any> = new RouterClass(rootDefinition, opts);
@@ -349,6 +343,91 @@ class RouterClass implements Router<any> {
       }
       return hasEverBeenFocused.current;
     });
+  };
+
+  public InlineLink = (
+    a: {
+      children: ReactNode;
+      path: PathObjResultLeaf<any, any, any, any, any, any, any, any>;
+      params: Record<string, any>;
+    } & TextProps &
+      LinkProps,
+  ) => {
+    const { children, path, params, hrefLang, media, rel, target, referrerPolicy, ...rest } = a;
+
+    const platformProps =
+      Platform.OS === "web"
+        ? { href: "/" + this.generateUrl(path, params), hrefLang, media, rel, target, referrerPolicy }
+        : {
+            onPress: () => {
+              this.navigate(path, params);
+            },
+          };
+
+    return (
+      <Text accessibilityRole="link" {...platformProps} {...rest}>
+        {children}
+      </Text>
+    );
+  };
+
+  public BlockLink = (
+    a: {
+      children: ReactNode;
+      path: any;
+      params: any;
+    } & Omit<TouchableOpacityProps, "onPress"> & { onPress?: () => void } & LinkProps,
+  ) => {
+    const { children, path, params, hrefLang, media, referrerPolicy, rel, target, ...rest } = a;
+
+    const { onPress, accessibilityRole, activeOpacity, ...restTouchableProps } = rest;
+
+    const webLink: any =
+      Platform.OS === "web" ? (
+        <a
+          //Expand the link to fill it's container. See: https://css-tricks.com/a-complete-guide-to-links-and-buttons/#aa-links-around-bigger-chunks-of-content
+          style={{ position: "absolute", top: 0, right: 0, left: 0, bottom: 0 }}
+          onClick={(e) => {
+            onPress?.();
+
+            if (
+              //Use same logic as react-router here...
+              !e.defaultPrevented &&
+              e.button === 0 && //Ignore non-left clicks
+              (!target || target === "_self") && //Ignore if target is set
+              !(e.metaKey || e.altKey || e.ctrlKey || e.shiftKey) //Ignore if click modifiers
+            ) {
+              e.preventDefault();
+              this.navigate(path, params);
+            }
+          }}
+          href={"/" + this.generateUrl(path, params)}
+          hrefLang={hrefLang}
+          media={media}
+          referrerPolicy={referrerPolicy}
+          rel={rel}
+          target={target}
+        />
+      ) : null;
+
+    return (
+      <TouchableOpacity
+        activeOpacity={activeOpacity ?? 1}
+        accessibilityRole={accessibilityRole ?? "link"}
+        onPress={
+          Platform.OS === "web"
+            ? undefined
+            : () => {
+                onPress?.();
+                this.navigate(path, params);
+              }
+        }
+        {...restTouchableProps}
+      >
+        {webLink}
+        {children}
+      </TouchableOpacity>
+    );
   };
 
   //NOTE: This is the root navigator

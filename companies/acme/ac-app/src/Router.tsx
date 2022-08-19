@@ -78,4 +78,6 @@ export const {
   subscribeToFocusedUrl,
   useFocusedUrl,
   validateUrl,
+  InlineLink,
+  BlockLink,
 } = createRouter(routeDef);

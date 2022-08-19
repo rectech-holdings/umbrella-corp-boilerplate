@@ -1,6 +1,6 @@
 import { View, Button, Text } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { PATHS, navigate } from "../Router.js";
+import { PATHS, navigate, BlockLink } from "../Router.js";
 export default function MainTabBar() {
   const insets = useSafeAreaInsets();
   return (
@@ -14,20 +14,14 @@ export default function MainTabBar() {
       }}
     >
       <View style={{ flex: 1 }}>
-        <Button
-          title="Tab 1"
-          onPress={() => {
-            navigate(PATHS.main.tab_1.tab_1_stack_home, {});
-          }}
-        />
+        <BlockLink style={{ height: 50 }} path={PATHS.main.tab_1.tab_1_stack_home} params={{}}>
+          <Text>Tab 1</Text>
+        </BlockLink>
       </View>
       <View style={{ flex: 1 }}>
-        <Button
-          title="Tab 2"
-          onPress={() => {
-            navigate(PATHS.main.tab_2, {});
-          }}
-        />
+        <BlockLink style={{ height: 50 }} path={PATHS.main.tab_2} params={{}}>
+          <Text>Tab 2</Text>
+        </BlockLink>
       </View>
     </View>
   );

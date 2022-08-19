@@ -3,6 +3,8 @@ import { PathObj, $pathType, PathObjResultLeaf, GenerateUrlFn, UrlString, PathOb
 import { RouteDef } from "./routes.js";
 import { ExtractObjectPath } from "../utils/typescript-utils.js";
 import { NavigateOptions, RootNavigationState } from "./navigationState.js";
+import type { TextProps, TouchableOpacityProps } from "react-native";
+import { ReactNode } from "react";
 
 export type RouterOptions = {
   rememberDevState?: boolean; //Defaults to true
@@ -78,6 +80,29 @@ export interface Router<T extends RouteDef> {
     opts?: NavigateOptions,
   ) => void;
 
+  InlineLink: <
+    Path extends PathObjResultLeaf<any, any, any, any, any, any, any, any>,
+    Params = ExtractObjectPath<ParamsInputObj<T>, Path[$pathType]>[$paramsType],
+  >(
+    p: {
+      children: ReactNode;
+      path: Path;
+      params: Params;
+    } & TextProps &
+      LinkProps,
+  ) => JSX.Element | null;
+
+  BlockLink: <
+    Path extends PathObjResultLeaf<any, any, any, any, any, any, any, any>,
+    Params = ExtractObjectPath<ParamsInputObj<T>, Path[$pathType]>[$paramsType],
+  >(
+    p: {
+      children: ReactNode;
+      path: Path;
+      params: Params;
+    } & Omit<TouchableOpacityProps, "onPress"> & { onPress?: () => void } & LinkProps,
+  ) => JSX.Element | null;
+
   /**
    * Function w/ callback that lets you to REPLACE the entire navigation state tree. Only the screens navigated to inside the callback will be present.
    * The last screen navigated to will become the current visible screen.
@@ -141,3 +166,11 @@ export interface Router<T extends RouteDef> {
    */
   useFocusedUrl: <Ret>(selector: (currUrl: string) => Ret) => Ret;
 }
+
+export type LinkProps = {
+  hrefLang?: string | undefined;
+  media?: string | undefined;
+  rel?: string | undefined;
+  target?: React.HTMLAttributeAnchorTarget | undefined;
+  referrerPolicy?: React.HTMLAttributeReferrerPolicy | undefined;
+};
