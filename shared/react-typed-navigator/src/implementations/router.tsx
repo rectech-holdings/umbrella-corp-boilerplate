@@ -1,6 +1,6 @@
 import { validateAndCleanInputParams, ParamTypesClass, ParamsTypeRecord } from "./params.js";
 import { PathObjResult, PathObjResultLeaf, UrlString } from "../types/path.js";
-import { LinkProps, Router, RouterOptions } from "../types/router.js";
+import { LinkComponentProps, Router, RouterOptions } from "../types/router.js";
 import { MultiTypeComponent, RouteDef, StackRouteDef, SwitchRouteDef } from "../types/routes.js";
 import { dequal } from "dequal/lite";
 import urlParse from "url-parse";
@@ -345,39 +345,49 @@ class RouterClass implements Router<any> {
     });
   };
 
-  public InlineLink = (
-    a: {
-      children: ReactNode;
-      path: PathObjResultLeaf<any, any, any, any, any, any, any, any>;
-      params: Record<string, any>;
-    } & TextProps &
-      LinkProps,
-  ) => {
-    const { children, path, params, hrefLang, media, rel, target, referrerPolicy, ...rest } = a;
+  public InlineLink = (a: LinkComponentProps<any, TextProps, any>) => {
+    const {
+      children,
+      path,
+      params,
+      hrefLang,
+      media,
+      rel,
+      target,
+      referrerPolicy,
+      onPress,
+      accessibilityRole,
+      ...rest
+    } = a;
 
     const platformProps =
       Platform.OS === "web"
-        ? { href: "/" + this.generateUrl(path, params), hrefLang, media, rel, target, referrerPolicy }
+        ? {
+            onClick: (e: MouseEvent) => {
+              onPress?.();
+              if (isHandledMouseEvent(e, target)) {
+                e.preventDefault();
+                this.navigate(path, params, { resetTouchedStackNavigators: false });
+              }
+            },
+            href: "/" + this.generateUrl(path, params),
+            hrefAttrs: { hrefLang, media, rel, target, referrerPolicy },
+          }
         : {
             onPress: () => {
+              onPress?.();
               this.navigate(path, params, { resetTouchedStackNavigators: false });
             },
           };
 
     return (
-      <Text accessibilityRole="link" {...platformProps} {...rest}>
+      <Text accessibilityRole={accessibilityRole ?? "link"} {...platformProps} {...rest}>
         {children}
       </Text>
     );
   };
 
-  public BlockLink = (
-    a: {
-      children: ReactNode;
-      path: any;
-      params: any;
-    } & Omit<TouchableOpacityProps, "onPress"> & { onPress?: () => void } & LinkProps,
-  ) => {
+  public BlockLink = (a: LinkComponentProps<any, TouchableOpacityProps, any>) => {
     const { children, path, params, hrefLang, media, referrerPolicy, rel, target, ...rest } = a;
 
     const { onPress, accessibilityRole, activeOpacity, ...restTouchableProps } = rest;
@@ -1264,4 +1274,13 @@ function WithMountEffect(p: { children: JSX.Element; onMount: () => void | (() =
   }, []);
 
   return p.children;
+}
+
+function isHandledMouseEvent(e: MouseEvent, target: string | undefined) {
+  return (
+    !e.defaultPrevented &&
+    e.button === 0 && //Ignore non-left clicks
+    (!target || target === "_self") && //Ignore if target is set
+    !(e.metaKey || e.altKey || e.ctrlKey || e.shiftKey)
+  ); //Ignore if click modifiers
 }

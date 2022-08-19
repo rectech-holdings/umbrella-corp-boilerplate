@@ -80,27 +80,16 @@ export interface Router<T extends RouteDef> {
     opts?: NavigateOptions,
   ) => void;
 
-  InlineLink: <
-    Path extends PathObjResultLeaf<any, any, any, any, any, any, any, any>,
-    Params = ExtractObjectPath<ParamsInputObj<T>, Path[$pathType]>[$paramsType],
-  >(
-    p: {
-      children: ReactNode;
-      path: Path;
-      params: Params;
-    } & TextProps &
-      LinkProps,
+  InlineLink: <Path extends PathObjResultLeaf<any, any, any, any, any, any, any, any>>(
+    p: LinkComponentProps<Path, TextProps, ExtractObjectPath<ParamsInputObj<T>, Path[$pathType]>[$paramsType]>,
   ) => JSX.Element | null;
 
-  BlockLink: <
-    Path extends PathObjResultLeaf<any, any, any, any, any, any, any, any>,
-    Params = ExtractObjectPath<ParamsInputObj<T>, Path[$pathType]>[$paramsType],
-  >(
-    p: {
-      children: ReactNode;
-      path: Path;
-      params: Params;
-    } & Omit<TouchableOpacityProps, "onPress"> & { onPress?: () => void } & LinkProps,
+  BlockLink: <Path extends PathObjResultLeaf<any, any, any, any, any, any, any, any>>(
+    p: LinkComponentProps<
+      Path,
+      TouchableOpacityProps,
+      ExtractObjectPath<ParamsInputObj<T>, Path[$pathType]>[$paramsType]
+    >,
   ) => JSX.Element | null;
 
   /**
@@ -174,3 +163,9 @@ export type LinkProps = {
   target?: React.HTMLAttributeAnchorTarget | undefined;
   referrerPolicy?: React.HTMLAttributeReferrerPolicy | undefined;
 };
+
+export type LinkComponentProps<Path, ComponentProps, Params> = {
+  children: ReactNode;
+  path: Path;
+  params: Params;
+} & Omit<ComponentProps, "onPress"> & { onPress?: () => void } & LinkProps;
