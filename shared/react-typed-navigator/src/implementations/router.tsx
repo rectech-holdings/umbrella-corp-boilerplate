@@ -360,7 +360,7 @@ class RouterClass implements Router<any> {
         ? { href: "/" + this.generateUrl(path, params), hrefLang, media, rel, target, referrerPolicy }
         : {
             onPress: () => {
-              this.navigate(path, params);
+              this.navigate(path, params, { resetTouchedStackNavigators: false });
             },
           };
 
@@ -398,7 +398,7 @@ class RouterClass implements Router<any> {
               !(e.metaKey || e.altKey || e.ctrlKey || e.shiftKey) //Ignore if click modifiers
             ) {
               e.preventDefault();
-              this.navigate(path, params);
+              this.navigate(path, params, { resetTouchedStackNavigators: false });
             }
           }}
           href={"/" + this.generateUrl(path, params)}
@@ -419,7 +419,7 @@ class RouterClass implements Router<any> {
             ? undefined
             : () => {
                 onPress?.();
-                this.navigate(path, params);
+                this.navigate(path, params, { resetTouchedStackNavigators: false });
               }
         }
         {...restTouchableProps}
@@ -547,10 +547,10 @@ class RouterClass implements Router<any> {
                 <Screen
                   key={i}
                   screenOrientation={screenOrientation}
-                  style={[{ ...StyleSheet.absoluteFillObject, backgroundColor: "white" }, style]}
                   stackAnimation={
                     stackAnimation ? stackAnimation : Platform.OS === "android" ? "fade" : "slide_from_left"
                   }
+                  style={[{ ...StyleSheet.absoluteFillObject, backgroundColor: "white" }, style]}
                   stackPresentation={
                     stackPresentation
                       ? stackPresentation
@@ -603,8 +603,9 @@ class RouterClass implements Router<any> {
       const Footer = this.#getComponentAtPath(p.path, "footer");
 
       //Gotta do some weird shenanigans to make the transition smooth and not show a switch page too soon (before it has had time to render at least once)
-      //Hopefully will be fixed by React Native Screens when this issue gets resolved: https://github.com/software-mansion/react-native-screens/issues/1251
-      //TODO: The web could also use this optimization. There's a bit of a flash. Could probably just be a timeout though
+      //Doesn't seem to happen on Android though so don't do anything there.
+      //NOTE: This workaround only helps when the switch has keepChildrenMounted to true.
+
       const focusedSwitchIndex = p.state.focusedSwitchIndex;
       const prevRawFocusedSwitchIndex = usePreviousValue(focusedSwitchIndex);
       const [indexHasMounted, setIndexHasMounted] = useState<Record<number, true>>({});
@@ -623,7 +624,7 @@ class RouterClass implements Router<any> {
                 let activityState: 0 | 1 | 2;
                 let zIndex: number;
 
-                if (Platform.OS === "ios") {
+                if (Platform.OS !== "android") {
                   if (i === focusedSwitchIndex) {
                     const shouldDisplay = indexHasMounted[focusedSwitchIndex] || prevRawFocusedSwitchIndex === null;
                     activityState = shouldDisplay ? 2 : 1;
@@ -654,40 +655,41 @@ class RouterClass implements Router<any> {
                 const {
                   screenOrientation,
                   activityState: ignoredActivityState,
-                  onAppear,
                   style,
                   ...screenProps
                 } = allScreenProps;
 
                 return (
-                  <Screen
+                  <WithMountEffect
                     key={i}
-                    screenOrientation={screenOrientation}
-                    onAppear={(e) => {
+                    onMount={() => {
                       if (!indexHasMounted[i]) {
                         isMountedRef.current && setIndexHasMounted((b) => ({ ...b, [i]: true }));
                       }
-                      onAppear?.(e);
                     }}
-                    activityState={activityState}
-                    style={[
-                      {
-                        ...StyleSheet.absoluteFillObject,
-                        backgroundColor: "white",
-                        zIndex,
-                      },
-                      style,
-                    ]}
-                    {...screenProps}
                   >
-                    <Freeze freeze={activityState === 0}>
-                      <InnerNavigator
-                        state={thisNavigationState as any}
-                        path={thisRoutePath}
-                        absoluteNavStatePath={p.absoluteNavStatePath.concat("switches", i, thisNavigationState.path)}
-                      />
-                    </Freeze>
-                  </Screen>
+                    <Screen
+                      screenOrientation={screenOrientation}
+                      activityState={activityState}
+                      style={[
+                        {
+                          ...StyleSheet.absoluteFillObject,
+                          backgroundColor: "white",
+                          zIndex,
+                        },
+                        style,
+                      ]}
+                      {...screenProps}
+                    >
+                      <Freeze freeze={activityState === 0}>
+                        <InnerNavigator
+                          state={thisNavigationState as any}
+                          path={thisRoutePath}
+                          absoluteNavStatePath={p.absoluteNavStatePath.concat("switches", i, thisNavigationState.path)}
+                        />
+                      </Freeze>
+                    </Screen>
+                  </WithMountEffect>
                 );
               })}
             </ScreenContainer>
@@ -1255,3 +1257,11 @@ function traverse(jsonObj: any, fn: (val: any) => any) {
 }
 
 type NavigateToPathOpts = NavigateOptions & { browserHistoryAction?: "push" | "none" | "replace" };
+
+function WithMountEffect(p: { children: JSX.Element; onMount: () => void | (() => void) }) {
+  useEffect(() => {
+    return p.onMount();
+  }, []);
+
+  return p.children;
+}
